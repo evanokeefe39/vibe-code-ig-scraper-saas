@@ -17,9 +17,10 @@ Including another URLconf
 
 from django.contrib import admin
 from django.urls import path
-from core.views import home
+from core.views import home, test_geocode
 
 urlpatterns = [
     path("admin/", admin.site.urls),
     path("", home, name="home"),
+    path("test-geocode/", test_geocode, name="test_geocode"),
 ]
