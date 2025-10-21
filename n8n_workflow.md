@@ -15,4 +15,11 @@
 - HTTP Request: Geocode via Nominatim
 - Supabase: Insert data
 
+## Import Workflow
+The workflow is defined in `n8n/workflows/scrape-workflow.json`. To import:
+1. Access n8n at http://localhost:5678 (user: user, password: password)
+2. Go to Workflows > Import from File
+3. Upload `scrape-workflow.json`
+4. Configure credentials for Apify and Supabase.
+
 Access n8n at http://localhost:5678 (user: user, password: password)
