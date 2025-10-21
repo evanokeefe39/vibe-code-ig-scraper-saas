@@ -1,0 +1,121 @@
+{
+  "name": "Scrape Instagram and Process Locations",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "scrape",
+        "responseMode": "onReceived",
+        "options": {}
+      },
+      "id": "webhook-trigger",
+      "name": "Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [240, 300]
+    },
+    {
+      "parameters": {
+        "actorId": "apidojo/instagram-scraper",
+        "input": "={{ $json.body.profileUrl }}",
+        "options": {}
+      },
+      "id": "apify-scraper",
+      "name": "Apify Instagram Scraper",
+      "type": "@apify/instagram-scraper",
+      "typeVersion": 1,
+      "position": [460, 300]
+    },
+    {
+      "parameters": {
+        "functionCode": "const posts = $input.item.json.posts || [];\nconst locations = [];\nposts.forEach(post => {\n  const caption = post.caption || '';\n  const locationMatch = caption.match(/📍\\s*([^\\n]+)/);\n  if (locationMatch) {\n    locations.push({ address: locationMatch[1], postId: post.id });\n  }\n});\nreturn [{ json: { locations } }];\n"
+      },
+      "id": "extract-locations",
+      "name": "Extract Locations",
+      "type": "n8n-nodes-base.function",
+      "typeVersion": 1,
+      "position": [680, 300]
+    },
+    {
+      "parameters": {
+        "url": "https://nominatim.openstreetmap.org/search",
+        "method": "GET",
+        "queryParameters": {
+          "q": "={{ $node['Extract Locations'].json.locations[0].address }}",
+          "format": "json",
+          "limit": "1"
+        },
+        "options": {}
+      },
+      "id": "geocode",
+      "name": "Geocode",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 3,
+      "position": [900, 300]
+    },
+    {
+      "parameters": {
+        "table": "locations",
+        "operation": "insert",
+        "columns": "address,latitude,longitude,user_id",
+        "values": "={{ $node['Extract Locations'].json.locations[0].address }},={{ $node['Geocode'].json[0].lat }},={{ $node['Geocode'].json[0].lon }},1"
+      },
+      "id": "store-supabase",
+      "name": "Supabase",
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [1120, 300]
+    }
+  ],
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Apify Instagram Scraper",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Apify Instagram Scraper": {
+      "main": [
+        [
+          {
+            "node": "Extract Locations",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract Locations": {
+      "main": [
+        [
+          {
+            "node": "Geocode",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Geocode": {
+      "main": [
+        [
+          {
+            "node": "Supabase",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {},
+  "staticData": null,
+  "meta": {},
+  "tags": []
+}
