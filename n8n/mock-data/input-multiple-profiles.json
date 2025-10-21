@@ -1,0 +1,42 @@
+{
+  "user_id": 1,
+  "tier": "premium",
+  "profiles": [
+    {
+      "url": "https://www.instagram.com/parisfoodguide_/",
+      "days_since": 30,
+      "type": "instagram",
+      "max_results": 50
+    },
+    {
+      "url": "https://www.instagram.com/ellevousguide/",
+      "days_since": 30,
+      "type": "instagram",
+      "max_results": 50
+    },
+    {
+      "url": "https://www.instagram.com/_lavieparisienne__/",
+      "days_since": 30,
+      "type": "instagram",
+      "max_results": 50
+    },
+    {
+      "url": "https://www.instagram.com/le__walk/",
+      "days_since": 30,
+      "type": "instagram",
+      "max_results": 50
+    },
+    {
+      "url": "https://www.instagram.com/sagevanalstine/",
+      "days_since": 30,
+      "type": "instagram",
+      "max_results": 50
+    },
+    {
+      "url": "https://www.instagram.com/paname_in_my_belly/",
+      "days_since": 30,
+      "type": "instagram",
+      "max_results": 50
+    }
+  ]
+}

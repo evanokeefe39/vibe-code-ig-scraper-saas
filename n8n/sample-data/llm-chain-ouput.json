@@ -1,0 +1,20 @@
+[
+  {
+    "text": "{\n  \"address\": \"Paris & Co\",\n  \"category\": \"bakery\",\n  \"vibes\": [\"creative\", \"trendy\", \"good_value\"],\n  \"cost_note\": \"Item prices: 5.90€ to 7.90€ per slice of flan depending on flavors, 22€ for whole classic flan.\",\n  \"confidence\": 0.95\n}"
+  },
+  {
+    "text": "{\"address\": null, \"category\": \"Culture\", \"vibes\": [\"exciting\", \"modern\"], \"cost_note\": \"free USD\", \"confidence\": 0.6}"
+  },
+  {
+    "text": "{\"address\":null,\"category\":\"bed_and_breakfast\",\"vibes\":[\"romantic\",\"scenic\",\"elegant\"],\"cost_note\":\"expensive EUR\",\"confidence\":0.6}"
+  },
+  {
+    "text": "{\"address\":\"42 Rue Charlot, 75003 Paris\",\"category\":\"bakery\",\"vibes\":[\"cosy\",\"good_value\"],\"cost_note\":\"19.30€ for a ham and cheese baguette\",\"confidence\":0.95}"
+  },
+  {
+    "text": "{\"address\": null,\"category\": \"restaurant\",\"vibes\": [\"cosy\", \"romantic\"],\"cost_note\": \"Meal for 2 people: 20-50\\u20ac\",\"confidence\": 0.9}"
+  },
+  {
+    "text": "{\"address\":\"59 Rivoli\",\"category\":\"Culture\",\"vibes\":[\"artsy\",\"creative\",\"good_value\"],\"cost_note\":\"Free admission (donations encouraged) EUR\",\"confidence\":0.9}"
+  }
+]

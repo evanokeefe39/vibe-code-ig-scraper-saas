@@ -1,0 +1,50 @@
+{
+  "user_id": 1,
+  "locations": [
+    {
+      "address": "Le Grenier de Notre-Dame, Paris",
+      "latitude": 48.8534,
+      "longitude": 2.3488,
+      "category": "restaurant",
+      "source_profile": "https://www.instagram.com/parisfoodguide_/",
+      "post_caption": "Amazing brunch spot 📍Le Grenier de Notre-Dame",
+      "confidence_score": 0.95
+    },
+    {
+      "address": "Café de Flore, Saint-Germain-des-Prés",
+      "latitude": 48.8543,
+      "longitude": 2.3325,
+      "category": "cafe",
+      "source_profile": "https://www.instagram.com/parisfoodguide_/",
+      "post_caption": "Perfect for people watching 📍Café de Flore",
+      "confidence_score": 0.88
+    },
+    {
+      "address": "Pierre Hermé, Paris",
+      "latitude": 48.8656,
+      "longitude": 2.3078,
+      "category": "bakery",
+      "source_profile": "https://www.instagram.com/parisfoodguide_/",
+      "post_caption": "Best macarons in town 📍Pierre Hermé",
+      "confidence_score": 0.92
+    },
+    {
+      "address": "Le Comptoir du Relais, Paris",
+      "latitude": 48.8549,
+      "longitude": 2.3331,
+      "category": "restaurant",
+      "source_profile": "https://www.instagram.com/parisfoodguide_/",
+      "post_caption": "Hidden gem for traditional French cuisine 📍Le Comptoir du Relais",
+      "confidence_score": 0.89
+    },
+    {
+      "address": "Angelina, Paris",
+      "latitude": 48.8642,
+      "longitude": 2.3284,
+      "category": "cafe",
+      "source_profile": "https://www.instagram.com/parisfoodguide_/",
+      "post_caption": "Mont Blanc heaven 📍Angelina",
+      "confidence_score": 0.91
+    }
+  ]
+}
