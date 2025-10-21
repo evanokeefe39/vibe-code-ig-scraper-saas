@@ -1,0 +1,21 @@
+[tool.poetry]
+name = "vibe-scraper"
+version = "0.1.0"
+description = "SaaS for curating social media location recommendations"
+authors = ["evano <evano@example.com>"]
+readme = "README.md"
+packages = [{include = "vibe_scraper"}]
+
+[tool.poetry.dependencies]
+python = "^3.10"
+django = "^5.0"
+djangorestframework = "^3.14"
+requests = "^2.31"
+geopy = "^2.4"
+supabase = "^2.3"
+gunicorn = "^21.2"
+stripe = "^8.0"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
