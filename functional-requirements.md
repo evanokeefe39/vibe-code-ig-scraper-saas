@@ -57,7 +57,8 @@ The Vibe Code IG Scraper SaaS allows users to curate location-based recommendati
 - n8n: Workflow orchestration for scraping/processing and curation.
 - Apify: Scraping actors (called via n8n).
 - Stripe: Payment processing.
-- Google Maps: Geocoding API, My Maps export.
+- Mapbox: Geocoding API for location conversion.
+- Google Maps: My Maps export.
 
 ### Security & Validation
 - **URL Validation**: Backend validates user-submitted profile URLs against domain whitelist (instagram.com, tiktok.com) and format requirements.
@@ -88,6 +89,7 @@ The Vibe Code IG Scraper SaaS allows users to curate location-based recommendati
 ## Acceptance Criteria
 - All user stories must have corresponding UI/API implementations.
 - Data must be securely stored and tied to user accounts.
+- Geocoding must achieve >90% accuracy for well-formed location strings, with fallback handling for partial matches.
 - Exports must be compatible with Google My Maps.
 - Subscriptions must enforce feature limits (e.g., free tier restrictions).
 - URL validation prevents SSRF and malicious scraping.

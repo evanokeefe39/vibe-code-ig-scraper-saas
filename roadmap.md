@@ -15,7 +15,7 @@ Phased development from boilerplate to full product release, with milestones and
 **Milestones**:
 - Integrate n8n with Apify.
 - Build scraping workflow (Instagram).
-- Add geocoding and basic processing.
+- Add Mapbox geocoding and basic processing.
 - Test end-to-end flow.
 **Deliverables**: Working scrape-to-store pipeline.
 

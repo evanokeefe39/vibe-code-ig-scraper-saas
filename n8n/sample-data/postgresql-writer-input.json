@@ -1,0 +1,182 @@
+[
+  {
+    "mapbox_suggestion": "15 Rue Gracieuse, 75005 Paris, France",
+    "mapbox_searched": "15 Rue Gracieuse, 75005 Paris",
+    "business_name": "Osteria Brutto",
+    "address": "15 Rue Gracieuse, 75005 Paris",
+    "vibes": [
+      "romantic",
+      "cozy"
+    ],
+    "cost_note": "Meal for 2 people: 30–50€",
+    "confidence": 1
+  },
+  {
+    "mapbox_suggestion": "20 Rue De Douai, 75009 Paris, France",
+    "mapbox_searched": "20 Rue de Douai, 75009 Paris",
+    "business_name": "Pink Mamma",
+    "address": "20 Rue de Douai, 75009 Paris",
+    "vibes": [
+      "romantic",
+      "cozy"
+    ],
+    "cost_note": "Meal for 2 people: 20–40€",
+    "confidence": 1
+  },
+  {
+    "mapbox_suggestion": "124 Rue De Grenelle, 75007 Paris, France",
+    "mapbox_searched": "124 Rue de Grenelle, 75007 Paris",
+    "business_name": "Civetta Paris",
+    "address": "124 Rue de Grenelle, 75007 Paris",
+    "vibes": [
+      "romantic",
+      "cozy"
+    ],
+    "cost_note": "Meal for 2 people: 30–50€",
+    "confidence": 1
+  },
+  {
+    "mapbox_suggestion": "19 Rue Soufflot, 75005 Paris, France",
+    "mapbox_searched": "19 Rue Soufflot, 75005 Paris",
+    "business_name": "Abracetto Paris",
+    "address": "19 Rue Soufflot, 75005 Paris",
+    "vibes": [
+      "romantic",
+      "cozy"
+    ],
+    "cost_note": "Meal for 2 people: 20–30€",
+    "confidence": 1
+  },
+  {
+    "mapbox_suggestion": "20 Rue Du Faubourg Poissonnière, 75010 Paris, France",
+    "mapbox_searched": "20 Rue du Faubourg Poissonnière, 75010 Paris",
+    "business_name": "Adela Pasta",
+    "address": "20 Rue du Faubourg Poissonnière, 75010 Paris",
+    "vibes": [
+      "romantic",
+      "cozy"
+    ],
+    "cost_note": "Meal for 2 people: 20–30€",
+    "confidence": 1
+  },
+  {
+    "mapbox_suggestion": "52 Rue La Fayette, 75009 Paris, France",
+    "mapbox_searched": "52 Rue La Fayette, 75009 Paris",
+    "business_name": "Madonna Osteria",
+    "address": "52 Rue La Fayette, 75009 Paris",
+    "vibes": [
+      "romantic",
+      "cozy"
+    ],
+    "cost_note": "Meal for 2 people: 30–50€",
+    "confidence": 1
+  },
+  {
+    "mapbox_suggestion": "47 Rue Saint-Charles, 75015 Paris, France",
+    "mapbox_searched": "47 Rue Saint-Charles, 75015 Paris",
+    "business_name": "Joya Trattoria",
+    "address": "47 Rue Saint-Charles, 75015 Paris",
+    "vibes": [
+      "romantic",
+      "cozy"
+    ],
+    "cost_note": "Meal for 2 people: 20–30€",
+    "confidence": 1
+  },
+  {
+    "mapbox_suggestion": "13 Rue Philibert Lucot, 75013 Paris, France",
+    "mapbox_searched": "13 Rue Philibert Lucot, 75013 Paris",
+    "business_name": "Pho Tai Paris",
+    "address": "13 Rue Philibert Lucot, 75013 Paris",
+    "vibes": [
+      "cosy",
+      "warm"
+    ],
+    "cost_note": "13,80€ for a bowl of speciale beef phô",
+    "confidence": 0.95
+  },
+  {
+    "mapbox_suggestion": "4 Rue De La Convention, 75015 Paris, France",
+    "mapbox_searched": "4 rue de la Convention, 75015 Paris",
+    "business_name": "Paris & Co",
+    "address": "4 rue de la Convention, 75015 Paris",
+    "vibes": [
+      "cosy",
+      "good_value"
+    ],
+    "cost_note": "5.90€ to 7.90€ per slice depending on flavors, 22€ for whole classic flan",
+    "confidence": 0.95
+  },
+  {
+    "mapbox_suggestion": "49 Rue De La Gaîté, 75014 Paris, France",
+    "mapbox_searched": "49 rue de la Gaité, 75014 Paris",
+    "business_name": "Paris & Co",
+    "address": "49 rue de la Gaité, 75014 Paris",
+    "vibes": [
+      "cosy",
+      "good_value"
+    ],
+    "cost_note": "5.90€ to 7.90€ per slice depending on flavors, 22€ for whole classic flan",
+    "confidence": 0.95
+  },
+  {
+    "mapbox_suggestion": "59 Rue de Rivoli, 75001 Paris, France",
+    "mapbox_searched": "59 Rivoli",
+    "business_name": "59 Rivoli",
+    "address": null,
+    "vibes": [
+      "artsy",
+      "modern"
+    ],
+    "cost_note": "free admission, donation encouraged (EUR)",
+    "confidence": 0.9
+  },
+  {
+    "mapbox_suggestion": "7 Quai Valéry Giscard d'Estaing, 75007 Paris, France",
+    "mapbox_searched": "Esplanade Valéry Giscard d’Estaing, 75007 Paris",
+    "business_name": "Musée d’Orsay",
+    "address": "Esplanade Valéry Giscard d’Estaing, 75007 Paris",
+    "vibes": [
+      "artsy",
+      "elegant"
+    ],
+    "cost_note": "free entry on first Sunday of the month (EUR)",
+    "confidence": 0.95
+  },
+  {
+    "mapbox_suggestion": "14 Rue Catherine De La Rochefoucauld, 75009 Paris, France",
+    "mapbox_searched": "14 rue de La Rochefoucauld, 75009 Paris",
+    "business_name": "Musée Gustave Moreau",
+    "address": "14 rue de La Rochefoucauld, 75009 Paris",
+    "vibes": [
+      "artsy",
+      "historic"
+    ],
+    "cost_note": "free entry on first Sunday of the month (EUR)",
+    "confidence": 0.95
+  },
+  {
+    "mapbox_suggestion": "Jardin des Tuileries, 75001 Paris, France",
+    "mapbox_searched": "Jardin des Tuileries, 75001 Paris",
+    "business_name": "Musée de l’Orangerie",
+    "address": "Jardin des Tuileries, 75001 Paris",
+    "vibes": [
+      "artsy",
+      "scenic"
+    ],
+    "cost_note": "free entry on first Sunday of the month (EUR)",
+    "confidence": 0.95
+  },
+  {
+    "mapbox_suggestion": "37 Quai Jacques Chirac, 75007 Paris, France",
+    "mapbox_searched": "37 Quai Jacques Chirac, 75007 Paris",
+    "business_name": "Musée du Quai Branly – Jacques Chirac",
+    "address": "37 Quai Jacques Chirac, 75007 Paris",
+    "vibes": [
+      "artsy",
+      "cultural"
+    ],
+    "cost_note": "free entry on first Sunday of the month (EUR)",
+    "confidence": 0.95
+  }
+]

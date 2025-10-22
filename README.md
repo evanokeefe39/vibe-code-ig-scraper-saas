@@ -2,12 +2,25 @@
 
 A lightweight B2C SaaS that curates location-based recommendations from social media profiles into personalized lists for Google Maps.
 
-## Setup
+## Prerequisites
+
+### Development Setup
 
 1. Install Poetry: `pip install poetry`
 2. Install dependencies: `poetry install`
 3. Activate shell: `poetry shell`
 4. Run Django: `python manage.py runserver`
+
+### Geocoding Setup
+
+This project uses Mapbox for geocoding services. To set up:
+
+1. Sign up for a Mapbox account at [mapbox.com](https://account.mapbox.com/)
+2. Create an access token in Account > Access Tokens
+3. Set the environment variable: `MAPBOX_ACCESS_TOKEN=your_token_here`
+4. For development, you can use Nominatim (OpenStreetMap) as a fallback without an API key
+
+See [geocoding-providers.md](geocoding-providers.md) for detailed provider information.
 
 ## Requirements
 
