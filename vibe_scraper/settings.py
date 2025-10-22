@@ -77,8 +77,12 @@ WSGI_APPLICATION = "vibe_scraper.wsgi.application"
 
 DATABASES = {
     "default": {
-        "ENGINE": "django.db.backends.sqlite3",
-        "NAME": BASE_DIR / "db.sqlite3",
+        "ENGINE": "django.db.backends.postgresql",
+        "NAME": "vibe_scraper",
+        "USER": "vibe_user",
+        "PASSWORD": "vibe_pass",
+        "HOST": "localhost",
+        "PORT": "5432",
     }
 }
 

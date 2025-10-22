@@ -66,14 +66,20 @@ function validateResult(result) {
   // Normalize to array
   const locations = Array.isArray(result) ? result : [result];
 
-  // Clean each location object and include all fields
+  // Clean each location object
   return locations.map((location, index) => {
     if (!location || typeof location !== 'object') {
       console.warn(`Invalid location at index ${index}, using fallback`);
       return createFallbackResult(`Invalid location object at index ${index}`);
     }
 
-    // Normalize arrays and numbers, but keep all fields
+    const requiredFields = ['address', 'category', 'vibes', 'cost_note', 'confidence'];
+    for (const field of requiredFields) {
+      if (!(field in location)) {
+        console.warn(`Missing required field '${field}' in location ${index}`);
+      }
+    }
+
     if (location.vibes && !Array.isArray(location.vibes)) {
       location.vibes = [location.vibes];
     }
@@ -113,16 +119,8 @@ const llmTexts = items
   .map(i => i.json.text || i.json.response || i.json.output)
   .filter(Boolean);
 
-// Parse all LLM outputs and flatten, including extra fields from the item
-const parsedLocations = llmTexts.flatMap((t, index) => {
-  const locations = parseLLMJson(t);
-  const item = items[index].json;
-  // Extract extra fields, excluding 'text'
-  const extraFields = { ...item };
-  delete extraFields.text;
-  // Add extra fields to each location
-  return locations.map(location => ({ ...location, ...extraFields }));
-});
+// Parse all LLM outputs and flatten
+const parsedLocations = llmTexts.flatMap(t => parseLLMJson(t));
 
 // Return one item per location
 return parsedLocations.map(location => ({ json: location }));

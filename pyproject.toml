@@ -15,6 +15,7 @@ geopy = "^2.4"
 supabase = "^2.3"
 gunicorn = "^21.2"
 stripe = "^8.0"
+psycopg = {extras = ["c"], version = "^3.1"}
 
 [build-system]
 requires = ["poetry-core"]

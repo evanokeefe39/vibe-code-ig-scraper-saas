@@ -13,5 +13,18 @@ services:
       - n8n_data:/home/node/.n8n
     restart: unless-stopped
 
+  postgres:
+    image: postgres:15
+    environment:
+      POSTGRES_DB: vibe_scraper
+      POSTGRES_USER: vibe_user
+      POSTGRES_PASSWORD: vibe_pass
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    restart: unless-stopped
+
 volumes:
   n8n_data:
+  postgres_data:
