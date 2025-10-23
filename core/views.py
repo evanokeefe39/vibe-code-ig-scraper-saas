@@ -11,6 +11,25 @@ from .forms import RunForm
 
 logger = logging.getLogger(__name__)
 
+def get_n8n_execution_status(execution_id):
+    """Query n8n REST API for execution status"""
+    if not execution_id:
+        return None
+
+    n8n_url = settings.N8N_WEBHOOK_URL.replace('/webhook/scrape', '/rest/executions/') + str(execution_id)
+    try:
+        # Basic auth for n8n REST API
+        response = requests.get(n8n_url, auth=('user', 'password'), timeout=5)
+        if response.status_code == 200:
+            data = response.json()
+            return data.get('status', 'unknown')
+        else:
+            logger.warning(f"Failed to get execution status for {execution_id}: HTTP {response.status_code}")
+            return 'unknown'
+    except Exception as e:
+        logger.error(f"Exception getting execution status for {execution_id}: {str(e)}")
+        return 'unknown'
+
 def home(request):
     return render(request, 'home.html')
 
@@ -79,14 +98,26 @@ def run_create(request):
 def run_list(request):
     # For now, filter by dummy user_id=1
     runs = Run.objects.filter(user_id=1).order_by('-created_at')
-    return render(request, 'core/run_list.html', {'runs': runs})
+
+    # Add execution status to each run
+    runs_with_status = []
+    for run in runs:
+        status = get_n8n_execution_status(run.n8n_execution_id)
+        runs_with_status.append({
+            'run': run,
+            'status': status
+        })
+
+    return render(request, 'core/run_list.html', {'runs_with_status': runs_with_status})
 
 def run_detail(request, pk):
     run = get_object_or_404(Run, pk=pk)
-    return render(request, 'core/run_detail.html', {'run': run})
+    status = get_n8n_execution_status(run.n8n_execution_id)
+    return render(request, 'core/run_detail.html', {'run': run, 'execution_status': status})
 
 def run_by_n8n(request, n8n_execution_id):
     run = get_object_or_404(Run, n8n_execution_id=n8n_execution_id)
-    return render(request, 'core/run_detail.html', {'run': run})
+    status = get_n8n_execution_status(run.n8n_execution_id)
+    return render(request, 'core/run_detail.html', {'run': run, 'execution_status': status})
 
 # Create your views here.

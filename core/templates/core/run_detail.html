@@ -32,15 +32,25 @@
                 <p class="text-gray-600 mt-1">Created {{ run.created_at|date:"M j, Y g:i A" }}</p>
             </div>
             <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium
-                {% if run.n8n_execution_id %}
+                {% if execution_status == 'success' %}
                     bg-green-100 text-green-800
+                {% elif execution_status == 'running' or execution_status == 'waiting' %}
+                    bg-blue-100 text-blue-800
+                {% elif execution_status == 'failed' or execution_status == 'error' %}
+                    bg-red-100 text-red-800
                 {% else %}
                     bg-yellow-100 text-yellow-800
                 {% endif %}">
-                {% if run.n8n_execution_id %}
-                    Executing
+                {% if execution_status == 'success' %}
+                    Completed
+                {% elif execution_status == 'running' %}
+                    Running
+                {% elif execution_status == 'waiting' %}
+                    Waiting
+                {% elif execution_status == 'failed' or execution_status == 'error' %}
+                    Failed
                 {% else %}
-                    Pending
+                    {{ execution_status|title }}
                 {% endif %}
             </span>
         </div>
@@ -76,10 +86,16 @@
                 <div class="flex justify-between">
                     <span class="text-sm font-medium text-gray-700">Status</span>
                     <span class="text-sm text-gray-900">
-                        {% if run.n8n_execution_id %}
+                        {% if execution_status == 'success' %}
+                            Completed
+                        {% elif execution_status == 'running' %}
                             Running
+                        {% elif execution_status == 'waiting' %}
+                            Waiting
+                        {% elif execution_status == 'failed' or execution_status == 'error' %}
+                            Failed
                         {% else %}
-                            Pending
+                            {{ execution_status|title }}
                         {% endif %}
                     </span>
                 </div>
