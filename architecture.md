@@ -35,13 +35,17 @@ The platform supports various data processing services depending on the extracti
 See [geocoding-providers.md](geocoding-providers.md) for provider details.
 
 ### Data Flow
-1. User → Django (auth/UI) → n8n (trigger scrape) → Apify (scrape) → n8n (process/aggregate) → Django DB (store as flexible JSONB).
-2. User → Django (curation) → DB (CRUD on JSONB data) → Export (adaptable formats: CSV/JSON/Google Maps).
+1. **Web UI Flow**: User → Django (auth/UI) → Agent (scrape via Apify + LLM extraction + validation) → Django DB (store entities as flexible JSONB) → Generic entity list view → Export (CSV/JSON).
+2. **MCP Flow**: External agent → MCP server → Internal agent (scrape + extraction + validation) → Return data (file/markdown/JSON/CSV message).
 3. Payments: Stripe buy buttons → Webhooks → DB.
 
-**Data Storage Decision**: Extracted data stored as JSONB structures in Django models for maximum flexibility across different use cases (locations, leads, research data, etc.). n8n execution data remains in n8n; correlated via execution ID.
+**Unified Agent Architecture**: A single agent handles both web UI and MCP requests. The agent:
+- Scrapes social media profiles using Apify
+- Uses LLM to extract entities based on user prompts
+- Validates extracted entities
+- Formats output based on context (DB storage for web UI, direct response for MCP)
 
-**Future Agentic Flow**: Agents (via n8n/LangChain) dynamically select and call Apify tools based on cost/user prompts; data validation occurs via specialized agent tools; MCP servers expose capabilities for external agents. Processing adapts to user-specified schemas rather than hardcoded location logic.
+**Data Storage Decision**: Extracted entities stored as JSONB structures in Django models for maximum flexibility across different use cases (locations, leads, research data, etc.). n8n execution data remains in n8n; correlated via execution ID.
 
 ## Architecture by Stage
 

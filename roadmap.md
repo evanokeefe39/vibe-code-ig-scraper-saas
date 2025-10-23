@@ -34,25 +34,26 @@ Phased development from boilerplate to full product release, with milestones and
 ## Stage 4: First Release (Agentic Foundations)
 **Milestones**:
 - Deploy to Render production.
-- Enhance UI/UX for multiple data types.
-- Full export to Google My Maps (for location data) and flexible formats.
+- Implement unified agent for web UI and MCP server.
+- Generic entity list views in Django with CSV/JSON export.
+- MCP server with multiple output formats (file/markdown/JSON/CSV message).
 - Subscription enforcement with dynamic pricing based on API usage.
 - Set up CI/CD and monitoring.
-- Implement user-provided system prompts for data extraction with sanitization.
-- Wrap n8n pipelines as agent tools; introduce basic agent orchestration using n8n components.
+- Implement user-provided system prompts for LLM entity extraction with sanitization.
+- Agent uses Apify for scraping + LLM for entity extraction + validation.
 - Research and implement cost querying for Apify actors (or hardcode estimates with user confirmation).
-**Deliverables**: Public beta launch with agentic scraping capabilities adaptable to various use cases.
+**Deliverables**: Public beta launch with unified agent handling both web UI and MCP requests.
 
 ## Stage 5: Second Release (Full Agentic Platform)
 **Milestones**:
 - Expand to multi-platform scraping (TikTok, etc.) via agent-driven decisions.
-- Improve NLP categorization with agent-selected models for various data types.
+- Improve entity extraction with advanced LLM models and validation.
 - User analytics dashboard with cost insights.
-- API for integrations and MCP client/server exposure.
-- Performance optimizations and dynamic data validation modules for extensible schemas.
-- Migrate to LangChain for advanced agent capabilities.
-- Develop specialized validators for complex types (JSON, currency, timestamps, custom schemas).
-**Deliverables**: Polished v1.0 release as flexible agentic data extraction platform.
+- Enhanced MCP server capabilities.
+- Performance optimizations and advanced entity validation modules.
+- Migrate to LangChain for sophisticated agent capabilities.
+- Develop specialized validators for complex entity types.
+**Deliverables**: Polished v1.0 release as unified agentic data extraction platform.
 
 ## Post-Release (Ongoing)
 - Bug fixes and user feedback.
@@ -61,14 +62,15 @@ Phased development from boilerplate to full product release, with milestones and
 - Explore partnerships/monetization tweaks.
 
 ## Agentic Vision & TODOs
+- **Unified Agent**: Single agent handles web UI and MCP server requests - scrapes with Apify, extracts entities with LLM, validates data, formats output appropriately.
 - **Dynamic Pipelines**: Agents decide when/how to call Apify actors based on cost, success rates, and user goals for various data extraction tasks.
 - **Cost Management**: Query Apify actor costs via API (research needed); fallback to hardcoded estimates with user confirmation dialogs.
 - **Prompt Sanitization**: Implement input validation for user prompts using frameworks like Guardrails AI or NeMo Guardrails to detect malicious content.
-- **Data Validation Modules**: Develop reusable tools for complex types (JSON schema, currency parsing, timestamp validation, location geocoding, custom user-defined schemas).
-- **MCP Integration**: Expose scraping tools as MCP servers for broader AI agent ecosystems.
+- **Entity Validation**: Develop validation for extracted entities (location geocoding, contact info, etc.).
+- **MCP Integration**: Expose agent as MCP server that returns data in multiple formats (file/markdown/JSON/CSV message).
+- **Generic Entity Views**: Django UI shows flexible list of extracted entities with CSV/JSON export.
 - **Project Rename**: Consider renaming from "IG Scraper SaaS" to "Agentic Social Scraper" or similar to reflect expanded scope.
 - **Agent Framework**: Start with n8n for agentic workflows, transition to LangChain for maturity.
-- **Schema Flexibility**: Support user-defined data extraction schemas beyond hardcoded location processing.
 
 ## Risks & Dependencies
 - Apify API limits/costs.
