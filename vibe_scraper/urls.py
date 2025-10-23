@@ -17,7 +17,7 @@ Including another URLconf
 
 from django.contrib import admin
 from django.urls import path
-from core.views import home, test_geocode, run_create, run_list, run_detail, run_by_n8n, run_status_api
+from core.views import home, test_geocode, run_create, run_list, run_detail, run_by_n8n, run_status_api, entity_list, collection_list, collection_detail, collection_create, add_to_collection
 
 urlpatterns = [
     path("admin/", admin.site.urls),
@@ -28,4 +28,9 @@ urlpatterns = [
     path("runs/<int:pk>/", run_detail, name="run_detail"),
     path("runs/<int:pk>/status/", run_status_api, name="run_status_api"),
     path("runs/by-n8n/<int:n8n_execution_id>/", run_by_n8n, name="run_by_n8n"),
+    path("curation/", entity_list, name="entity_list"),
+    path("collections/", collection_list, name="collection_list"),
+    path("collections/create/", collection_create, name="collection_create"),
+    path("collections/<int:pk>/", collection_detail, name="collection_detail"),
+    path("add-to-collection/", add_to_collection, name="add_to_collection"),
 ]

@@ -1,0 +1,87 @@
+{% extends "base.html" %}
+
+{% block title %}{{ collection.name }} - Vibe Scraper SaaS{% endblock %}
+
+{% block content %}
+<div class="max-w-6xl mx-auto px-4 py-8">
+    <div class="mb-8">
+        <div class="flex justify-between items-start">
+            <div>
+                <h1 class="text-3xl font-bold text-gray-900 mb-2">{{ collection.name }}</h1>
+                {% if collection.description %}
+                <p class="text-gray-600">{{ collection.description }}</p>
+                {% endif %}
+                <p class="text-sm text-gray-500 mt-2">Created {{ collection.created_at|date:"M j, Y g:i A" }}</p>
+            </div>
+            <a href="{% url 'collection_list' %}"
+               class="inline-flex items-center px-4 py-2 bg-gray-600 hover:bg-gray-700 text-white font-semibold rounded-lg transition-colors duration-200">
+                ← Back to Collections
+            </a>
+        </div>
+    </div>
+
+    {% if items %}
+    <div class="bg-white rounded-lg shadow-md overflow-hidden">
+        <div class="px-6 py-4 border-b border-gray-200">
+            <h2 class="text-lg font-semibold text-gray-900">Curated Items ({{ items|length }})</h2>
+        </div>
+        <div class="divide-y divide-gray-200">
+            {% for item in items %}
+            <div class="px-6 py-4">
+                <div class="flex justify-between items-start mb-4">
+                    <div class="flex-1">
+                        <div class="text-sm text-gray-600 mb-2">
+                            From Run #{{ item.source_run.pk }} • Added {{ item.created_at|date:"M j, Y g:i A" }}
+                        </div>
+                        {% if item.category %}
+                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800 mb-2">
+                            {{ item.category }}
+                        </span>
+                        {% endif %}
+                    </div>
+                    <div class="flex space-x-2">
+                        <button class="text-gray-400 hover:text-gray-600" title="Edit">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
+                            </svg>
+                        </button>
+                        <button class="text-gray-400 hover:text-red-600" title="Remove">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+                {% if item.notes %}
+                <div class="mb-4">
+                    <h4 class="text-sm font-medium text-gray-900 mb-1">Notes</h4>
+                    <p class="text-sm text-gray-700 bg-gray-50 p-3 rounded-md">{{ item.notes }}</p>
+                </div>
+                {% endif %}
+                <div>
+                    <h4 class="text-sm font-medium text-gray-900 mb-2">Entity Data</h4>
+                    <div class="bg-gray-50 rounded-md p-4">
+                        <pre class="text-sm text-gray-800 whitespace-pre-wrap">{{ item.entity_data|json_script:"item-data" }}</pre>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% else %}
+    <div class="text-center py-12">
+        <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4"/>
+        </svg>
+        <h3 class="mt-2 text-sm font-medium text-gray-900">No items in this collection</h3>
+        <p class="mt-1 text-sm text-gray-500">Add entities from the curation page to populate this collection.</p>
+        <div class="mt-6">
+            <a href="{% url 'entity_list' %}"
+               class="inline-flex items-center px-4 py-2 bg-primary-600 hover:bg-primary-700 text-white font-semibold rounded-lg transition-colors duration-200">
+                Browse Entities
+            </a>
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

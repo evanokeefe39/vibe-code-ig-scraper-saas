@@ -6,7 +6,7 @@ from django.http import HttpResponse, JsonResponse
 from django.contrib import messages
 from django.conf import settings
 from .utils import geocode_location
-from .models import Run
+from .models import Run, CuratedList, CuratedItem
 from .forms import RunForm
 
 logger = logging.getLogger(__name__)
@@ -148,5 +148,80 @@ def run_status_api(request, pk):
         'status': execution_info['status'],
         'data': execution_info['data']
     })
+
+# Curation views
+def entity_list(request):
+    # For now, dummy user_id=1
+    user_id = 1
+    runs = Run.objects.filter(user_id=user_id, output__isnull=False)
+
+    entities = []
+    for run in runs:
+        if isinstance(run.output, list):
+            for entity in run.output:
+                entities.append({
+                    'data': entity,
+                    'run_id': run.pk,
+                    'run_created': run.created_at
+                })
+
+    # Get user's collections for the dropdown
+    collections = CuratedList.objects.filter(user_id=user_id)
+
+    return render(request, 'core/entity_list.html', {
+        'entities': entities,
+        'collections': collections
+    })
+
+def collection_list(request):
+    # Dummy user
+    user_id = 1
+    collections = CuratedList.objects.filter(user_id=user_id).order_by('-created_at')
+    return render(request, 'core/collection_list.html', {'collections': collections})
+
+def collection_detail(request, pk):
+    collection = get_object_or_404(CuratedList, pk=pk, user_id=1)  # Dummy user
+    items = CuratedItem.objects.filter(curated_list=collection).order_by('-created_at')
+    return render(request, 'core/collection_detail.html', {
+        'collection': collection,
+        'items': items
+    })
+
+def collection_create(request):
+    if request.method == 'POST':
+        name = request.POST.get('name')
+        description = request.POST.get('description', '')
+        if name:
+            CuratedList.objects.create(
+                user_id=1,  # Dummy
+                name=name,
+                description=description
+            )
+            messages.success(request, 'Collection created successfully!')
+            return redirect('collection_list')
+    return render(request, 'core/collection_create.html')
+
+# AJAX view to add entity to collection
+def add_to_collection(request):
+    if request.method == 'POST':
+        collection_id = request.POST.get('collection_id')
+        run_id = request.POST.get('run_id')
+        entity_index = int(request.POST.get('entity_index', 0))
+
+        try:
+            collection = CuratedList.objects.get(pk=collection_id, user_id=1)
+            run = Run.objects.get(pk=run_id, user_id=1)
+            if isinstance(run.output, list) and 0 <= entity_index < len(run.output):
+                entity_data = run.output[entity_index]
+                CuratedItem.objects.create(
+                    user_id=1,
+                    curated_list=collection,
+                    source_run=run,
+                    entity_data=entity_data
+                )
+                return JsonResponse({'success': True})
+        except Exception as e:
+            logger.error(f"Error adding to collection: {e}")
+    return JsonResponse({'success': False})
 
 # Create your views here.
