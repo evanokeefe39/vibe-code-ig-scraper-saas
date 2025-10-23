@@ -62,45 +62,62 @@
                           {{ execution_status|title }}
                       {% endif %}
                   </span>
-                  {% if run.input %}
-                  <button class="px-4 py-2 bg-gray-600 hover:bg-gray-700 text-white text-sm font-medium rounded-lg transition-colors duration-200" onclick="alert('Rerun with modified prompt - coming soon!')">
-                      Rerun with Modified Prompt
-                  </button>
-                  {% endif %}
+
               </div>
           </div>
     </div>
 
     <div class="grid md:grid-cols-2 gap-8">
         <!-- Input Configuration -->
+        <!-- Scraping Configuration -->
         <div class="bg-white rounded-lg shadow-md p-6">
-            <h2 class="text-xl font-semibold text-gray-900 mb-4">Configuration</h2>
+            <h2 class="text-xl font-semibold text-gray-900 mb-4">Scraping Configuration</h2>
              {% if run.input %}
                  <script id="input-data" type="application/json">{{ input_json|safe }}</script>
                  <div class="space-y-4">
                     <div>
-                        <h3 class="text-sm font-medium text-gray-700 mb-2">Profiles</h3>
+                        <h3 class="text-sm font-medium text-gray-700 mb-2">Instagram Profiles</h3>
                         <div class="bg-gray-50 rounded-lg p-3">
                             <ul id="profiles-list" class="text-sm text-gray-800"></ul>
                         </div>
                     </div>
                     <div>
-                        <h3 class="text-sm font-medium text-gray-700 mb-2">Parameters</h3>
+                        <h3 class="text-sm font-medium text-gray-700 mb-2">Scraping Parameters</h3>
                         <div class="grid grid-cols-2 gap-4 text-sm">
                             <div>
                                 <span class="font-medium text-gray-600">Days Since:</span>
                                 <span id="days-since" class="text-gray-800 ml-2"></span>
                             </div>
                             <div>
-                                <span class="font-medium text-gray-600">Max Results:</span>
+                                <span class="font-medium text-gray-600">Max Results per Profile:</span>
                                 <span id="max-results" class="text-gray-800 ml-2"></span>
                             </div>
                         </div>
                     </div>
+                </div>
+            {% else %}
+                <p class="text-gray-500">No configuration data available.</p>
+            {% endif %}
+        </div>
+
+        <!-- Extraction Configuration -->
+        <div class="bg-white rounded-lg shadow-md p-6">
+            <h2 class="text-xl font-semibold text-gray-900 mb-4">Extraction Configuration</h2>
+            {% if run.input %}
+                <div class="space-y-4">
                     <div>
                         <h3 class="text-sm font-medium text-gray-700 mb-2">Extraction Prompt</h3>
-                        <div class="bg-gray-50 rounded-lg p-3">
-                            <p id="extraction-prompt" class="text-sm text-gray-800"></p>
+                        <div class="space-y-3">
+                            <textarea id="extraction-prompt-textarea" rows="4" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500 text-sm" placeholder="Enter extraction prompt...">{{ run.input.extraction_prompt|default:"Extract location information, business mentions, and contact details from social media posts." }}</textarea>
+                            <div class="flex items-center space-x-3">
+                                <button id="rerun-button" class="hidden inline-flex items-center px-4 py-2 bg-primary-600 hover:bg-primary-700 text-white text-sm font-medium rounded-lg transition-colors duration-200" onclick="rerunWithModifiedPrompt()">
+                                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+                                    </svg>
+                                    Rerun with Modified Prompt
+                                </button>
+                                <span id="prompt-changed-indicator" class="hidden text-sm text-orange-600">Prompt has been modified</span>
+                            </div>
                         </div>
                     </div>
                     <div>
@@ -110,8 +127,6 @@
                         </div>
                     </div>
                 </div>
-            {% else %}
-                <p class="text-gray-500">No configuration data available.</p>
             {% endif %}
         </div>
 
@@ -295,6 +310,48 @@ function formatDuration(ms) {
     return `${seconds}s`;
 }
 
+function initializePromptEditing(originalPrompt) {
+    const textarea = document.getElementById('extraction-prompt-textarea');
+    const rerunButton = document.getElementById('rerun-button');
+    const changedIndicator = document.getElementById('prompt-changed-indicator');
+
+    textarea.value = originalPrompt;
+
+    textarea.addEventListener('input', function() {
+        const hasChanged = textarea.value.trim() !== originalPrompt.trim();
+        if (hasChanged) {
+            rerunButton.classList.remove('hidden');
+            changedIndicator.classList.remove('hidden');
+        } else {
+            rerunButton.classList.add('hidden');
+            changedIndicator.classList.add('hidden');
+        }
+    });
+}
+
+function rerunWithModifiedPrompt() {
+    const textarea = document.getElementById('extraction-prompt-textarea');
+    const newPrompt = textarea.value.trim();
+
+    if (!newPrompt) {
+        alert('Please enter an extraction prompt.');
+        return;
+    }
+
+    // For now, just show an alert. In the future, this would trigger a rerun
+    alert(`Rerun functionality coming soon!\n\nNew prompt: ${newPrompt}`);
+
+    // TODO: Implement actual rerun API call
+    // fetch(`/runs/{{ run.pk }}/rerun/`, {
+    //     method: 'POST',
+    //     headers: {
+    //         'Content-Type': 'application/json',
+    //         'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+    //     },
+    //     body: JSON.stringify({ extraction_prompt: newPrompt })
+    // })
+}
+
 function renderExtractedTable(extractedData) {
     console.log('Extracted data:', extractedData);
 
@@ -428,7 +485,6 @@ try {
 
     document.getElementById('days-since').textContent = inputData.days_since || 'N/A';
     document.getElementById('max-results').textContent = inputData.max_results || 'N/A';
-    document.getElementById('extraction-prompt').textContent = inputData.extraction_prompt || 'N/A';
 
     const profilesList = document.getElementById('profiles-list');
     if (inputData.profiles && Array.isArray(inputData.profiles)) {
@@ -442,13 +498,16 @@ try {
         li.textContent = 'No profiles configured';
         profilesList.appendChild(li);
     }
+
+    // Initialize extraction prompt editing
+    initializePromptEditing(inputData.extraction_prompt || 'Extract location information, business mentions, and contact details from social media posts.');
+
 } catch (e) {
     debugElement.textContent += ` | Parse error: ${e.message}`;
 
     // Fallback: try to display raw data
     document.getElementById('days-since').textContent = 'Parse error - check debug below';
     document.getElementById('max-results').textContent = 'Parse error - check debug below';
-    document.getElementById('extraction-prompt').textContent = 'Parse error - check debug below';
 
     const profilesList = document.getElementById('profiles-list');
     const li = document.createElement('li');
@@ -471,7 +530,13 @@ try {
 {% if run.scraped %}
 try {
     const scrapedData = {{ run.scraped|safe }};
-    document.getElementById('scraped-json').textContent = JSON.stringify(scrapedData, null, 2);
+    // Assume scraped data has a 'result' key with array of JSON objects
+    const scrapedEntities = scrapedData.result || scrapedData.results || scrapedData;
+    if (Array.isArray(scrapedEntities)) {
+        document.getElementById('scraped-json').textContent = JSON.stringify(scrapedEntities, null, 2);
+    } else {
+        document.getElementById('scraped-json').textContent = JSON.stringify(scrapedData, null, 2);
+    }
 } catch (e) {
     console.error('Failed to format scraped data:', e);
     document.getElementById('scraped-json').textContent = 'Error formatting data';
