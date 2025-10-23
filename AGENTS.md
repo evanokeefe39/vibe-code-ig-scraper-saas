@@ -1,6 +1,7 @@
 # Project Rules
 - Don't make any changes to @n8n/workflows/*
 - Refer to below locaitons for important documents about the project
+- When making Django code changes, rebuild and restart the Docker container in detached mode (-d)
 
 # Solution Requirements
 - Function requirements are documented in @functional-requirements.md
