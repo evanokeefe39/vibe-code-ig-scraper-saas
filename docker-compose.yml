@@ -1,6 +1,22 @@
 version: '3.8'
 
 services:
+  django:
+    build: .
+    ports:
+      - "8000:8000"
+    environment:
+      - DATABASE_URL=postgresql://vibe_user:vibe_pass@postgres:5432/vibe_scraper
+      - DEBUG=True
+      - ALLOWED_HOSTS=localhost,127.0.0.1
+      - N8N_WEBHOOK_URL=http://n8n:5678/webhook/scrape
+    depends_on:
+      - postgres
+    volumes:
+      - .:/app
+      - /app/__pycache__
+    restart: unless-stopped
+
   n8n:
     image: n8nio/n8n:latest
     ports:
@@ -9,6 +25,8 @@ services:
       - N8N_BASIC_AUTH_ACTIVE=true
       - N8N_BASIC_AUTH_USER=user
       - N8N_BASIC_AUTH_PASSWORD=password
+      - N8N_REST_API_ENABLED=true
+      - N8N_REST_API_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJhNjc0NzA5MS1hOThkLTQ1ZjctYWFjZi04YzAyY2UwYzQxYzEiLCJpc3MiOiJuOG4iLCJhdWQiOiJwdWJsaWMtYXBpIiwiaWF0IjoxNzYxMjA4OTc5LCJleHAiOjE3NjM3ODc2MDB9.HW6YCY5ZUhC2n13yjNUCkNmRQS6W7YvjtqZ72YHqzYI
     volumes:
       - n8n_data:/home/node/.n8n
     restart: unless-stopped

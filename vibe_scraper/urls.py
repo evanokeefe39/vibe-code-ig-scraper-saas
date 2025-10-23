@@ -17,10 +17,13 @@ Including another URLconf
 
 from django.contrib import admin
 from django.urls import path
-from core.views import home, test_geocode
+from core.views import home, test_geocode, run_create, run_list, run_detail
 
 urlpatterns = [
     path("admin/", admin.site.urls),
     path("", home, name="home"),
     path("test-geocode/", test_geocode, name="test_geocode"),
+    path("runs/", run_list, name="run_list"),
+    path("runs/create/", run_create, name="run_create"),
+    path("runs/<int:pk>/", run_detail, name="run_detail"),
 ]
