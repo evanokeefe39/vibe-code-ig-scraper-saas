@@ -1,15 +1,16 @@
 # Non-Functional Requirements
 
 ## Performance
-- **Response Time**: API responses <2s for user actions; scraping triggers <5s acknowledgment; geocoding <3s per request.
-- **Throughput**: Handle 100 concurrent users; scale to 1000 with n8n.
-- **Scalability**: Horizontal scaling via Render containers; n8n for async processing.
-- **Availability**: 99% uptime; graceful degradation for external API failures.
+- **Response Time**: API responses <2s for user actions; scraping triggers <5s acknowledgment; geocoding <3s per request; agent decisions <10s.
+- **Throughput**: Handle 100 concurrent users; scale to 1000 with n8n/LangChain.
+- **Scalability**: Horizontal scaling via Render containers; agent orchestration for efficient resource use.
+- **Availability**: 99% uptime; graceful degradation for external API failures; agent fallbacks for tool unavailability.
 
 ## Security
 - **Authentication**: OAuth-only (Google/Apple); no password storage.
 - **Data Protection**: Encrypt sensitive data; comply with GDPR/CCPA.
 - **API Security**: Rate limiting (django-ratelimit); validate inputs; use HTTPS.
+- **Prompt Security**: Sanitize user prompts against malicious content using AI guardrails.
 - **Secrets Management**: Store keys in environment variables; no hardcoding.
 
 ## Usability
@@ -33,8 +34,8 @@
 - **Integrations**: Compatible with Mapbox Geocoding API; Google Maps export; Stripe API.
 
 ## Cost Efficiency
-- **Resource Usage**: Optimize for Render free tier initially; monitor Apify/n8n/Mapbox costs (Mapbox: $0.0075/req after 100k free/month).
-- **Profitability**: Freemium model with clear conversion metrics.
+- **Resource Usage**: Optimize for Render free tier initially; monitor Apify/n8n/Mapbox costs (Mapbox: $0.0075/req after 100k free/month); implement dynamic cost querying/estimation.
+- **Profitability**: Freemium model with usage-based pricing; agents optimize for cost-effective tool selection.
 
 ## Legal & Compliance
 - **Terms of Service**: User agreements for data usage; scraping compliance.

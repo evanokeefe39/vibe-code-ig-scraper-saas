@@ -1,8 +1,16 @@
 # Vibe Scraper SaaS
 
-A lightweight B2C SaaS that curates location-based recommendations from social media profiles into personalized lists for Google Maps.
+A lightweight B2C SaaS that curates location-based recommendations from social media profiles into personalized lists for Google Maps. Evolving towards an agentic platform where AI agents dynamically orchestrate scraping operations based on user goals and cost constraints.
 
 ## Prerequisites
+
+### Database Setup
+
+This project uses PostgreSQL for data storage.
+
+1. Start PostgreSQL with Docker: `docker-compose up -d postgres`
+2. Run migrations: `python manage.py migrate`
+3. Create superuser (optional): `python manage.py createsuperuser`
 
 ### Development Setup
 
