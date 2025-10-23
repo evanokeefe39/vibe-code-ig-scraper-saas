@@ -60,16 +60,14 @@ def trigger_run(run):
     for url in profiles:
         n8n_profiles.append({
             "url": url,
-            "days_since": days_since,
-            "type": "instagram",
-            "max_results": max_results,
-            # "include_comments": include_comments,  # Hidden for now
-            # "include_stories": include_stories,    # Hidden for now
-            "extraction_prompt": extraction_prompt
+            "type": "instagram"
         })
     payload = {
         "user_id": run.user_id,
         "tier": "premium",  # stub
+        "days_since": days_since,
+        "max_results": max_results,
+        "extraction_prompt": extraction_prompt,
         "profiles": n8n_profiles
     }
     # Post to n8n webhook
