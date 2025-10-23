@@ -13,8 +13,8 @@
 # Project Description Usage & How to Run
 - defined in @README.md
 
-# Proof Of Concept Plan
-- defined in @poc_plan.md 
+# MVP Plan
+- defined in @mvp_plan.md
 - also should be defined in issues in github
 
 # Architecture
