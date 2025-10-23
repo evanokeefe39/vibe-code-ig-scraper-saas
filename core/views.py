@@ -1,4 +1,5 @@
 import json
+import json
 import logging
 import requests
 import csv
@@ -143,7 +144,8 @@ def run_detail(request, pk):
         'execution_data_json': execution_data_json,
         'input_json': input_json,
         'run_data': run_data,
-        'run_data_json': run_data_json
+        'run_data_json': run_data_json,
+        'run_scraped_json': json.dumps(run.scraped) if run.scraped else 'null'
     })
 
 def run_by_n8n(request, n8n_execution_id):
