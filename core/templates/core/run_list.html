@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Runs</title>
+</head>
+<body>
+    <h1>Scraping Runs</h1>
+    <a href="{% url 'run_create' %}">Create New Run</a>
+    <ul>
+        {% for run in runs %}
+        <li>
+            <a href="{% url 'run_detail' run.pk %}">Run {{ run.pk }}</a> - Execution: {{ run.n8n_execution_id }} - {{ run.created_at }}
+        </li>
+        {% endfor %}
+    </ul>
+</body>
+</html>

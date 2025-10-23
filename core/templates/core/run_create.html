@@ -1,0 +1,15 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Create New Run</title>
+</head>
+<body>
+    <h1>Create New Scraping Run</h1>
+    <form method="post">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit">Create Run</button>
+    </form>
+    <a href="{% url 'run_list' %}">Back to Runs</a>
+</body>
+</html>
