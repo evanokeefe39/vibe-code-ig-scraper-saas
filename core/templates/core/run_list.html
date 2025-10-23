@@ -1,17 +1,84 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <title>Runs</title>
-</head>
-<body>
-    <h1>Scraping Runs</h1>
-    <a href="{% url 'run_create' %}">Create New Run</a>
-    <ul>
-        {% for run in runs %}
-        <li>
-            <a href="{% url 'run_detail' run.pk %}">Run {{ run.pk }}</a> - Execution: {{ run.n8n_execution_id }} - {{ run.created_at }}
-        </li>
-        {% endfor %}
-    </ul>
-</body>
-</html>
+{% extends "base.html" %}
+
+{% block title %}Your Runs - Vibe Scraper SaaS{% endblock %}
+
+{% block content %}
+<div class="max-w-6xl mx-auto px-4 py-8">
+    <div class="flex justify-between items-center mb-8">
+        <div>
+            <h1 class="text-3xl font-bold text-gray-900 mb-2">Your Scraping Runs</h1>
+            <p class="text-gray-600">View and manage your data extraction runs</p>
+        </div>
+        <a href="{% url 'run_create' %}"
+           class="inline-flex items-center px-6 py-3 bg-primary-600 hover:bg-primary-700 text-white font-semibold rounded-lg transition-colors duration-200 shadow-md hover:shadow-lg">
+            <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/>
+            </svg>
+            Create New Run
+        </a>
+    </div>
+
+    {% if runs %}
+    <div class="bg-white rounded-lg shadow-md overflow-hidden">
+        <div class="px-6 py-4 border-b border-gray-200">
+            <h2 class="text-lg font-semibold text-gray-900">Recent Runs</h2>
+        </div>
+        <div class="divide-y divide-gray-200">
+            {% for run in runs %}
+            <div class="px-6 py-4 hover:bg-gray-50 transition-colors duration-150">
+                <div class="flex items-center justify-between">
+                    <div class="flex-1">
+                        <div class="flex items-center">
+                            <h3 class="text-lg font-medium text-gray-900">
+                                <a href="{% url 'run_detail' run.pk %}" class="hover:text-primary-600">
+                                    Run #{{ run.pk }}
+                                </a>
+                            </h3>
+                            <span class="ml-4 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium
+                                {% if run.n8n_execution_id %}
+                                    bg-green-100 text-green-800
+                                {% else %}
+                                    bg-yellow-100 text-yellow-800
+                                {% endif %}">
+                                {% if run.n8n_execution_id %}
+                                    Executing
+                                {% else %}
+                                    Pending
+                                {% endif %}
+                            </span>
+                        </div>
+                        <div class="mt-1 text-sm text-gray-600">
+                            Created {{ run.created_at|date:"M j, Y g:i A" }}
+                            {% if run.n8n_execution_id %}
+                                • Execution ID: {{ run.n8n_execution_id }}
+                            {% endif %}
+                        </div>
+                    </div>
+                    <div class="flex items-center space-x-4">
+                        <a href="{% url 'run_detail' run.pk %}"
+                           class="text-primary-600 hover:text-primary-800 font-medium text-sm">
+                            View Details →
+                        </a>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% else %}
+    <div class="text-center py-12">
+        <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+        </svg>
+        <h3 class="mt-2 text-sm font-medium text-gray-900">No runs yet</h3>
+        <p class="mt-1 text-sm text-gray-500">Get started by creating your first scraping run.</p>
+        <div class="mt-6">
+            <a href="{% url 'run_create' %}"
+               class="inline-flex items-center px-4 py-2 bg-primary-600 hover:bg-primary-700 text-white font-semibold rounded-lg transition-colors duration-200">
+                Create Your First Run
+            </a>
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

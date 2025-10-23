@@ -1,15 +1,198 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <title>Create New Run</title>
-</head>
-<body>
-    <h1>Create New Scraping Run</h1>
-    <form method="post">
+{% extends "base.html" %}
+
+{% block title %}Create New Run - Vibe Scraper SaaS{% endblock %}
+
+{% block content %}
+<div class="max-w-6xl mx-auto px-4 py-8">
+    <div class="mb-8">
+        <h1 class="text-3xl font-bold text-gray-900 mb-2">Create New Scraping Run</h1>
+        <p class="text-gray-600">Configure your social media data extraction parameters</p>
+    </div>
+
+    <form method="post" class="bg-white rounded-lg shadow-md p-6" id="run-form">
         {% csrf_token %}
-        {{ form.as_p }}
-        <button type="submit">Create Run</button>
+
+        <div class="grid md:grid-cols-2 gap-8">
+            <!-- Left Column: Parameters -->
+            <div class="space-y-6">
+                <h2 class="text-xl font-semibold text-gray-900 mb-4">Extraction Parameters</h2>
+
+                <div>
+                    <label for="{{ form.days_since.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-2">
+                        Days Since
+                    </label>
+                    {{ form.days_since }}
+                    {% if form.days_since.help_text %}
+                        <p class="mt-1 text-sm text-gray-500">{{ form.days_since.help_text }}</p>
+                    {% endif %}
+                    {% if form.days_since.errors %}
+                        <p class="mt-1 text-sm text-red-600">{{ form.days_since.errors.0 }}</p>
+                    {% endif %}
+                </div>
+
+                <div>
+                    <label for="{{ form.max_results.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-2">
+                        Max Results per Profile
+                    </label>
+                    {{ form.max_results }}
+                    {% if form.max_results.help_text %}
+                        <p class="mt-1 text-sm text-gray-500">{{ form.max_results.help_text }}</p>
+                    {% endif %}
+                    {% if form.max_results.errors %}
+                        <p class="mt-1 text-sm text-red-600">{{ form.max_results.errors.0 }}</p>
+                    {% endif %}
+                </div>
+
+                <div class="space-y-3">
+                    <div class="flex items-center">
+                        {{ form.include_comments }}
+                        <label for="{{ form.include_comments.id_for_label }}" class="ml-2 text-sm font-medium text-gray-700">
+                            Include Comments
+                        </label>
+                    </div>
+                    {% if form.include_comments.help_text %}
+                        <p class="ml-6 text-sm text-gray-500">{{ form.include_comments.help_text }}</p>
+                    {% endif %}
+
+                    <div class="flex items-center">
+                        {{ form.include_stories }}
+                        <label for="{{ form.include_stories.id_for_label }}" class="ml-2 text-sm font-medium text-gray-700">
+                            Include Stories
+                        </label>
+                    </div>
+                    {% if form.include_stories.help_text %}
+                        <p class="ml-6 text-sm text-gray-500">{{ form.include_stories.help_text }}</p>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Right Column: Profiles and Prompt -->
+            <div class="space-y-6">
+                <div>
+                    <label for="{{ form.profiles.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-2">
+                        Instagram Profiles
+                    </label>
+                    {{ form.profiles }}
+                    {% if form.profiles.help_text %}
+                        <p class="mt-1 text-sm text-gray-500">{{ form.profiles.help_text }}</p>
+                    {% endif %}
+                    {% if form.profiles.errors %}
+                        <p class="mt-1 text-sm text-red-600">{{ form.profiles.errors.0 }}</p>
+                    {% endif %}
+                    <div id="profile-tags" class="mt-2 flex flex-wrap gap-2"></div>
+                </div>
+
+                <div>
+                    <label for="{{ form.extraction_prompt.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-2">
+                        Extraction Prompt
+                    </label>
+                    {{ form.extraction_prompt }}
+                    {% if form.extraction_prompt.help_text %}
+                        <p class="mt-1 text-sm text-gray-500">{{ form.extraction_prompt.help_text }}</p>
+                    {% endif %}
+                    {% if form.extraction_prompt.errors %}
+                        <p class="mt-1 text-sm text-red-600">{{ form.extraction_prompt.errors.0 }}</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Submit Button -->
+        <div class="mt-8 pt-6 border-t border-gray-200">
+            <button type="submit" class="inline-flex items-center px-6 py-3 bg-primary-600 hover:bg-primary-700 text-white font-semibold rounded-lg transition-colors duration-200 shadow-md hover:shadow-lg">
+                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/>
+                </svg>
+                Create Run
+            </button>
+            <a href="{% url 'run_list' %}" class="ml-4 inline-flex items-center px-4 py-2 text-gray-700 hover:text-gray-900 font-medium">
+                Cancel
+            </a>
+        </div>
     </form>
-    <a href="{% url 'run_list' %}">Back to Runs</a>
-</body>
-</html>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const profilesTextarea = document.getElementById('{{ form.profiles.id_for_label|lower }}');
+    const profileTags = document.getElementById('profile-tags');
+    const form = document.getElementById('run-form');
+
+    // Function to parse profiles
+    function parseProfiles(text) {
+        if (text.includes('\n')) {
+            return text.split('\n').map(p => p.trim()).filter(p => p);
+        } else {
+            return text.split(',').map(p => p.trim()).filter(p => p);
+        }
+    }
+
+    // Function to render profile tags
+    function renderProfileTags(profiles) {
+        profileTags.innerHTML = '';
+        profiles.forEach((profile, index) => {
+            const tag = document.createElement('span');
+            tag.className = 'inline-flex items-center px-3 py-1 rounded-full text-sm bg-primary-100 text-primary-800';
+            tag.innerHTML = `
+                ${profile}
+                <button type="button" class="ml-2 text-primary-600 hover:text-primary-800" data-index="${index}">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                    </svg>
+                </button>
+            `;
+            profileTags.appendChild(tag);
+        });
+    }
+
+    // Update tags on input
+    profilesTextarea.addEventListener('input', function() {
+        const profiles = parseProfiles(this.value);
+        renderProfileTags(profiles);
+    });
+
+    // Handle tag deletion
+    profileTags.addEventListener('click', function(e) {
+        if (e.target.closest('button')) {
+            const index = parseInt(e.target.closest('button').dataset.index);
+            const profiles = parseProfiles(profilesTextarea.value);
+            profiles.splice(index, 1);
+            profilesTextarea.value = profiles.join('\n');
+            renderProfileTags(profiles);
+        }
+    });
+
+    // Form validation
+    form.addEventListener('submit', function(e) {
+        const profiles = parseProfiles(profilesTextarea.value);
+        if (profiles.length === 0) {
+            e.preventDefault();
+            alert('Please enter at least one Instagram profile URL.');
+            return;
+        }
+
+        // Show loading state
+        const submitBtn = form.querySelector('button[type="submit"]');
+        const originalText = submitBtn.innerHTML;
+        submitBtn.innerHTML = `
+            <svg class="w-5 h-5 mr-2 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+            </svg>
+            Creating Run...
+        `;
+        submitBtn.disabled = true;
+
+        // Re-enable after 10 seconds as fallback
+        setTimeout(() => {
+            submitBtn.innerHTML = originalText;
+            submitBtn.disabled = false;
+        }, 10000);
+    });
+
+    // Initial render if there's existing value
+    if (profilesTextarea.value) {
+        renderProfileTags(parseProfiles(profilesTextarea.value));
+    }
+});
+</script>
+{% endblock %}

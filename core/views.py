@@ -12,7 +12,7 @@ from .forms import RunForm
 logger = logging.getLogger(__name__)
 
 def home(request):
-    return HttpResponse("Welcome to Vibe Scraper SaaS!")
+    return render(request, 'home.html')
 
 def test_geocode(request):
     address = request.GET.get('address', 'New York')
@@ -24,7 +24,11 @@ def trigger_run(run):
     input_data = json.loads(run.input)
     profiles = input_data.get('profiles', [])
     days_since = input_data.get('days_since', 14)
-    
+    max_results = input_data.get('max_results', 50)
+    include_comments = input_data.get('include_comments', True)
+    include_stories = input_data.get('include_stories', False)
+    extraction_prompt = input_data.get('extraction_prompt', "Extract location information, business mentions, and contact details from social media posts.")
+
     # Format payload for n8n
     n8n_profiles = []
     for url in profiles:
@@ -32,7 +36,10 @@ def trigger_run(run):
             "url": url,
             "days_since": days_since,
             "type": "instagram",
-            "max_results": 50  # or configurable
+            "max_results": max_results,
+            "include_comments": include_comments,
+            "include_stories": include_stories,
+            "extraction_prompt": extraction_prompt
         })
     payload = {
         "user_id": run.user_id,

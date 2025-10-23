@@ -1,0 +1,71 @@
+{% extends "base.html" %}
+
+{% block title %}Home - Vibe Scraper SaaS{% endblock %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto px-4 py-16">
+    <!-- Hero Section -->
+    <div class="text-center mb-16 bg-gradient-to-br from-primary-50 to-white rounded-2xl p-8 md:p-12">
+        <h1 class="text-4xl md:text-6xl font-bold text-gray-900 mb-6">
+            Extract <span class="text-primary-600">Structured Data</span><br>
+            from Social Media
+        </h1>
+        <p class="text-xl text-gray-600 mb-8 max-w-2xl mx-auto">
+            Turn Instagram and TikTok posts into actionable insights. Extract locations, mentions, hashtags, and more with AI-powered processing.
+        </p>
+        <a href="{% url 'run_create' %}"
+           class="inline-flex items-center px-8 py-4 bg-primary-600 hover:bg-primary-700 text-white font-semibold rounded-lg text-lg transition-all duration-200 shadow-lg hover:shadow-xl hover:-translate-y-0.5">
+            <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/>
+            </svg>
+            Create Your First Run
+        </a>
+    </div>
+
+    <!-- Features Grid -->
+    <div class="grid md:grid-cols-3 gap-8 mb-16">
+        <div class="bg-white rounded-lg shadow-md p-6 text-center hover:shadow-lg hover:-translate-y-1 transition-all duration-300">
+            <div class="w-12 h-12 bg-primary-100 rounded-lg flex items-center justify-center mx-auto mb-4">
+                <svg class="w-6 h-6 text-primary-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
+                </svg>
+            </div>
+            <h3 class="text-lg font-semibold text-gray-900 mb-2">AI-Powered Extraction</h3>
+            <p class="text-gray-600">Advanced language models extract structured data from posts automatically.</p>
+        </div>
+
+        <div class="bg-white rounded-lg shadow-md p-6 text-center hover:shadow-lg hover:-translate-y-1 transition-all duration-300">
+            <div class="w-12 h-12 bg-primary-100 rounded-lg flex items-center justify-center mx-auto mb-4">
+                <svg class="w-6 h-6 text-primary-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
+                </svg>
+            </div>
+            <h3 class="text-lg font-semibold text-gray-900 mb-2">Multiple Platforms</h3>
+            <p class="text-gray-600">Extract data from Instagram and TikTok profiles with unified processing.</p>
+        </div>
+
+        <div class="bg-white rounded-lg shadow-md p-6 text-center hover:shadow-lg hover:-translate-y-1 transition-all duration-300">
+            <div class="w-12 h-12 bg-primary-100 rounded-lg flex items-center justify-center mx-auto mb-4">
+                <svg class="w-6 h-6 text-primary-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                </svg>
+            </div>
+            <h3 class="text-lg font-semibold text-gray-900 mb-2">Export Ready</h3>
+            <p class="text-gray-600">Download your extracted data as CSV or JSON for use in other tools.</p>
+        </div>
+    </div>
+
+    <!-- CTA Section -->
+    <div class="bg-primary-50 rounded-2xl p-8 text-center">
+        <h2 class="text-2xl font-bold text-gray-900 mb-4">Ready to Extract Insights?</h2>
+        <p class="text-gray-600 mb-6">Start with a free run and see how AI can transform social media data into structured insights.</p>
+        <a href="{% url 'run_create' %}"
+           class="inline-flex items-center px-6 py-3 bg-primary-600 hover:bg-primary-700 text-white font-semibold rounded-lg transition-colors duration-200">
+            Get Started
+            <svg class="w-4 h-4 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+            </svg>
+        </a>
+    </div>
+</div>
+{% endblock %}
