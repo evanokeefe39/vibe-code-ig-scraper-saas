@@ -16,19 +16,26 @@ def get_n8n_execution_status(execution_id):
     if not execution_id:
         return None
 
-    n8n_url = settings.N8N_WEBHOOK_URL.replace('/webhook/scrape', '/rest/executions/') + str(execution_id)
+    execution_api_url = settings.N8N_BASE_URL + '/api/v1/executions/' + str(execution_id) + '?includeData=true'
+    headers = {'X-N8N-API-KEY': settings.N8N_API_KEY}
+
     try:
-        # Basic auth for n8n REST API
-        response = requests.get(n8n_url, auth=('user', 'password'), timeout=5)
+        response = requests.get(execution_api_url, headers=headers, timeout=5)
         if response.status_code == 200:
             data = response.json()
             return data.get('status', 'unknown')
+        elif response.status_code == 401:
+            logger.error(f"Authentication failed for execution {execution_id}")
+            return 'auth_error'
         else:
             logger.warning(f"Failed to get execution status for {execution_id}: HTTP {response.status_code}")
             return 'unknown'
+    except requests.exceptions.Timeout:
+        logger.warning(f"Timeout getting execution status for {execution_id}")
+        return 'timeout'
     except Exception as e:
         logger.error(f"Exception getting execution status for {execution_id}: {str(e)}")
-        return 'unknown'
+        return 'error'
 
 def home(request):
     return render(request, 'home.html')
@@ -66,10 +73,10 @@ def trigger_run(run):
         "profiles": n8n_profiles
     }
     # Post to n8n webhook
-    n8n_url = settings.N8N_WEBHOOK_URL
+    webscrape_url = settings.N8N_WEBSCRAPE_URL
     try:
-        logger.info(f"Triggering n8n workflow for run {run.pk} at {n8n_url}")
-        response = requests.post(n8n_url, json=payload, timeout=10)
+        logger.info(f"Triggering n8n workflow for run {run.pk} at {webscrape_url}")
+        response = requests.post(webscrape_url, json=payload, timeout=10)
         if response.status_code == 200:
             # Parse execution_id from response
             response_data = response.json()
