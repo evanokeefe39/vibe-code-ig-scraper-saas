@@ -21,8 +21,9 @@
 - defined in @architecture.md
 
 # Long Running Tasks & Orchestration
-- defined in n8n workflows
+- defined in n8n workflows (modular for future agent tool conversion)
 - n8n documentation under @n8n/*
+- Future: Agentic orchestration with LangChain; MCP client/server integration
 
 # Database Environment Guidelines
 - **Local Development**: Uses PostgreSQL 15 in Docker container with connection string `postgresql://vibe_user:vibe_pass@postgres:5432/vibe_scraper`
