@@ -28,43 +28,87 @@
 
 
 
-         <div class="flex items-center justify-between">
-            <div>
-                 <h1 class="text-3xl font-bold text-gray-900">Run #{{ run.pk }}</h1>
-                 <p class="text-gray-600 mt-1">Created {{ run.created_at|date:"M j, Y g:i A" }}</p>
-            </div>
-             <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium
-                 {% if execution_status == 'success' %}
-                     bg-green-100 text-green-800
-                 {% elif execution_status == 'running' or execution_status == 'waiting' %}
-                     bg-blue-100 text-blue-800
-                 {% elif execution_status == 'failed' or execution_status == 'error' %}
-                     bg-red-100 text-red-800
-                 {% else %}
-                     bg-yellow-100 text-yellow-800
-                 {% endif %}">
-                 {% if execution_status == 'success' %}
-                     Completed
-                 {% elif execution_status == 'running' %}
-                     Running
-                 {% elif execution_status == 'waiting' %}
-                     Waiting
-                 {% elif execution_status == 'failed' or execution_status == 'error' %}
-                     Failed
-                 {% else %}
-                     {{ execution_status|title }}
-                 {% endif %}
-             </span>
-        </div>
+          <div class="flex items-center justify-between">
+             <div>
+                  <h1 class="text-3xl font-bold text-gray-900">Run #{{ run.pk }}</h1>
+                  <p class="text-gray-600 mt-1">Created {{ run.created_at|date:"M j, Y g:i A" }}</p>
+             </div>
+              <div class="flex items-center space-x-6">
+                  <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium
+                      {% if execution_status == 'success' %}
+                          bg-green-100 text-green-800
+                      {% elif execution_status == 'running' or execution_status == 'waiting' %}
+                          bg-blue-100 text-blue-800 animate-pulse
+                      {% elif execution_status == 'failed' or execution_status == 'error' %}
+                          bg-red-100 text-red-800
+                      {% else %}
+                          bg-yellow-100 text-yellow-800
+                      {% endif %}">
+                  {% if execution_status == 'running' %}
+                      <svg class="inline-block animate-spin mr-2 h-4 w-4 text-blue-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" aria-hidden="true">
+                          <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                          <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                      </svg>
+                  {% endif %}
+                      {% if execution_status == 'success' %}
+                          Completed
+                      {% elif execution_status == 'running' %}
+                          Running
+                      {% elif execution_status == 'waiting' %}
+                          Waiting
+                      {% elif execution_status == 'failed' or execution_status == 'error' %}
+                          Failed
+                      {% else %}
+                          {{ execution_status|title }}
+                      {% endif %}
+                  </span>
+                  {% if run.input %}
+                  <button class="px-4 py-2 bg-gray-600 hover:bg-gray-700 text-white text-sm font-medium rounded-lg transition-colors duration-200" onclick="alert('Rerun with modified prompt - coming soon!')">
+                      Rerun with Modified Prompt
+                  </button>
+                  {% endif %}
+              </div>
+          </div>
     </div>
 
     <div class="grid md:grid-cols-2 gap-8">
         <!-- Input Configuration -->
         <div class="bg-white rounded-lg shadow-md p-6">
             <h2 class="text-xl font-semibold text-gray-900 mb-4">Configuration</h2>
-            {% if run.input %}
-                <div class="bg-gray-50 rounded-lg p-4">
-                    <pre class="text-sm text-gray-800 whitespace-pre-wrap">{{ run.input }}</pre>
+             {% if run.input %}
+                 <script id="input-data" type="application/json">{{ input_json|safe }}</script>
+                 <div class="space-y-4">
+                    <div>
+                        <h3 class="text-sm font-medium text-gray-700 mb-2">Profiles</h3>
+                        <div class="bg-gray-50 rounded-lg p-3">
+                            <ul id="profiles-list" class="text-sm text-gray-800"></ul>
+                        </div>
+                    </div>
+                    <div>
+                        <h3 class="text-sm font-medium text-gray-700 mb-2">Parameters</h3>
+                        <div class="grid grid-cols-2 gap-4 text-sm">
+                            <div>
+                                <span class="font-medium text-gray-600">Days Since:</span>
+                                <span id="days-since" class="text-gray-800 ml-2"></span>
+                            </div>
+                            <div>
+                                <span class="font-medium text-gray-600">Max Results:</span>
+                                <span id="max-results" class="text-gray-800 ml-2"></span>
+                            </div>
+                        </div>
+                    </div>
+                    <div>
+                        <h3 class="text-sm font-medium text-gray-700 mb-2">Extraction Prompt</h3>
+                        <div class="bg-gray-50 rounded-lg p-3">
+                            <p id="extraction-prompt" class="text-sm text-gray-800"></p>
+                        </div>
+                    </div>
+                    <div>
+                        <h3 class="text-sm font-medium text-gray-700 mb-2">Raw Configuration</h3>
+                        <div class="bg-gray-50 rounded-lg p-4 max-h-32 overflow-y-auto">
+                            <pre class="text-xs text-gray-800 whitespace-pre-wrap">{{ run.input }}</pre>
+                        </div>
+                    </div>
                 </div>
             {% else %}
                 <p class="text-gray-500">No configuration data available.</p>
@@ -115,31 +159,96 @@
         </div>
     </div>
 
+    <!-- Debug Info (remove after troubleshooting) -->
+    <div class="mt-8 bg-gray-100 rounded-lg p-4 text-xs">
+        <h3 class="font-medium mb-2">Debug Info:</h3>
+        <p><strong>run.input:</strong> <code>{{ run.input|truncatechars:200 }}</code></p>
+        <p><strong>run.output:</strong> <code>{{ run.output|truncatechars:100 }}</code></p>
+        <p><strong>run.extracted:</strong> <code>{{ run.extracted|truncatechars:100 }}</code></p>
+        <p><strong>run.scraped:</strong> <code>{{ run.scraped|truncatechars:100 }}</code></p>
+        <div id="js-debug" class="mt-2 p-2 bg-yellow-50 border border-yellow-200 rounded">
+            <strong>JS Debug:</strong> <span id="js-debug-content">Loading...</span>
+        </div>
+    </div>
+
     <!-- Output Data -->
-    {% if run.output %}
     <div class="mt-8 bg-white rounded-lg shadow-md p-6">
         <h2 class="text-xl font-semibold text-gray-900 mb-4">Extracted Data</h2>
-        <div class="bg-gray-50 rounded-lg p-4 max-h-96 overflow-y-auto">
-            <pre id="output-json" class="text-sm text-gray-800 whitespace-pre-wrap"></pre>
-        </div>
-    </div>
-    {% else %}
-    <div class="mt-8 bg-yellow-50 border border-yellow-200 rounded-lg p-6">
-        <div class="flex">
-            <div class="flex-shrink-0">
-                <svg class="h-5 w-5 text-yellow-400" fill="currentColor" viewBox="0 0 20 20">
-                    <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/>
-                </svg>
-            </div>
-            <div class="ml-3">
-                <h3 class="text-sm font-medium text-yellow-800">Processing in Progress</h3>
-                <div class="mt-2 text-sm text-yellow-700">
-                    <p>Your data extraction is currently running. Results will appear here once processing is complete.</p>
+        <div class="space-y-4">
+            {% if run.extracted %}
+            <div class="bg-green-50 border border-green-200 rounded-lg p-4">
+                <div class="flex">
+                    <div class="flex-shrink-0">
+                        <svg class="h-5 w-5 text-green-400" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+                        </svg>
+                    </div>
+                    <div class="ml-3">
+                        <h3 class="text-sm font-medium text-green-800">Extracted Data Available</h3>
+                        <div class="mt-2">
+                            <button class="text-sm text-green-700 hover:text-green-900 underline" onclick="toggleExtractedData()">
+                                Show Processed Entities
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                <div id="extracted-data" class="hidden mt-4 bg-gray-50 rounded-lg p-4 max-h-96 overflow-y-auto">
+                    <h3 class="text-sm font-medium text-gray-900 mb-2">Processed Entities</h3>
+                    <pre id="extracted-json" class="text-sm text-gray-800 whitespace-pre-wrap"></pre>
                 </div>
             </div>
+            {% elif run.output %}
+            <div class="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                <div class="flex">
+                    <div class="flex-shrink-0">
+                        <svg class="h-5 w-5 text-blue-400" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"/>
+                        </svg>
+                    </div>
+                    <div class="ml-3">
+                        <h3 class="text-sm font-medium text-blue-800">Legacy Data Available</h3>
+                        <div class="mt-2">
+                            <button class="text-sm text-blue-700 hover:text-blue-900 underline" onclick="toggleLegacyData()">
+                                Show Legacy Extracted Data
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                <div id="legacy-data" class="hidden mt-4 bg-gray-50 rounded-lg p-4 max-h-96 overflow-y-auto">
+                    <h3 class="text-sm font-medium text-gray-900 mb-2">Legacy Extracted Data</h3>
+                    <pre id="output-json" class="text-sm text-gray-800 whitespace-pre-wrap"></pre>
+                </div>
+            </div>
+            {% else %}
+            <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-6">
+                <div class="flex">
+                    <div class="flex-shrink-0">
+                        <svg class="h-5 w-5 text-yellow-400" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/>
+                        </svg>
+                    </div>
+                    <div class="ml-3">
+                        <h3 class="text-sm font-medium text-yellow-800">No Data Available Yet</h3>
+                        <div class="mt-2 text-sm text-yellow-700">
+                            <p>Data will appear here once the n8n workflow completes processing. The workflow needs to be updated to populate the new <code>scraped</code> and <code>extracted</code> fields.</p>
+                        </div>
+                    </div>
+                </div>
+            {% endif %}
+
+            {% if run.scraped %}
+            <div class="border-t pt-4">
+                <button id="scraped-toggle" class="text-sm text-blue-600 hover:text-blue-800 underline" onclick="toggleScrapedData()">
+                    Show Raw Scraped Data
+                </button>
+                <div id="scraped-data" class="hidden mt-2 bg-gray-50 rounded-lg p-4 max-h-96 overflow-y-auto">
+                    <h3 class="text-sm font-medium text-gray-900 mb-2">Raw Scraped Posts</h3>
+                    <pre id="scraped-json" class="text-sm text-gray-800 whitespace-pre-wrap"></pre>
+                </div>
+            </div>
+            {% endif %}
         </div>
     </div>
-    {% endif %}
 </div>
 
 {% load static %}
@@ -166,10 +275,10 @@ function updateStatusAndDuration(data) {
     // Update status
     const statusElement = document.getElementById('status-display');
     let statusText = data.status || 'unknown';
-    if (statusText === 'success') statusText = 'Completed';
+    if (statusText === 'success' || statusText === 'completed' || statusText === 'finished') statusText = 'Completed';
     else if (statusText === 'running') statusText = 'Running';
     else if (statusText === 'waiting') statusText = 'Waiting';
-    else if (statusText === 'failed' || statusText === 'error') statusText = 'Failed';
+    else if (statusText === 'failed' || statusText === 'error' || statusText === 'cancelled') statusText = 'Failed';
     else statusText = statusText.charAt(0).toUpperCase() + statusText.slice(1);
     statusElement.textContent = statusText;
 
@@ -179,7 +288,13 @@ function updateStatusAndDuration(data) {
         const startTime = new Date(data.startedAt);
         const endTime = data.stoppedAt ? new Date(data.stoppedAt) : new Date();
         const durationMs = endTime - startTime;
-        durationElement.textContent = formatDuration(durationMs);
+
+        // Show "In Progress" for running tasks without stoppedAt
+        if (!data.stoppedAt && (data.status === 'running' || data.status === 'waiting')) {
+            durationElement.textContent = 'In Progress';
+        } else {
+            durationElement.textContent = formatDuration(durationMs);
+        }
     } else {
         durationElement.textContent = 'Not started';
     }
@@ -190,8 +305,8 @@ function pollStatus() {
         .then(response => response.json())
         .then(data => {
             updateStatusAndDuration(data.data);
-            // Stop polling if completed or failed
-            if (data.status === 'success' || data.status === 'failed' || data.status === 'error') {
+            // Stop polling if completed, failed, or cancelled
+            if (['success', 'completed', 'finished', 'failed', 'error', 'cancelled'].includes(data.status)) {
                 clearInterval(pollingInterval);
             }
         })
@@ -202,14 +317,118 @@ function pollStatus() {
 const initialData = {{ execution_data_json|safe }};
 updateStatusAndDuration(initialData);
 
-// Format JSON output
-{% if run.output %}
-const outputData = {{ run_output_json|safe }};
-document.getElementById('output-json').textContent = JSON.stringify(outputData, null, 2);
+// Populate configuration data
+{% if run.input %}
+const rawInput = document.getElementById('input-data').textContent;
+const debugElement = document.getElementById('js-debug-content');
+
+debugElement.textContent = `Raw length: ${rawInput.length}, starts with: "${rawInput.substring(0, 50)}..."`;
+
+try {
+    const inputData = JSON.parse(rawInput);
+    debugElement.textContent += ' | Successfully parsed JSON';
+
+    document.getElementById('days-since').textContent = inputData.days_since || 'N/A';
+    document.getElementById('max-results').textContent = inputData.max_results || 'N/A';
+    document.getElementById('extraction-prompt').textContent = inputData.extraction_prompt || 'N/A';
+
+    const profilesList = document.getElementById('profiles-list');
+    if (inputData.profiles && Array.isArray(inputData.profiles)) {
+        inputData.profiles.forEach(profile => {
+            const li = document.createElement('li');
+            li.textContent = `• ${profile}`;
+            profilesList.appendChild(li);
+        });
+    } else {
+        const li = document.createElement('li');
+        li.textContent = 'No profiles configured';
+        profilesList.appendChild(li);
+    }
+} catch (e) {
+    debugElement.textContent += ` | Parse error: ${e.message}`;
+
+    // Fallback: try to display raw data
+    document.getElementById('days-since').textContent = 'Parse error - check debug below';
+    document.getElementById('max-results').textContent = 'Parse error - check debug below';
+    document.getElementById('extraction-prompt').textContent = 'Parse error - check debug below';
+
+    const profilesList = document.getElementById('profiles-list');
+    const li = document.createElement('li');
+    li.textContent = 'Parse error - check debug section';
+    profilesList.appendChild(li);
+}
 {% endif %}
 
+// Format JSON output
+{% if run.extracted %}
+try {
+    const extractedData = {{ run.extracted|safe }};
+    document.getElementById('extracted-json').textContent = JSON.stringify(extractedData, null, 2);
+} catch (e) {
+    console.error('Failed to format extracted data:', e);
+    document.getElementById('extracted-json').textContent = 'Error formatting data';
+}
+{% elif run.output %}
+try {
+    const outputData = {{ run_output_json|safe }};
+    document.getElementById('output-json').textContent = JSON.stringify(outputData, null, 2);
+} catch (e) {
+    console.error('Failed to format legacy output data:', e);
+    document.getElementById('output-json').textContent = 'Error formatting data';
+}
+{% endif %}
+
+{% if run.scraped %}
+try {
+    const scrapedData = {{ run.scraped|safe }};
+    document.getElementById('scraped-json').textContent = JSON.stringify(scrapedData, null, 2);
+} catch (e) {
+    console.error('Failed to format scraped data:', e);
+    document.getElementById('scraped-json').textContent = 'Error formatting data';
+}
+{% endif %}
+
+function toggleExtractedData() {
+    const extractedDiv = document.getElementById('extracted-data');
+    const toggleButton = extractedDiv.previousElementSibling.querySelector('button');
+
+    if (extractedDiv.classList.contains('hidden')) {
+        extractedDiv.classList.remove('hidden');
+        toggleButton.textContent = 'Hide Processed Entities';
+    } else {
+        extractedDiv.classList.add('hidden');
+        toggleButton.textContent = 'Show Processed Entities';
+    }
+}
+
+function toggleLegacyData() {
+    const legacyDiv = document.getElementById('legacy-data');
+    const toggleButton = legacyDiv.previousElementSibling.querySelector('button');
+
+    if (legacyDiv.classList.contains('hidden')) {
+        legacyDiv.classList.remove('hidden');
+        toggleButton.textContent = 'Hide Legacy Extracted Data';
+    } else {
+        legacyDiv.classList.add('hidden');
+        toggleButton.textContent = 'Show Legacy Extracted Data';
+    }
+}
+
+function toggleScrapedData() {
+    const scrapedDiv = document.getElementById('scraped-data');
+    const toggleButton = document.getElementById('scraped-toggle');
+
+    if (scrapedDiv.classList.contains('hidden')) {
+        scrapedDiv.classList.remove('hidden');
+        toggleButton.textContent = 'Hide Raw Scraped Data';
+    } else {
+        scrapedDiv.classList.add('hidden');
+        toggleButton.textContent = 'Show Raw Scraped Data';
+    }
+}
+
 // Start polling if execution is running
-{% if run.n8n_execution_id and execution_status != 'success' and execution_status != 'failed' and execution_status != 'error' %}
+{% if run.n8n_execution_id and execution_status != 'success' and execution_status != 'failed' and execution_status != 'error' and execution_status != 'completed' and execution_status != 'finished' %}
 pollingInterval = setInterval(pollStatus, 10000); // Poll every 10 seconds
 {% endif %}
 </script>

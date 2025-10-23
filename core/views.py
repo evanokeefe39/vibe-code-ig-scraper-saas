@@ -6,6 +6,7 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.http import HttpResponse, JsonResponse
 from django.contrib import messages
 from django.conf import settings
+from django.db import models
 from .utils import geocode_location
 from .models import Run, CuratedList, CuratedItem
 from .forms import RunForm
@@ -120,50 +121,105 @@ def run_detail(request, pk):
     run = get_object_or_404(Run, pk=pk)
     execution_info = get_n8n_execution_status(run.n8n_execution_id)
     execution_data_json = json.dumps(execution_info['data'])
-    run_output_json = json.dumps(run.output) if run.output else 'null'
+
+    # Prepare input data for JavaScript
+    input_json = json.dumps(run.input) if isinstance(run.input, dict) else (run.input if isinstance(run.input, str) else 'null')
+
+    # Prepare data for display - show both new and legacy formats
+    run_data = {}
+    if run.scraped:
+        run_data['scraped'] = run.scraped
+    if run.extracted:
+        run_data['extracted'] = run.extracted
+    if run.output:
+        run_data['legacy_output'] = run.output
+
+    run_data_json = json.dumps(run_data) if run_data else 'null'
+
     return render(request, 'core/run_detail.html', {
         'run': run,
         'execution_status': execution_info['status'],
         'execution_data': execution_info['data'],
         'execution_data_json': execution_data_json,
-        'run_output_json': run_output_json
+        'input_json': input_json,
+        'run_data': run_data,
+        'run_data_json': run_data_json
     })
 
 def run_by_n8n(request, n8n_execution_id):
     run = get_object_or_404(Run, n8n_execution_id=n8n_execution_id)
     execution_info = get_n8n_execution_status(run.n8n_execution_id)
     execution_data_json = json.dumps(execution_info['data'])
-    run_output_json = json.dumps(run.output) if run.output else 'null'
+
+    # Prepare data for display - show both new and legacy formats
+    run_data = {}
+    if run.scraped:
+        run_data['scraped'] = run.scraped
+    if run.extracted:
+        run_data['extracted'] = run.extracted
+    if run.output:
+        run_data['legacy_output'] = run.output
+
+    run_data_json = json.dumps(run_data) if run_data else 'null'
+
     return render(request, 'core/run_detail.html', {
         'run': run,
         'execution_status': execution_info['status'],
         'execution_data': execution_info['data'],
         'execution_data_json': execution_data_json,
-        'run_output_json': run_output_json
+        'run_data': run_data,
+        'run_data_json': run_data_json
     })
 
 def run_status_api(request, pk):
     run = get_object_or_404(Run, pk=pk)
     execution_info = get_n8n_execution_status(run.n8n_execution_id)
+
+    # Include run data in API response
+    run_data = {}
+    if run.scraped:
+        run_data['scraped'] = run.scraped
+    if run.extracted:
+        run_data['extracted'] = run.extracted
+    if run.output:
+        run_data['legacy_output'] = run.output
+
     return JsonResponse({
         'status': execution_info['status'],
-        'data': execution_info['data']
+        'data': execution_info['data'],
+        'run_data': run_data
     })
 
 # Curation views
 def entity_list(request):
     # For now, dummy user_id=1
     user_id = 1
-    runs = Run.objects.filter(user_id=user_id, output__isnull=False)
+    # Filter runs that have either extracted data or legacy output data
+    runs = Run.objects.filter(
+        user_id=user_id
+    ).filter(
+        models.Q(extracted__isnull=False) | models.Q(output__isnull=False)
+    )
 
     entities = []
     for run in runs:
-        if isinstance(run.output, list):
+        # Try new extracted data structure first
+        if run.extracted and isinstance(run.extracted, dict) and 'result' in run.extracted:
+            for entity in run.extracted['result']:
+                entities.append({
+                    'data': entity,
+                    'run_id': run.pk,
+                    'run_created': run.created_at,
+                    'data_source': 'extracted'  # Track data source for debugging
+                })
+        # Fallback to legacy output format for backward compatibility
+        elif run.output and isinstance(run.output, list):
             for entity in run.output:
                 entities.append({
                     'data': entity,
                     'run_id': run.pk,
-                    'run_created': run.created_at
+                    'run_created': run.created_at,
+                    'data_source': 'legacy_output'  # Track data source for debugging
                 })
 
     # Get user's collections for the dropdown
@@ -212,8 +268,19 @@ def add_to_collection(request):
         try:
             collection = CuratedList.objects.get(pk=collection_id, user_id=1)
             run = Run.objects.get(pk=run_id, user_id=1)
-            if isinstance(run.output, list) and 0 <= entity_index < len(run.output):
+
+            entity_data = None
+
+            # Try new extracted data structure first
+            if run.extracted and isinstance(run.extracted, dict) and 'result' in run.extracted:
+                extracted_entities = run.extracted['result']
+                if isinstance(extracted_entities, list) and 0 <= entity_index < len(extracted_entities):
+                    entity_data = extracted_entities[entity_index]
+            # Fallback to legacy output format
+            elif isinstance(run.output, list) and 0 <= entity_index < len(run.output):
                 entity_data = run.output[entity_index]
+
+            if entity_data is not None:
                 CuratedItem.objects.create(
                     user_id=1,
                     curated_list=collection,

@@ -14,7 +14,7 @@
                 <p class="text-sm text-gray-500 mt-2">Created {{ collection.created_at|date:"M j, Y g:i A" }}</p>
             </div>
             <div class="flex space-x-4">
-                <a href="{% url 'collection_list' %}"
+                <!-- <a href="{% url 'collection_list' %}"
                    class="inline-flex items-center px-4 py-2 bg-gray-600 hover:bg-gray-700 text-white font-semibold rounded-lg transition-colors duration-200">
                     ← Back to Collections
                 </a>
@@ -33,7 +33,7 @@
                     </svg>
                     Export JSON
                 </a>
-                {% endif %}
+                {% endif %} -->
             </div>
         </div>
     </div>
@@ -94,10 +94,10 @@
         <h3 class="mt-2 text-sm font-medium text-gray-900">No items in this collection</h3>
         <p class="mt-1 text-sm text-gray-500">Add entities from the curation page to populate this collection.</p>
         <div class="mt-6">
-            <a href="{% url 'entity_list' %}"
+            <!-- <a href="{% url 'entity_list' %}"
                class="inline-flex items-center px-4 py-2 bg-primary-600 hover:bg-primary-700 text-white font-semibold rounded-lg transition-colors duration-200">
                 Browse Entities
-            </a>
+            </a> -->
         </div>
     </div>
     {% endif %}

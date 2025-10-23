@@ -44,12 +44,7 @@
                      <a href="{% url 'run_list' %}" class="text-gray-700 hover:text-gray-900 px-3 py-2 text-sm font-medium">
                          Runs
                      </a>
-                     <a href="{% url 'entity_list' %}" class="text-gray-700 hover:text-gray-900 px-3 py-2 text-sm font-medium">
-                         Curation
-                     </a>
-                     <a href="{% url 'collection_list' %}" class="text-gray-700 hover:text-gray-900 px-3 py-2 text-sm font-medium">
-                         Collections
-                     </a>
+                      <!-- Temporarily disabled curation and collection features -->
                      <a href="{% url 'run_create' %}" class="bg-primary-600 hover:bg-primary-700 text-white px-4 py-2 rounded-md text-sm font-medium">
                          Create Run
                      </a>
@@ -78,5 +73,6 @@
             // Utility functions will go here
         };
     </script>
+    {% block extra_js %}{% endblock %}
 </body>
 </html>
