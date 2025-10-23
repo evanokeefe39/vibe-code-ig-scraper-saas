@@ -17,7 +17,7 @@ Including another URLconf
 
 from django.contrib import admin
 from django.urls import path
-from core.views import home, test_geocode, run_create, run_list, run_detail, run_by_n8n, run_status_api, entity_list, collection_list, collection_detail, collection_create, add_to_collection, export_collection_csv, export_collection_json
+from core.views import home, test_geocode, run_create, run_list, run_detail, run_by_n8n, run_status_api, entity_list, collection_list, collection_detail, collection_create, add_to_collection, export_collection_csv, export_collection_json, export_run_csv, export_run_json
 
 urlpatterns = [
     path("admin/", admin.site.urls),
@@ -27,6 +27,8 @@ urlpatterns = [
     path("runs/create/", run_create, name="run_create"),
     path("runs/<int:pk>/", run_detail, name="run_detail"),
     path("runs/<int:pk>/status/", run_status_api, name="run_status_api"),
+    path("runs/<int:pk>/export/csv/", export_run_csv, name="export_run_csv"),
+    path("runs/<int:pk>/export/json/", export_run_json, name="export_run_json"),
     path("runs/by-n8n/<int:n8n_execution_id>/", run_by_n8n, name="run_by_n8n"),
     # Temporarily disabled curation and collection features
     # path("curation/", entity_list, name="entity_list"),

@@ -337,6 +337,69 @@ def export_collection_json(request, pk):
 
     response = HttpResponse(json.dumps(data, indent=2), content_type='application/json')
     response['Content-Disposition'] = f'attachment; filename="{collection.name}.json"'
+
+    return response
+
+def export_run_csv(request, pk):
+    run = get_object_or_404(Run, pk=pk)
+    entities = []
+
+    # Extract entities from run.extracted['result'] or run.output
+    if run.extracted and isinstance(run.extracted, dict) and 'result' in run.extracted:
+        entities = run.extracted['result']
+    elif run.output and isinstance(run.output, list):
+        entities = run.output
+
+    if not entities:
+        return HttpResponse("No extracted data available for export", status=404)
+
+    response = HttpResponse(content_type='text/csv')
+    response['Content-Disposition'] = f'attachment; filename="run_{pk}_extracted.csv"'
+
+    writer = csv.writer(response)
+
+    # Write headers from first entity
+    if entities:
+        headers = list(entities[0].keys())
+        writer.writerow(headers)
+
+        # Write data rows
+        for entity in entities:
+            row = []
+            for header in headers:
+                value = entity.get(header, '')
+                if isinstance(value, list):
+                    row.append(', '.join(str(v) for v in value))
+                elif isinstance(value, dict):
+                    row.append(json.dumps(value))
+                else:
+                    row.append(str(value))
+            writer.writerow(row)
+
+    return response
+
+def export_run_json(request, pk):
+    run = get_object_or_404(Run, pk=pk)
+    entities = []
+
+    # Extract entities from run.extracted['result'] or run.output
+    if run.extracted and isinstance(run.extracted, dict) and 'result' in run.extracted:
+        entities = run.extracted['result']
+    elif run.output and isinstance(run.output, list):
+        entities = run.output
+
+    if not entities:
+        return JsonResponse({"error": "No extracted data available for export"}, status=404)
+
+    data = {
+        "run_id": run.pk,
+        "created_at": run.created_at.isoformat(),
+        "entities": entities
+    }
+
+    response = HttpResponse(json.dumps(data, indent=2), content_type='application/json')
+    response['Content-Disposition'] = f'attachment; filename="run_{pk}_extracted.json"'
+
     return response
 
 # Create your views here.

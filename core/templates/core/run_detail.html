@@ -185,17 +185,43 @@
                     </div>
                     <div class="ml-3">
                         <h3 class="text-sm font-medium text-green-800">Extracted Data Available</h3>
-                        <div class="mt-2">
-                            <button class="text-sm text-green-700 hover:text-green-900 underline" onclick="toggleExtractedData()">
-                                Show Processed Entities
-                            </button>
-                        </div>
+                     <div class="mt-2 flex items-center space-x-4">
+                             <button class="text-sm text-green-700 hover:text-green-900 underline" onclick="toggleExtractedData()">
+                                 Show Processed Entities
+                             </button>
+                             <div class="flex space-x-2">
+                                 <a href="{% url 'export_run_csv' run.pk %}"
+                                    class="inline-flex items-center px-3 py-1 text-xs font-medium text-green-700 bg-green-100 hover:bg-green-200 rounded-md transition-colors">
+                                     <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                                     </svg>
+                                     Export CSV
+                                 </a>
+                                 <a href="{% url 'export_run_json' run.pk %}"
+                                    class="inline-flex items-center px-3 py-1 text-xs font-medium text-green-700 bg-green-100 hover:bg-green-200 rounded-md transition-colors">
+                                     <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                                     </svg>
+                                     Export JSON
+                                 </a>
+                             </div>
+                         </div>
                     </div>
                 </div>
-                <div id="extracted-data" class="hidden mt-4 bg-gray-50 rounded-lg p-4 max-h-96 overflow-y-auto">
-                    <h3 class="text-sm font-medium text-gray-900 mb-2">Processed Entities</h3>
-                    <pre id="extracted-json" class="text-sm text-gray-800 whitespace-pre-wrap"></pre>
-                </div>
+                 <div id="extracted-data" class="hidden mt-4 bg-gray-50 rounded-lg p-4">
+                     <h3 class="text-sm font-medium text-gray-900 mb-3">Processed Entities</h3>
+                     <div id="extracted-table-container" class="overflow-x-auto max-h-96">
+                         <table id="extracted-table" class="min-w-full divide-y divide-gray-200">
+                             <thead class="bg-gray-100 sticky top-0">
+                                 <tr id="table-headers"></tr>
+                             </thead>
+                             <tbody id="table-body" class="bg-white divide-y divide-gray-200"></tbody>
+                         </table>
+                         <div id="no-data-message" class="text-center py-8 text-gray-500 hidden">
+                             No entities to display
+                         </div>
+                     </div>
+                 </div>
             </div>
             {% elif run.output %}
             <div class="bg-blue-50 border border-blue-200 rounded-lg p-4">
@@ -267,6 +293,58 @@ function formatDuration(ms) {
     if (hours > 0) return `${hours}h ${minutes % 60}m ${seconds % 60}s`;
     if (minutes > 0) return `${minutes}m ${seconds % 60}s`;
     return `${seconds}s`;
+}
+
+function renderExtractedTable(extractedData) {
+    const entities = extractedData.result || [];
+    const tableHeaders = document.getElementById('table-headers');
+    const tableBody = document.getElementById('table-body');
+    const noDataMessage = document.getElementById('no-data-message');
+
+    if (!entities || entities.length === 0) {
+        tableHeaders.innerHTML = '';
+        tableBody.innerHTML = '';
+        noDataMessage.classList.remove('hidden');
+        return;
+    }
+
+    noDataMessage.classList.add('hidden');
+
+    // Get column headers from first entity
+    const columns = Object.keys(entities[0]);
+
+    // Generate table headers
+    tableHeaders.innerHTML = columns.map(col => `
+        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+            ${col.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}
+        </th>
+    `).join('');
+
+    // Generate table rows
+    tableBody.innerHTML = entities.map(entity => `
+        <tr class="hover:bg-gray-50">
+            ${columns.map(col => {
+                const value = entity[col];
+                let displayValue = '';
+                let cellClass = 'px-4 py-3 text-sm text-gray-900';
+
+                if (Array.isArray(value)) {
+                    displayValue = value.join(', ');
+                    cellClass += ' array-cell';
+                } else if (typeof value === 'object' && value !== null) {
+                    displayValue = JSON.stringify(value, null, 2);
+                    cellClass += ' object-cell font-mono text-xs bg-gray-50';
+                } else if (typeof value === 'number') {
+                    displayValue = value.toString();
+                    cellClass += ' text-right';
+                } else {
+                    displayValue = value || '';
+                }
+
+                return `<td class="${cellClass}" title="${typeof value === 'string' ? value : JSON.stringify(value)}">${displayValue}</td>`;
+            }).join('')}
+        </tr>
+    `).join('');
 }
 
 function updateStatusAndDuration(data) {
@@ -359,22 +437,14 @@ try {
 }
 {% endif %}
 
-// Format JSON output
+// Format table output
 {% if run.extracted %}
 try {
     const extractedData = {{ run.extracted|safe }};
-    document.getElementById('extracted-json').textContent = JSON.stringify(extractedData, null, 2);
+    renderExtractedTable(extractedData);
 } catch (e) {
     console.error('Failed to format extracted data:', e);
-    document.getElementById('extracted-json').textContent = 'Error formatting data';
-}
-{% elif run.output %}
-try {
-    const outputData = {{ run_output_json|safe }};
-    document.getElementById('output-json').textContent = JSON.stringify(outputData, null, 2);
-} catch (e) {
-    console.error('Failed to format legacy output data:', e);
-    document.getElementById('output-json').textContent = 'Error formatting data';
+    document.getElementById('extracted-table-container').innerHTML = '<p class="text-red-600">Error loading data</p>';
 }
 {% endif %}
 
