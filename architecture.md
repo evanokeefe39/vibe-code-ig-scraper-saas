@@ -5,39 +5,43 @@
 ### Core Components
 - **Frontend**: Django templates for web UI.
 - **Backend**: Django server for API, auth, and business logic.
-- **Database**: Supabase (Postgres) for data storage.
-- **Orchestration**: n8n for async workflows (scraping, processing).
-- **Integrations**: Apify (scraping), Stripe (payments), Mapbox (geocoding), Google Maps (export).
+- **Database**: Supabase (Postgres) for data storage with JSONB flexibility.
+- **Orchestration**: n8n for async workflows (scraping, processing) with modular design for agent conversion.
+- **Integrations**: Apify (scraping), Stripe (payments), Mapbox (geocoding for location data), Google Maps (export for location data).
 - **Hosting**: Render (containerized deployment).
 - **DevOps**: GitHub (version control, CI/CD, issues).
 
-### Geocoding Service
+### Data Processing Services
 
-The geocoding service converts location strings from scraped Instagram data into latitude/longitude coordinates for mapping.
+The platform supports various data processing services depending on the extraction use case. For location data (current focus):
 
-**Flow**:
+**Geocoding Service Flow**:
 1. Scraper extracts location strings (e.g., "4 rue de la Convention, 75015 Paris").
 2. n8n workflow sends location to Mapbox Geocoding API.
 3. API returns coordinates with confidence score.
 4. Coordinates stored in Supabase with location metadata.
+
+**Extensible Processing**:
+- The system is designed to support additional processing services (e.g., entity extraction, sentiment analysis, data validation) based on user requirements.
+- Processing modules can be added as n8n nodes or agent tools.
 
 **Constraints**:
 - Primary provider: Mapbox (excellent fuzzy matching, 100k free req/month).
 - Fallback: Nominatim (free, no API key, but lower accuracy).
 - Rate limits: Respect API quotas; implement caching and retry logic.
 - Accuracy: Target >90% success rate for well-formed addresses.
-- Privacy: No user data sent to geocoding providers.
+- Privacy: No user data sent to external processing providers.
 
 See [geocoding-providers.md](geocoding-providers.md) for provider details.
 
 ### Data Flow
-1. User → Django (auth/UI) → n8n (trigger scrape) → Apify (scrape) → n8n (process/aggregate) → Django DB (store as JSONB).
-2. User → Django (curation) → DB (CRUD on JSONB data) → Export (CSV/Google Maps).
+1. User → Django (auth/UI) → n8n (trigger scrape) → Apify (scrape) → n8n (process/aggregate) → Django DB (store as flexible JSONB).
+2. User → Django (curation) → DB (CRUD on JSONB data) → Export (adaptable formats: CSV/JSON/Google Maps).
 3. Payments: Stripe buy buttons → Webhooks → DB.
 
-**Data Storage Decision**: Location data stored as JSONB arrays in Django models rather than separate tables for simplicity and flexibility. n8n execution data remains in n8n; correlated via execution ID.
+**Data Storage Decision**: Extracted data stored as JSONB structures in Django models for maximum flexibility across different use cases (locations, leads, research data, etc.). n8n execution data remains in n8n; correlated via execution ID.
 
-**Future Agentic Flow**: Agents (via n8n/LangChain) dynamically select and call Apify tools based on cost/user prompts; data validation occurs via specialized agent tools; MCP servers expose capabilities for external agents.
+**Future Agentic Flow**: Agents (via n8n/LangChain) dynamically select and call Apify tools based on cost/user prompts; data validation occurs via specialized agent tools; MCP servers expose capabilities for external agents. Processing adapts to user-specified schemas rather than hardcoded location logic.
 
 ## Architecture by Stage
 
