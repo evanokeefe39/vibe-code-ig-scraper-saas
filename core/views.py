@@ -2,7 +2,7 @@ import json
 import logging
 import requests
 from django.shortcuts import render, redirect, get_object_or_404
-from django.http import HttpResponse
+from django.http import HttpResponse, JsonResponse
 from django.contrib import messages
 from django.conf import settings
 from .utils import geocode_location
@@ -12,9 +12,9 @@ from .forms import RunForm
 logger = logging.getLogger(__name__)
 
 def get_n8n_execution_status(execution_id):
-    """Query n8n REST API for execution status"""
+    """Query n8n REST API for execution status and full data"""
     if not execution_id:
-        return None
+        return {'status': None, 'data': None}
 
     execution_api_url = settings.N8N_BASE_URL + '/api/v1/executions/' + str(execution_id) + '?includeData=true'
     headers = {'X-N8N-API-KEY': settings.N8N_API_KEY}
@@ -23,19 +23,19 @@ def get_n8n_execution_status(execution_id):
         response = requests.get(execution_api_url, headers=headers, timeout=5)
         if response.status_code == 200:
             data = response.json()
-            return data.get('status', 'unknown')
+            return {'status': data.get('status', 'unknown'), 'data': data}
         elif response.status_code == 401:
             logger.error(f"Authentication failed for execution {execution_id}")
-            return 'auth_error'
+            return {'status': 'auth_error', 'data': None}
         else:
             logger.warning(f"Failed to get execution status for {execution_id}: HTTP {response.status_code}")
-            return 'unknown'
+            return {'status': 'unknown', 'data': None}
     except requests.exceptions.Timeout:
         logger.warning(f"Timeout getting execution status for {execution_id}")
-        return 'timeout'
+        return {'status': 'timeout', 'data': None}
     except Exception as e:
         logger.error(f"Exception getting execution status for {execution_id}: {str(e)}")
-        return 'error'
+        return {'status': 'error', 'data': None}
 
 def home(request):
     return render(request, 'home.html')
@@ -107,22 +107,46 @@ def run_list(request):
     # Add execution status to each run
     runs_with_status = []
     for run in runs:
-        status = get_n8n_execution_status(run.n8n_execution_id)
+        execution_info = get_n8n_execution_status(run.n8n_execution_id)
         runs_with_status.append({
             'run': run,
-            'status': status
+            'status': execution_info['status']
         })
 
     return render(request, 'core/run_list.html', {'runs_with_status': runs_with_status})
 
 def run_detail(request, pk):
     run = get_object_or_404(Run, pk=pk)
-    status = get_n8n_execution_status(run.n8n_execution_id)
-    return render(request, 'core/run_detail.html', {'run': run, 'execution_status': status})
+    execution_info = get_n8n_execution_status(run.n8n_execution_id)
+    execution_data_json = json.dumps(execution_info['data'])
+    run_output_json = json.dumps(run.output) if run.output else 'null'
+    return render(request, 'core/run_detail.html', {
+        'run': run,
+        'execution_status': execution_info['status'],
+        'execution_data': execution_info['data'],
+        'execution_data_json': execution_data_json,
+        'run_output_json': run_output_json
+    })
 
 def run_by_n8n(request, n8n_execution_id):
     run = get_object_or_404(Run, n8n_execution_id=n8n_execution_id)
-    status = get_n8n_execution_status(run.n8n_execution_id)
-    return render(request, 'core/run_detail.html', {'run': run, 'execution_status': status})
+    execution_info = get_n8n_execution_status(run.n8n_execution_id)
+    execution_data_json = json.dumps(execution_info['data'])
+    run_output_json = json.dumps(run.output) if run.output else 'null'
+    return render(request, 'core/run_detail.html', {
+        'run': run,
+        'execution_status': execution_info['status'],
+        'execution_data': execution_info['data'],
+        'execution_data_json': execution_data_json,
+        'run_output_json': run_output_json
+    })
+
+def run_status_api(request, pk):
+    run = get_object_or_404(Run, pk=pk)
+    execution_info = get_n8n_execution_status(run.n8n_execution_id)
+    return JsonResponse({
+        'status': execution_info['status'],
+        'data': execution_info['data']
+    })
 
 # Create your views here.

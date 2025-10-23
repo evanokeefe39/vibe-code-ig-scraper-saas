@@ -3,12 +3,12 @@
 {% block title %}Run #{{ run.pk }} - Vibe Scraper SaaS{% endblock %}
 
 {% block content %}
-<div class="max-w-6xl mx-auto px-4 py-8">
+    <div class="max-w-6xl mx-auto px-4 py-8">
     <div class="mb-8">
         <nav class="flex mb-4" aria-label="Breadcrumb">
             <ol class="inline-flex items-center space-x-1 md:space-x-3">
                 <li class="inline-flex items-center">
-                    <a href="{% url 'run_list' %}" class="inline-flex items-center text-sm font-medium text-gray-700 hover:text-primary-600">
+                     <a href="{% url 'run_list' %}" class="inline-flex items-center text-sm font-medium text-gray-700 hover:text-primary-600">
                         <svg class="w-3 h-3 mr-2.5" fill="currentColor" viewBox="0 0 20 20">
                             <path d="m19.707 9.293-2-2-7-7a1 1 0 0 0-1.414 0l-7 7-2 2A1 1 0 0 0 1 10h2v8a1 1 0 0 0 1 1h4a1 1 0 0 0 1-1v-4a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v4a1 1 0 0 0 1 1h4a1 1 0 0 0 1-1v-8h2a1 1 0 0 0 .707-1.707Z"/>
                         </svg>
@@ -24,35 +24,37 @@
                     </div>
                 </li>
             </ol>
-        </nav>
+         </nav>
 
-        <div class="flex items-center justify-between">
+
+
+         <div class="flex items-center justify-between">
             <div>
-                <h1 class="text-3xl font-bold text-gray-900">Run #{{ run.pk }}</h1>
-                <p class="text-gray-600 mt-1">Created {{ run.created_at|date:"M j, Y g:i A" }}</p>
+                 <h1 class="text-3xl font-bold text-gray-900">Run #{{ run.pk }}</h1>
+                 <p class="text-gray-600 mt-1">Created {{ run.created_at|date:"M j, Y g:i A" }}</p>
             </div>
-            <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium
-                {% if execution_status == 'success' %}
-                    bg-green-100 text-green-800
-                {% elif execution_status == 'running' or execution_status == 'waiting' %}
-                    bg-blue-100 text-blue-800
-                {% elif execution_status == 'failed' or execution_status == 'error' %}
-                    bg-red-100 text-red-800
-                {% else %}
-                    bg-yellow-100 text-yellow-800
-                {% endif %}">
-                {% if execution_status == 'success' %}
-                    Completed
-                {% elif execution_status == 'running' %}
-                    Running
-                {% elif execution_status == 'waiting' %}
-                    Waiting
-                {% elif execution_status == 'failed' or execution_status == 'error' %}
-                    Failed
-                {% else %}
-                    {{ execution_status|title }}
-                {% endif %}
-            </span>
+             <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium
+                 {% if execution_status == 'success' %}
+                     bg-green-100 text-green-800
+                 {% elif execution_status == 'running' or execution_status == 'waiting' %}
+                     bg-blue-100 text-blue-800
+                 {% elif execution_status == 'failed' or execution_status == 'error' %}
+                     bg-red-100 text-red-800
+                 {% else %}
+                     bg-yellow-100 text-yellow-800
+                 {% endif %}">
+                 {% if execution_status == 'success' %}
+                     Completed
+                 {% elif execution_status == 'running' %}
+                     Running
+                 {% elif execution_status == 'waiting' %}
+                     Waiting
+                 {% elif execution_status == 'failed' or execution_status == 'error' %}
+                     Failed
+                 {% else %}
+                     {{ execution_status|title }}
+                 {% endif %}
+             </span>
         </div>
     </div>
 
@@ -85,7 +87,7 @@
                 </div>
                 <div class="flex justify-between">
                     <span class="text-sm font-medium text-gray-700">Status</span>
-                    <span class="text-sm text-gray-900">
+                    <span class="text-sm text-gray-900" id="status-display">
                         {% if execution_status == 'success' %}
                             Completed
                         {% elif execution_status == 'running' %}
@@ -99,6 +101,12 @@
                         {% endif %}
                     </span>
                 </div>
+                {% if execution_data %}
+                <div class="flex justify-between">
+                    <span class="text-sm font-medium text-gray-700">Duration</span>
+                    <span class="text-sm text-gray-900" id="duration-display">Calculating...</span>
+                </div>
+                {% endif %}
                 <div class="flex justify-between">
                     <span class="text-sm font-medium text-gray-700">Created</span>
                     <span class="text-sm text-gray-900">{{ run.created_at|date:"M j, Y g:i A" }}</span>
@@ -112,7 +120,7 @@
     <div class="mt-8 bg-white rounded-lg shadow-md p-6">
         <h2 class="text-xl font-semibold text-gray-900 mb-4">Extracted Data</h2>
         <div class="bg-gray-50 rounded-lg p-4 max-h-96 overflow-y-auto">
-            <pre class="text-sm text-gray-800 whitespace-pre-wrap">{{ run.output }}</pre>
+            <pre id="output-json" class="text-sm text-gray-800 whitespace-pre-wrap"></pre>
         </div>
     </div>
     {% else %}
@@ -135,12 +143,74 @@
 </div>
 
 {% load static %}
+
 <script>
-// Auto-refresh for running runs
-{% if run.n8n_execution_id %}
-setInterval(function() {
-    location.reload();
-}, 30000); // Refresh every 30 seconds
+let pollingInterval;
+
+function formatDuration(ms) {
+    if (ms < 1000) return 'Less than 1s';
+    const seconds = Math.floor(ms / 1000);
+    const minutes = Math.floor(seconds / 60);
+    const hours = Math.floor(minutes / 60);
+    const days = Math.floor(hours / 24);
+
+    if (days > 0) return `${days}d ${hours % 24}h ${minutes % 60}m ${seconds % 60}s`;
+    if (hours > 0) return `${hours}h ${minutes % 60}m ${seconds % 60}s`;
+    if (minutes > 0) return `${minutes}m ${seconds % 60}s`;
+    return `${seconds}s`;
+}
+
+function updateStatusAndDuration(data) {
+    if (!data) return;
+
+    // Update status
+    const statusElement = document.getElementById('status-display');
+    let statusText = data.status || 'unknown';
+    if (statusText === 'success') statusText = 'Completed';
+    else if (statusText === 'running') statusText = 'Running';
+    else if (statusText === 'waiting') statusText = 'Waiting';
+    else if (statusText === 'failed' || statusText === 'error') statusText = 'Failed';
+    else statusText = statusText.charAt(0).toUpperCase() + statusText.slice(1);
+    statusElement.textContent = statusText;
+
+    // Update duration
+    const durationElement = document.getElementById('duration-display');
+    if (data.startedAt) {
+        const startTime = new Date(data.startedAt);
+        const endTime = data.stoppedAt ? new Date(data.stoppedAt) : new Date();
+        const durationMs = endTime - startTime;
+        durationElement.textContent = formatDuration(durationMs);
+    } else {
+        durationElement.textContent = 'Not started';
+    }
+}
+
+function pollStatus() {
+    fetch(`/runs/{{ run.pk }}/status/`)
+        .then(response => response.json())
+        .then(data => {
+            updateStatusAndDuration(data.data);
+            // Stop polling if completed or failed
+            if (data.status === 'success' || data.status === 'failed' || data.status === 'error') {
+                clearInterval(pollingInterval);
+            }
+        })
+        .catch(error => console.error('Polling error:', error));
+}
+
+// Initial update
+const initialData = {{ execution_data_json|safe }};
+updateStatusAndDuration(initialData);
+
+// Format JSON output
+{% if run.output %}
+const outputData = {{ run_output_json|safe }};
+document.getElementById('output-json').textContent = JSON.stringify(outputData, null, 2);
+{% endif %}
+
+// Start polling if execution is running
+{% if run.n8n_execution_id and execution_status != 'success' and execution_status != 'failed' and execution_status != 'error' %}
+pollingInterval = setInterval(pollStatus, 10000); // Poll every 10 seconds
 {% endif %}
 </script>
 {% endblock %}
