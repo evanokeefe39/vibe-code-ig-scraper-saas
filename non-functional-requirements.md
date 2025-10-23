@@ -1,7 +1,7 @@
 # Non-Functional Requirements
 
 ## Performance
-- **Response Time**: API responses <2s for user actions; scraping triggers <5s acknowledgment.
+- **Response Time**: API responses <2s for user actions; scraping triggers <5s acknowledgment; geocoding <3s per request.
 - **Throughput**: Handle 100 concurrent users; scale to 1000 with n8n.
 - **Scalability**: Horizontal scaling via Render containers; n8n for async processing.
 - **Availability**: 99% uptime; graceful degradation for external API failures.
@@ -30,10 +30,10 @@
 ## Compatibility
 - **Browsers**: Support latest Chrome, Firefox, Safari, Edge.
 - **Devices**: Responsive for desktop/mobile/tablet.
-- **Integrations**: Compatible with Google Maps API v3; Stripe API.
+- **Integrations**: Compatible with Mapbox Geocoding API; Google Maps export; Stripe API.
 
 ## Cost Efficiency
-- **Resource Usage**: Optimize for Render free tier initially; monitor Apify/n8n costs.
+- **Resource Usage**: Optimize for Render free tier initially; monitor Apify/n8n/Mapbox costs (Mapbox: $0.0075/req after 100k free/month).
 - **Profitability**: Freemium model with clear conversion metrics.
 
 ## Legal & Compliance

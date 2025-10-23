@@ -12,21 +12,17 @@ class SocialProfile(models.Model):
     profile_url = models.URLField()
     created_at = models.DateTimeField(auto_now_add=True)
 
-class Location(models.Model):
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
-    name = models.CharField(max_length=255)
-    address = models.TextField()
-    latitude = models.FloatField()
-    longitude = models.FloatField()
-    category = models.CharField(max_length=100, blank=True)
-    notes = models.TextField(blank=True)
-    description = models.TextField(blank=True)
-    source_profile = models.ForeignKey(SocialProfile, on_delete=models.SET_NULL, null=True)
+class Run(models.Model):
+    user_id = models.BigIntegerField(null=True)
+    n8n_execution_id = models.BigIntegerField(blank=True, null=True, db_index=True)
+    input = models.JSONField(null=True)
+    output = models.JSONField(null=True)
     created_at = models.DateTimeField(auto_now_add=True)
+
+
 
 class CuratedList(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     name = models.CharField(max_length=255)
     description = models.TextField(blank=True)
-    locations = models.ManyToManyField(Location)
     created_at = models.DateTimeField(auto_now_add=True)

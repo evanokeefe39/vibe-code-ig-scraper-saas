@@ -369,6 +369,21 @@ files = [
 packaging = "*"
 
 [[package]]
+name = "dj-database-url"
+version = "2.3.0"
+description = "Use Database URLs in your Django Application."
+optional = false
+python-versions = "*"
+files = [
+    {file = "dj_database_url-2.3.0-py3-none-any.whl", hash = "sha256:bb0d414ba0ac5cd62773ec7f86f8cc378a9dbb00a80884c2fc08cc570452521e"},
+    {file = "dj_database_url-2.3.0.tar.gz", hash = "sha256:ae52e8e634186b57e5a45e445da5dc407a819c2ceed8a53d1fac004cc5288787"},
+]
+
+[package.dependencies]
+Django = ">=4.2"
+typing_extensions = ">=3.10.0.0"
+
+[[package]]
 name = "django"
 version = "5.2.7"
 description = "A high-level Python web framework that encourages rapid development and clean, pragmatic design."
@@ -752,13 +767,13 @@ files = [
 
 [[package]]
 name = "postgrest"
-version = "2.22.0"
+version = "2.22.1"
 description = "PostgREST client for Python. This library provides an ORM interface to PostgREST."
 optional = false
 python-versions = ">=3.9"
 files = [
-    {file = "postgrest-2.22.0-py3-none-any.whl", hash = "sha256:cbb5ded1df3806593d95c430109fe292201c23f627629af01a9f67381d65b370"},
-    {file = "postgrest-2.22.0.tar.gz", hash = "sha256:e9d77ed6c82918f8b67d48c963f52de06c71cd1351b64881f239c54a19f6420a"},
+    {file = "postgrest-2.22.1-py3-none-any.whl", hash = "sha256:e35f9fba59fe6e32e1a9809f47d8f986e207551df5675a2b4ccb220575b4593f"},
+    {file = "postgrest-2.22.1.tar.gz", hash = "sha256:973c559e56bed42f549ac4bd43939bdfc4e5ace8f39e80d9eac58fb4a6b7855d"},
 ]
 
 [package.dependencies]
@@ -897,6 +912,40 @@ files = [
     {file = "propcache-0.4.1-cp39-cp39-win_arm64.whl", hash = "sha256:5fd37c406dd6dc85aa743e214cef35dc54bbdd1419baac4f6ae5e5b1a2976938"},
     {file = "propcache-0.4.1-py3-none-any.whl", hash = "sha256:af2a6052aeb6cf17d3e46ee169099044fd8224cbaf75c76a2ef596e8163e2237"},
     {file = "propcache-0.4.1.tar.gz", hash = "sha256:f48107a8c637e80362555f37ecf49abe20370e557cc4ab374f04ec4423c97c3d"},
+]
+
+[[package]]
+name = "psycopg"
+version = "3.2.11"
+description = "PostgreSQL database adapter for Python"
+optional = false
+python-versions = ">=3.8"
+files = [
+    {file = "psycopg-3.2.11-py3-none-any.whl", hash = "sha256:217231b2b6b72fba88281b94241b2f16043ee67f81def47c52a01b72ff0c086a"},
+    {file = "psycopg-3.2.11.tar.gz", hash = "sha256:398bb484ed44361e041c8f804ed7af3d2fcefbffdace1d905b7446c319321706"},
+]
+
+[package.dependencies]
+psycopg-c = {version = "3.2.11", optional = true, markers = "implementation_name != \"pypy\" and extra == \"c\""}
+typing-extensions = {version = ">=4.6", markers = "python_version < \"3.13\""}
+tzdata = {version = "*", markers = "sys_platform == \"win32\""}
+
+[package.extras]
+binary = ["psycopg-binary (==3.2.11)"]
+c = ["psycopg-c (==3.2.11)"]
+dev = ["ast-comments (>=1.1.2)", "black (>=24.1.0)", "codespell (>=2.2)", "dnspython (>=2.1)", "flake8 (>=4.0)", "isort-psycopg", "isort[colors] (>=6.0)", "mypy (>=1.14)", "pre-commit (>=4.0.1)", "types-setuptools (>=57.4)", "types-shapely (>=2.0)", "wheel (>=0.37)"]
+docs = ["Sphinx (>=5.0)", "furo (==2022.6.21)", "sphinx-autobuild (>=2021.3.14)", "sphinx-autodoc-typehints (>=1.12)"]
+pool = ["psycopg-pool"]
+test = ["anyio (>=4.0)", "mypy (>=1.14)", "pproxy (>=2.7)", "pytest (>=6.2.5)", "pytest-cov (>=3.0)", "pytest-randomly (>=3.5)"]
+
+[[package]]
+name = "psycopg-c"
+version = "3.2.11"
+description = "PostgreSQL database adapter for Python -- C optimisation distribution"
+optional = false
+python-versions = ">=3.8"
+files = [
+    {file = "psycopg_c-3.2.11.tar.gz", hash = "sha256:b3104bcbd62e34cfc736bbdaa4cdcb7e9bfc9a4c0a1f0992cac0f68ea941a450"},
 ]
 
 [[package]]
@@ -1082,13 +1131,13 @@ tests = ["coverage[toml] (==5.0.4)", "pytest (>=6.0.0,<7.0.0)"]
 
 [[package]]
 name = "realtime"
-version = "2.22.0"
+version = "2.22.1"
 description = ""
 optional = false
 python-versions = ">=3.9"
 files = [
-    {file = "realtime-2.22.0-py3-none-any.whl", hash = "sha256:a599b7450f876f4ebe95aa1ccb3f3128ac8bea7e468950dc947708e2e3779015"},
-    {file = "realtime-2.22.0.tar.gz", hash = "sha256:116b331bcf34bf604e38edf6ac85d89cb7f98a9e973fd0c54a6baaeaee7404f7"},
+    {file = "realtime-2.22.1-py3-none-any.whl", hash = "sha256:8fcf8ad9f9d9bf187df4ceefde731edcff4d503ac2f9d827501a4e6aa5fe7e92"},
+    {file = "realtime-2.22.1.tar.gz", hash = "sha256:9c24e0536d070c32016752d5577e48cfe9a8c0c06b49cc1f2e688c00a1b47f55"},
 ]
 
 [package.dependencies]
@@ -1145,13 +1194,13 @@ doc = ["sphinx"]
 
 [[package]]
 name = "storage3"
-version = "2.22.0"
+version = "2.22.1"
 description = "Supabase Storage client for Python."
 optional = false
 python-versions = ">=3.9"
 files = [
-    {file = "storage3-2.22.0-py3-none-any.whl", hash = "sha256:fd31d884bfd590866e2b1897f3b2f26f737a836155a13c9a642dbc5c353e49df"},
-    {file = "storage3-2.22.0.tar.gz", hash = "sha256:199a67c2b1ac595191617ff2d7bcd0ef6440126e4335a6aaaf9df7881ccd3842"},
+    {file = "storage3-2.22.1-py3-none-any.whl", hash = "sha256:4cfbd12685b28559ce17e9fd4c108c2a086a0e321e44429cd353b8e10128f23a"},
+    {file = "storage3-2.22.1.tar.gz", hash = "sha256:a0f587619eac2aa164499fb3c3830a6c2a6c866f4c2e120be3ef2429989791e8"},
 ]
 
 [package.dependencies]
@@ -1193,13 +1242,13 @@ typing-extensions = {version = ">=4.5.0", markers = "python_version >= \"3.7\""}
 
 [[package]]
 name = "supabase"
-version = "2.22.0"
+version = "2.22.1"
 description = "Supabase client for Python."
 optional = false
 python-versions = ">=3.9"
 files = [
-    {file = "supabase-2.22.0-py3-none-any.whl", hash = "sha256:4d50b32b07b07439f69db75c1c1b013446167fd2aa747fbbb3b094084b5a52f4"},
-    {file = "supabase-2.22.0.tar.gz", hash = "sha256:c2dda9cc712db69ab4f690092581cff0b8978c268f782a3c16663c9ff0094473"},
+    {file = "supabase-2.22.1-py3-none-any.whl", hash = "sha256:31c4f8a65d3e457622bc146ec62956ebc96cd7637d8fde510d53538ee79530cc"},
+    {file = "supabase-2.22.1.tar.gz", hash = "sha256:abc0beba9924073441ff547ebee602f765bb7391ab66911035a2e70e9dcb648a"},
 ]
 
 [package.dependencies]
@@ -1212,13 +1261,13 @@ supabase-functions = "*"
 
 [[package]]
 name = "supabase-auth"
-version = "2.22.0"
+version = "2.22.1"
 description = "Python Client Library for Supabase Auth"
 optional = false
 python-versions = ">=3.9"
 files = [
-    {file = "supabase_auth-2.22.0-py3-none-any.whl", hash = "sha256:bea3808b9a17b883f6aa56abd55ba1b00c311e6f4a6e42ed9e03321caa9fe71f"},
-    {file = "supabase_auth-2.22.0.tar.gz", hash = "sha256:6a3db812102e0ab1a399996d492f05f68e07ca6510291758678be7b8c5345ce0"},
+    {file = "supabase_auth-2.22.1-py3-none-any.whl", hash = "sha256:d88f9856ffe36d5db30ad7ea67e9c5169779b30ab87159cae43c9b5cd1f1e806"},
+    {file = "supabase_auth-2.22.1.tar.gz", hash = "sha256:21115723061165b7225573884aadb40f822a58db06ddd714a50b5dd693b094c9"},
 ]
 
 [package.dependencies]
@@ -1228,13 +1277,13 @@ pyjwt = {version = ">=2.10.1", extras = ["crypto"]}
 
 [[package]]
 name = "supabase-functions"
-version = "2.22.0"
+version = "2.22.1"
 description = "Library for Supabase Functions"
 optional = false
 python-versions = ">=3.9"
 files = [
-    {file = "supabase_functions-2.22.0-py3-none-any.whl", hash = "sha256:c92d1b832499abfa8bde248d674aeb5f03b511d29959bf3d16afcdab824b290c"},
-    {file = "supabase_functions-2.22.0.tar.gz", hash = "sha256:dfc04c0c751629813e75153124b7f1bc81ff0128d058f6deaed2f124782416fa"},
+    {file = "supabase_functions-2.22.1-py3-none-any.whl", hash = "sha256:d1f99b605ce3c44b499cafcb44e59c8d50d047b0f031cd81863ab92863f166b3"},
+    {file = "supabase_functions-2.22.1.tar.gz", hash = "sha256:1d8e9bd07b1a6b68ab6ba6009e970288b2405a72570236f9a899679652375121"},
 ]
 
 [package.dependencies]
@@ -1520,4 +1569,4 @@ propcache = ">=0.2.1"
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.10"
-content-hash = "a897c35bdb73230066a7719cf2021b8c45fbd53d0b22302087755625b993186d"
+content-hash = "0d0dd253c37309e538e9d9acc2dce00f206c66ddc518f015b90d9909ca486452"

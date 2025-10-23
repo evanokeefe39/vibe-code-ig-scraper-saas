@@ -7,9 +7,28 @@
 - **Backend**: Django server for API, auth, and business logic.
 - **Database**: Supabase (Postgres) for data storage.
 - **Orchestration**: n8n for async workflows (scraping, processing).
-- **Integrations**: Apify (scraping), Stripe (payments), Google Maps (geocoding/export).
+- **Integrations**: Apify (scraping), Stripe (payments), Mapbox (geocoding), Google Maps (export).
 - **Hosting**: Render (containerized deployment).
 - **DevOps**: GitHub (version control, CI/CD, issues).
+
+### Geocoding Service
+
+The geocoding service converts location strings from scraped Instagram data into latitude/longitude coordinates for mapping.
+
+**Flow**:
+1. Scraper extracts location strings (e.g., "4 rue de la Convention, 75015 Paris").
+2. n8n workflow sends location to Mapbox Geocoding API.
+3. API returns coordinates with confidence score.
+4. Coordinates stored in Supabase with location metadata.
+
+**Constraints**:
+- Primary provider: Mapbox (excellent fuzzy matching, 100k free req/month).
+- Fallback: Nominatim (free, no API key, but lower accuracy).
+- Rate limits: Respect API quotas; implement caching and retry logic.
+- Accuracy: Target >90% success rate for well-formed addresses.
+- Privacy: No user data sent to geocoding providers.
+
+See [geocoding-providers.md](geocoding-providers.md) for provider details.
 
 ### Data Flow
 1. User → Django (auth/UI) → n8n (trigger scrape) → Apify (scrape) → n8n (process) → Supabase (store).
@@ -31,7 +50,7 @@
 **Architecture**:
 - Add n8n locally (docker-compose).
 - Integrate Apify in n8n workflows.
-- Basic geocoding (geopy).
+- Basic geocoding (Mapbox).
 - Django API to trigger n8n.
 - Supabase for DB (local mock if needed).
 - Test end-to-end: Scrape → Process → Store.

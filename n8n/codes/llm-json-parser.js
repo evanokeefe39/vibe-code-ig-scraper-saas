@@ -1,0 +1,128 @@
+// Robust JSON Parser for LLM Output in n8n
+// Updated for "Run Once for All Items" mode
+// Explodes each parsed location into its own n8n item
+
+function parseLLMJson(text) {
+  if (!text || typeof text !== 'string') {
+    return [createFallbackResult('Invalid input: text is empty or not a string')];
+  }
+
+  // Clean text and remove markdown code fences
+  let cleanText = text.trim();
+  if (cleanText.startsWith('```json')) {
+    cleanText = cleanText.replace(/^```json\s*/, '').replace(/\s*```$/, '');
+  } else if (cleanText.startsWith('```')) {
+    cleanText = cleanText.replace(/^```\s*/, '').replace(/\s*```$/, '');
+  }
+
+  // Try direct JSON parse
+  try {
+    const parsed = JSON.parse(cleanText);
+    return validateResult(parsed);
+  } catch (e) {
+    console.log('Direct JSON parse failed, attempting extraction:', e.message);
+
+    // Look for JSON array
+    const jsonMatch = cleanText.match(/\[[\s\S]*\]/);
+    if (jsonMatch) {
+      try {
+        const extractedJson = JSON.parse(jsonMatch[0]);
+        return validateResult(extractedJson);
+      } catch (e2) {
+        console.log('JSON array extraction failed:', e2.message);
+      }
+    }
+
+    // Look for single object
+    const objectMatch = cleanText.match(/\{[\s\S]*\}/);
+    if (objectMatch) {
+      try {
+        const extractedJson = JSON.parse(objectMatch[0]);
+        return validateResult([extractedJson]);
+      } catch (e2) {
+        console.log('JSON object extraction failed:', e2.message);
+      }
+    }
+
+    // Fallback: attempt to repair malformed JSON
+    try {
+      let fixedText = cleanText
+        .replace(/,\s*}/g, '}')
+        .replace(/,\s*]/g, ']')
+        .replace(/([{,]\s*)([a-zA-Z_][a-zA-Z0-9_]*)\s*:/g, '$1"$2":')
+        .replace(/:\s*'([^']*)'/g, ':"$1"')
+        .replace(/:\s*([a-zA-Z_][a-zA-Z0-9_]*)\s*([,}\]])/g, ':"$1"$2');
+
+      const parsed = JSON.parse(fixedText);
+      return validateResult(parsed);
+    } catch (e3) {
+      console.log('JSON fixing failed:', e3.message);
+      return [createFallbackResult(`JSON parsing failed: ${e.message}. Raw text: ${cleanText.substring(0, 200)}`)];
+    }
+  }
+}
+
+function validateResult(result) {
+  // Normalize to array
+  const locations = Array.isArray(result) ? result : [result];
+
+  // Clean each location object and include all fields
+  return locations.map((location, index) => {
+    if (!location || typeof location !== 'object') {
+      console.warn(`Invalid location at index ${index}, using fallback`);
+      return createFallbackResult(`Invalid location object at index ${index}`);
+    }
+
+    // Normalize arrays and numbers, but keep all fields
+    if (location.vibes && !Array.isArray(location.vibes)) {
+      location.vibes = [location.vibes];
+    }
+
+    if (typeof location.confidence !== 'number') {
+      location.confidence = parseFloat(location.confidence) || 0.5;
+    }
+
+    if (!('business_name' in location)) {
+      location.business_name = null;
+    }
+
+    return location;
+  });
+}
+
+function createFallbackResult(error) {
+  return {
+    business_name: null,
+    address: null,
+    category: 'other',
+    vibes: ['neutral'],
+    cost_note: 'unknown',
+    confidence: 0.0,
+    error,
+  };
+}
+
+// ----------------------
+// Main Execution
+// ----------------------
+
+const items = $input.all();
+
+// Collect all text fields from incoming items
+const llmTexts = items
+  .map(i => i.json.text || i.json.response || i.json.output)
+  .filter(Boolean);
+
+// Parse all LLM outputs and flatten, including extra fields from the item
+const parsedLocations = llmTexts.flatMap((t, index) => {
+  const locations = parseLLMJson(t);
+  const item = items[index].json;
+  // Extract extra fields, excluding 'text'
+  const extraFields = { ...item };
+  delete extraFields.text;
+  // Add extra fields to each location
+  return locations.map(location => ({ ...location, ...extraFields }));
+});
+
+// Return one item per location
+return parsedLocations.map(location => ({ json: location }));

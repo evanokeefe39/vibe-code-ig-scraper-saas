@@ -17,9 +17,14 @@ Including another URLconf
 
 from django.contrib import admin
 from django.urls import path
-from core.views import home
+from core.views import home, test_geocode, run_create, run_list, run_detail, run_by_n8n
 
 urlpatterns = [
     path("admin/", admin.site.urls),
     path("", home, name="home"),
+    path("test-geocode/", test_geocode, name="test_geocode"),
+    path("runs/", run_list, name="run_list"),
+    path("runs/create/", run_create, name="run_create"),
+    path("runs/<int:pk>/", run_detail, name="run_detail"),
+    path("runs/by-n8n/<int:n8n_execution_id>/", run_by_n8n, name="run_by_n8n"),
 ]

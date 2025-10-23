@@ -1,0 +1,14 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Run Detail</title>
+</head>
+<body>
+    <h1>Run {{ run.pk }}</h1>
+    <p>n8n Execution ID: {{ run.n8n_execution_id }}</p>
+    <p>Input: {{ run.input }}</p>
+    <p>Output: {{ run.output }}</p>
+    <p>Created: {{ run.created_at }}</p>
+    <a href="{% url 'run_list' %}">Back to Runs</a>
+</body>
+</html>

@@ -54,13 +54,47 @@ The Vibe Code IG Scraper SaaS allows users to curate location-based recommendati
 
 ### External Integrations
 - Supabase: Auth, DB, Analytics.
-- n8n: Workflow orchestration for scraping/processing.
+- n8n: Workflow orchestration for scraping/processing and curation.
 - Apify: Scraping actors (called via n8n).
 - Stripe: Payment processing.
-- Google Maps: Geocoding API, My Maps export.
+- Mapbox: Geocoding API for location conversion.
+- Google Maps: My Maps export.
+
+### Security & Validation
+- **URL Validation**: Backend validates user-submitted profile URLs against domain whitelist (instagram.com, tiktok.com) and format requirements.
+- **Input Sanitization**: All user inputs sanitized; length limits enforced.
+- **Rate Limiting**: Per-user limits on scraping requests and API calls.
+- **Authentication Enforcement**: All scraping triggers require authenticated users.
+- **Tier-Based Limits**: Free tier limited to 10 locations/profile, premium to 50+; enforced server-side.
+
+### Backend API Requirements
+- **Scraping Trigger Endpoint**: POST /api/scrape/ - accepts profile URLs, validates user tier, constructs n8n payload, triggers workflow.
+- **Curation Workflow Endpoint**: POST /api/curate/ - accepts user preferences for sorting/filtering, triggers n8n curation workflow.
+- **Location Management**: CRUD endpoints for viewing/editing scraped locations.
+- **Export Endpoint**: GET /api/export/ - generates Google My Maps compatible files based on curated lists.
+
+### Security & Validation
+- **URL Validation**: Backend validates user-submitted profile URLs against domain whitelist (instagram.com, tiktok.com) and format requirements.
+- **Input Sanitization**: All user inputs sanitized; length limits enforced.
+- **Rate Limiting**: Per-user limits on scraping requests and API calls.
+- **Authentication Enforcement**: All scraping triggers require authenticated users.
+- **Tier-Based Limits**: Free tier limited to 10 locations/profile, premium to 50+; enforced server-side.
+
+### Backend API Requirements
+- **Scraping Trigger Endpoint**: POST /api/scrape/ - accepts profile URLs, validates user tier, constructs n8n payload, triggers workflow.
+- **Curation Workflow Endpoint**: POST /api/curate/ - accepts user preferences for sorting/filtering, triggers n8n curation workflow.
+- **Location Management**: CRUD endpoints for viewing/editing scraped locations.
+- **Export Endpoint**: GET /api/export/ - generates Google My Maps compatible files based on curated lists.
 
 ## Acceptance Criteria
 - All user stories must have corresponding UI/API implementations.
 - Data must be securely stored and tied to user accounts.
+- Geocoding must achieve >90% accuracy for well-formed location strings, with fallback handling for partial matches.
 - Exports must be compatible with Google My Maps.
 - Subscriptions must enforce feature limits (e.g., free tier restrictions).
+- URL validation prevents SSRF and malicious scraping.
+- All API endpoints require authentication and respect user tiers.
+- Curation workflows allow flexible sorting (by category, rating, location type).
+- URL validation prevents SSRF and malicious scraping.
+- All API endpoints require authentication and respect user tiers.
+- Curation workflows allow flexible sorting (by category, rating, location type).
