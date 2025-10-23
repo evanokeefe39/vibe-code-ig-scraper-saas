@@ -95,7 +95,7 @@
     {% if run.output %}
     <div class="mt-8 bg-white rounded-lg shadow-md p-6">
         <h2 class="text-xl font-semibold text-gray-900 mb-4">Extracted Data</h2>
-        <div class="bg-gray-50 rounded-lg p-4">
+        <div class="bg-gray-50 rounded-lg p-4 max-h-96 overflow-y-auto">
             <pre class="text-sm text-gray-800 whitespace-pre-wrap">{{ run.output }}</pre>
         </div>
     </div>

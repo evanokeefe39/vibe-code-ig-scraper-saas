@@ -7,7 +7,7 @@ class RunForm(forms.ModelForm):
         widget=forms.Textarea(attrs={
             'rows': 8,
             'placeholder': 'Enter Instagram profile URLs, one per line or comma-separated',
-            'class': 'w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500'
+            'class': 'w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500 max-h-40 overflow-y-auto'
         }),
         help_text="Enter full Instagram profile URLs (e.g., https://www.instagram.com/username/), one per line or comma-separated."
     )
@@ -49,7 +49,7 @@ class RunForm(forms.ModelForm):
         widget=forms.Textarea(attrs={
             'rows': 6,
             'placeholder': 'Describe what data to extract from posts...',
-            'class': 'w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500'
+            'class': 'w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500 max-h-40 overflow-y-auto'
         }),
         initial="Extract location information, business mentions, and contact details from social media posts.",
         help_text="Custom prompt for AI extraction (leave default for standard location/business data)"
@@ -67,8 +67,8 @@ class RunForm(forms.ModelForm):
             self.fields['profiles'].initial = '\n'.join(data.get('profiles', []))
             self.fields['days_since'].initial = data.get('days_since', 14)
             self.fields['max_results'].initial = data.get('max_results', 50)
-            self.fields['include_comments'].initial = data.get('include_comments', True)
-            self.fields['include_stories'].initial = data.get('include_stories', False)
+            # self.fields['include_comments'].initial = data.get('include_comments', True)  # Hidden for now
+            # self.fields['include_stories'].initial = data.get('include_stories', False)   # Hidden for now
             self.fields['extraction_prompt'].initial = data.get('extraction_prompt', "Extract location information, business mentions, and contact details from social media posts.")
 
     def clean_profiles(self):
@@ -90,8 +90,8 @@ class RunForm(forms.ModelForm):
             'profiles': self.cleaned_data['profiles'],
             'days_since': self.cleaned_data['days_since'],
             'max_results': self.cleaned_data['max_results'],
-            'include_comments': self.cleaned_data['include_comments'],
-            'include_stories': self.cleaned_data['include_stories'],
+            # 'include_comments': self.cleaned_data['include_comments'],  # Hidden for now
+            # 'include_stories': self.cleaned_data['include_stories'],    # Hidden for now
             'extraction_prompt': self.cleaned_data['extraction_prompt']
         })
         if commit:

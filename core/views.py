@@ -25,8 +25,8 @@ def trigger_run(run):
     profiles = input_data.get('profiles', [])
     days_since = input_data.get('days_since', 14)
     max_results = input_data.get('max_results', 50)
-    include_comments = input_data.get('include_comments', True)
-    include_stories = input_data.get('include_stories', False)
+    # include_comments = input_data.get('include_comments', True)  # Hidden for now
+    # include_stories = input_data.get('include_stories', False)   # Hidden for now
     extraction_prompt = input_data.get('extraction_prompt', "Extract location information, business mentions, and contact details from social media posts.")
 
     # Format payload for n8n
@@ -37,8 +37,8 @@ def trigger_run(run):
             "days_since": days_since,
             "type": "instagram",
             "max_results": max_results,
-            "include_comments": include_comments,
-            "include_stories": include_stories,
+            # "include_comments": include_comments,  # Hidden for now
+            # "include_stories": include_stories,    # Hidden for now
             "extraction_prompt": extraction_prompt
         })
     payload = {
