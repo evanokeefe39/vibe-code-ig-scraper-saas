@@ -29,6 +29,7 @@ Phased development from boilerplate to full product release, with milestones and
 - Add Stripe test payments.
 - Containerize with Docker.
 - Add TikTok as second social media profile option.
+- **Schema Enhancement**: Split core_run.output into separate 'scraped' and 'extracted' columns to allow retrying extraction with different prompts without re-scraping. Add export options for both scraped raw data and extracted structured data.
 **Deliverables**: Deployable MVP for internal use with web GUI focused on location data but extensible to other use cases.
 **Future Agentic Prep**: Design n8n pipelines to be modular (split scraping and data validation) for eventual conversion to agent tools.
 
