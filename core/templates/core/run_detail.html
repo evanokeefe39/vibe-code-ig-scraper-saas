@@ -6,14 +6,9 @@
 <body>
     <h1>Run {{ run.pk }}</h1>
     <p>n8n Execution ID: {{ run.n8n_execution_id }}</p>
-    <p>Input Params: {{ run.input_params }}</p>
+    <p>Input: {{ run.input }}</p>
+    <p>Output: {{ run.output }}</p>
     <p>Created: {{ run.created_at }}</p>
-    <h2>Locations Found</h2>
-    <ul>
-        {% for location in locations %}
-        <li>{{ location.business_name }} - {{ location.address }}</li>
-        {% endfor %}
-    </ul>
     <a href="{% url 'run_list' %}">Back to Runs</a>
 </body>
 </html>

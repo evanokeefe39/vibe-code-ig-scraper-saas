@@ -14,30 +14,15 @@ class SocialProfile(models.Model):
 
 class Run(models.Model):
     user_id = models.BigIntegerField(null=True)
-    n8n_execution_id = models.CharField(max_length=255, blank=True, null=True)
-    input_params = models.JSONField(null=True)
+    n8n_execution_id = models.BigIntegerField(blank=True, null=True, db_index=True)
+    input = models.JSONField(null=True)
     output = models.JSONField(null=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
-class Location(models.Model):
-    user_id = models.BigIntegerField(null=True)
-    mapbox_suggestion = models.CharField(max_length=500)
-    mapbox_searched = models.CharField(max_length=500)
-    business_name = models.CharField(max_length=255)
-    address = models.TextField(null=True)
-    vibes = models.JSONField(null=True)  # Array of strings as JSON
-    cost_note = models.TextField()
-    confidence = models.FloatField()
-    post_url = models.TextField()
-    profile_url = models.TextField()
-    video_url = models.TextField()
-    sk = models.CharField(max_length=64, primary_key=True)
-    n8n_execution_id = models.CharField(max_length=255, null=True, blank=True)
-    created_at = models.DateTimeField(auto_now_add=True)
+
 
 class CuratedList(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     name = models.CharField(max_length=255)
     description = models.TextField(blank=True)
-    locations = models.ManyToManyField(Location)
     created_at = models.DateTimeField(auto_now_add=True)

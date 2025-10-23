@@ -6,7 +6,7 @@ from django.http import HttpResponse
 from django.contrib import messages
 from django.conf import settings
 from .utils import geocode_location
-from .models import Run, Location
+from .models import Run
 from .forms import RunForm
 
 logger = logging.getLogger(__name__)
@@ -20,8 +20,8 @@ def test_geocode(request):
     return HttpResponse(f"Address: {address}<br>Lat: {lat}<br>Lng: {lng}")
 
 def trigger_run(run):
-    # Parse input_params
-    input_data = json.loads(run.input_params)
+    # Parse input
+    input_data = json.loads(run.input)
     profiles = input_data.get('profiles', [])
     days_since = input_data.get('days_since', 14)
     
@@ -76,7 +76,10 @@ def run_list(request):
 
 def run_detail(request, pk):
     run = get_object_or_404(Run, pk=pk)
-    locations = Location.objects.filter(n8n_execution_id=run.n8n_execution_id)
-    return render(request, 'core/run_detail.html', {'run': run, 'locations': locations})
+    return render(request, 'core/run_detail.html', {'run': run})
+
+def run_by_n8n(request, n8n_execution_id):
+    run = get_object_or_404(Run, n8n_execution_id=n8n_execution_id)
+    return render(request, 'core/run_detail.html', {'run': run})
 
 # Create your views here.

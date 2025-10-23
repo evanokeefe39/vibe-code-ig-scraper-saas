@@ -20,9 +20,9 @@ class RunForm(forms.ModelForm):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        if self.instance and self.instance.input_params:
+        if self.instance and self.instance.input:
             # Pre-populate fields from JSON if editing
-            data = self.instance.input_params
+            data = self.instance.input
             self.fields['profiles'].initial = '\n'.join(data.get('profiles', []))
             self.fields['days_since'].initial = data.get('days_since', 14)
 
@@ -38,7 +38,7 @@ class RunForm(forms.ModelForm):
 
     def save(self, commit=True):
         instance = super().save(commit=False)
-        instance.input_params = json.dumps({
+        instance.input = json.dumps({
             'profiles': self.cleaned_data['profiles'],
             'days_since': self.cleaned_data['days_since']
         })
