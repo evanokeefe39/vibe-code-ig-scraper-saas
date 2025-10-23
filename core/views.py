@@ -1,6 +1,7 @@
 import json
 import logging
 import requests
+import csv
 from django.shortcuts import render, redirect, get_object_or_404
 from django.http import HttpResponse, JsonResponse
 from django.contrib import messages
@@ -223,5 +224,52 @@ def add_to_collection(request):
         except Exception as e:
             logger.error(f"Error adding to collection: {e}")
     return JsonResponse({'success': False})
+
+def export_collection_csv(request, pk):
+    collection = get_object_or_404(CuratedList, pk=pk, user_id=1)
+    items = CuratedItem.objects.filter(curated_list=collection)
+
+    response = HttpResponse(content_type='text/csv')
+    response['Content-Disposition'] = f'attachment; filename="{collection.name}.csv"'
+
+    writer = csv.writer(response)
+    # Write header
+    writer.writerow(['ID', 'Category', 'Notes', 'Entity Data'])
+
+    for item in items:
+        writer.writerow([
+            item.pk,
+            item.category or '',
+            item.notes or '',
+            json.dumps(item.entity_data)
+        ])
+
+    return response
+
+def export_collection_json(request, pk):
+    collection = get_object_or_404(CuratedList, pk=pk, user_id=1)
+    items = CuratedItem.objects.filter(curated_list=collection)
+
+    data = {
+        'collection': {
+            'id': collection.pk,
+            'name': collection.name,
+            'description': collection.description,
+            'created_at': collection.created_at.isoformat()
+        },
+        'items': [
+            {
+                'id': item.pk,
+                'category': item.category,
+                'notes': item.notes,
+                'entity_data': item.entity_data,
+                'created_at': item.created_at.isoformat()
+            } for item in items
+        ]
+    }
+
+    response = HttpResponse(json.dumps(data, indent=2), content_type='application/json')
+    response['Content-Disposition'] = f'attachment; filename="{collection.name}.json"'
+    return response
 
 # Create your views here.

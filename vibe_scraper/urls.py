@@ -17,7 +17,7 @@ Including another URLconf
 
 from django.contrib import admin
 from django.urls import path
-from core.views import home, test_geocode, run_create, run_list, run_detail, run_by_n8n, run_status_api, entity_list, collection_list, collection_detail, collection_create, add_to_collection
+from core.views import home, test_geocode, run_create, run_list, run_detail, run_by_n8n, run_status_api, entity_list, collection_list, collection_detail, collection_create, add_to_collection, export_collection_csv, export_collection_json
 
 urlpatterns = [
     path("admin/", admin.site.urls),
@@ -32,5 +32,7 @@ urlpatterns = [
     path("collections/", collection_list, name="collection_list"),
     path("collections/create/", collection_create, name="collection_create"),
     path("collections/<int:pk>/", collection_detail, name="collection_detail"),
+    path("collections/<int:pk>/export/csv/", export_collection_csv, name="export_collection_csv"),
+    path("collections/<int:pk>/export/json/", export_collection_json, name="export_collection_json"),
     path("add-to-collection/", add_to_collection, name="add_to_collection"),
 ]
