@@ -203,24 +203,35 @@ def entity_list(request):
 
     entities = []
     for run in runs:
+        run_entities = []
+
         # Try new extracted data structure first
-        if run.extracted and isinstance(run.extracted, dict) and 'result' in run.extracted:
-            for entity in run.extracted['result']:
-                entities.append({
-                    'data': entity,
-                    'run_id': run.pk,
-                    'run_created': run.created_at,
-                    'data_source': 'extracted'  # Track data source for debugging
-                })
+        if run.extracted:
+            if isinstance(run.extracted, dict):
+                if 'result' in run.extracted and isinstance(run.extracted['result'], list):
+                    run_entities = run.extracted['result']
+                elif 'results' in run.extracted and isinstance(run.extracted['results'], list):
+                    run_entities = run.extracted['results']
+                elif 'output' in run.extracted and isinstance(run.extracted['output'], dict):
+                    output = run.extracted['output']
+                    if 'results' in output and isinstance(output['results'], list):
+                        run_entities = output['results']
+                    elif 'result' in output and isinstance(output['result'], list):
+                        run_entities = output['result']
+            elif isinstance(run.extracted, list):
+                run_entities = run.extracted
+
         # Fallback to legacy output format for backward compatibility
-        elif run.output and isinstance(run.output, list):
-            for entity in run.output:
-                entities.append({
-                    'data': entity,
-                    'run_id': run.pk,
-                    'run_created': run.created_at,
-                    'data_source': 'legacy_output'  # Track data source for debugging
-                })
+        if not run_entities and run.output and isinstance(run.output, list):
+            run_entities = run.output
+
+        for entity in run_entities:
+            entities.append({
+                'data': entity,
+                'run_id': run.pk,
+                'run_created': run.created_at,
+                'data_source': 'extracted' if run.extracted else 'legacy_output'
+            })
 
     # Get user's collections for the dropdown
     collections = CuratedList.objects.filter(user_id=user_id)
@@ -270,12 +281,26 @@ def add_to_collection(request):
             run = Run.objects.get(pk=run_id, user_id=1)
 
             entity_data = None
+            extracted_entities = []
 
             # Try new extracted data structure first
-            if run.extracted and isinstance(run.extracted, dict) and 'result' in run.extracted:
-                extracted_entities = run.extracted['result']
-                if isinstance(extracted_entities, list) and 0 <= entity_index < len(extracted_entities):
-                    entity_data = extracted_entities[entity_index]
+            if run.extracted:
+                if isinstance(run.extracted, dict):
+                    if 'result' in run.extracted and isinstance(run.extracted['result'], list):
+                        extracted_entities = run.extracted['result']
+                    elif 'results' in run.extracted and isinstance(run.extracted['results'], list):
+                        extracted_entities = run.extracted['results']
+                    elif 'output' in run.extracted and isinstance(run.extracted['output'], dict):
+                        output = run.extracted['output']
+                        if 'results' in output and isinstance(output['results'], list):
+                            extracted_entities = output['results']
+                        elif 'result' in output and isinstance(output['result'], list):
+                            extracted_entities = output['result']
+                elif isinstance(run.extracted, list):
+                    extracted_entities = run.extracted
+
+            if isinstance(extracted_entities, list) and 0 <= entity_index < len(extracted_entities):
+                entity_data = extracted_entities[entity_index]
             # Fallback to legacy output format
             elif isinstance(run.output, list) and 0 <= entity_index < len(run.output):
                 entity_data = run.output[entity_index]
@@ -344,10 +369,24 @@ def export_run_csv(request, pk):
     run = get_object_or_404(Run, pk=pk)
     entities = []
 
-    # Extract entities from run.extracted['result'] or run.output
-    if run.extracted and isinstance(run.extracted, dict) and 'result' in run.extracted:
-        entities = run.extracted['result']
-    elif run.output and isinstance(run.output, list):
+    # Extract entities from various possible data structures
+    if run.extracted:
+        if isinstance(run.extracted, dict):
+            if 'result' in run.extracted and isinstance(run.extracted['result'], list):
+                entities = run.extracted['result']
+            elif 'results' in run.extracted and isinstance(run.extracted['results'], list):
+                entities = run.extracted['results']
+            elif 'output' in run.extracted and isinstance(run.extracted['output'], dict):
+                output = run.extracted['output']
+                if 'results' in output and isinstance(output['results'], list):
+                    entities = output['results']
+                elif 'result' in output and isinstance(output['result'], list):
+                    entities = output['result']
+        elif isinstance(run.extracted, list):
+            entities = run.extracted
+
+    # Fallback to legacy output
+    if not entities and run.output and isinstance(run.output, list):
         entities = run.output
 
     if not entities:
@@ -382,10 +421,24 @@ def export_run_json(request, pk):
     run = get_object_or_404(Run, pk=pk)
     entities = []
 
-    # Extract entities from run.extracted['result'] or run.output
-    if run.extracted and isinstance(run.extracted, dict) and 'result' in run.extracted:
-        entities = run.extracted['result']
-    elif run.output and isinstance(run.output, list):
+    # Extract entities from various possible data structures
+    if run.extracted:
+        if isinstance(run.extracted, dict):
+            if 'result' in run.extracted and isinstance(run.extracted['result'], list):
+                entities = run.extracted['result']
+            elif 'results' in run.extracted and isinstance(run.extracted['results'], list):
+                entities = run.extracted['results']
+            elif 'output' in run.extracted and isinstance(run.extracted['output'], dict):
+                output = run.extracted['output']
+                if 'results' in output and isinstance(output['results'], list):
+                    entities = output['results']
+                elif 'result' in output and isinstance(output['result'], list):
+                    entities = output['result']
+        elif isinstance(run.extracted, list):
+            entities = run.extracted
+
+    # Fallback to legacy output
+    if not entities and run.output and isinstance(run.output, list):
         entities = run.output
 
     if not entities:

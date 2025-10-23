@@ -296,7 +296,27 @@ function formatDuration(ms) {
 }
 
 function renderExtractedTable(extractedData) {
-    const entities = extractedData.result || [];
+    console.log('Extracted data:', extractedData);
+
+    let entities = [];
+
+    // Handle different data structures
+    if (extractedData.result && Array.isArray(extractedData.result)) {
+        entities = extractedData.result;
+    } else if (extractedData.results && Array.isArray(extractedData.results)) {
+        entities = extractedData.results;
+    } else if (Array.isArray(extractedData)) {
+        entities = extractedData;
+    } else if (extractedData.output && extractedData.output.results && Array.isArray(extractedData.output.results)) {
+        entities = extractedData.output.results;
+    } else if (extractedData.output && extractedData.output.result && Array.isArray(extractedData.output.result)) {
+        entities = extractedData.output.result;
+    } else {
+        console.warn('Unknown extracted data structure:', extractedData);
+    }
+
+    console.log('Found entities:', entities);
+
     const tableHeaders = document.getElementById('table-headers');
     const tableBody = document.getElementById('table-body');
     const noDataMessage = document.getElementById('no-data-message');
