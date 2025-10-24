@@ -17,7 +17,7 @@ Including another URLconf
 
 from django.contrib import admin
 from django.urls import path
-from core.views import home, test_geocode, run_create, run_list, run_detail, run_by_n8n, run_status_api, entity_list, collection_list, collection_detail, collection_create, add_to_collection, export_collection_csv, export_collection_json, export_run_csv, export_run_json
+from core.views import home, test_geocode, run_create, run_list, run_detail, run_by_n8n, run_status_api, list_list, list_detail, list_create, list_column_create, list_row_create, export_list_csv, export_list_json, export_run_csv, export_run_json, update_cell, delete_row, update_column, delete_column, delete_list
 
 urlpatterns = [
     path("admin/", admin.site.urls),
@@ -30,12 +30,17 @@ urlpatterns = [
     path("runs/<int:pk>/export/csv/", export_run_csv, name="export_run_csv"),
     path("runs/<int:pk>/export/json/", export_run_json, name="export_run_json"),
     path("runs/by-n8n/<int:n8n_execution_id>/", run_by_n8n, name="run_by_n8n"),
-    # Temporarily disabled curation and collection features
-    # path("curation/", entity_list, name="entity_list"),
-    # path("collections/", collection_list, name="collection_list"),
-    # path("collections/create/", collection_create, name="collection_create"),
-    # path("collections/<int:pk>/", collection_detail, name="collection_detail"),
-    # path("collections/<int:pk>/export/csv/", export_collection_csv, name="export_collection_csv"),
-    # path("collections/<int:pk>/export/json/", export_collection_json, name="export_collection_json"),
-    # path("add-to-collection/", add_to_collection, name="add_to_collection"),
+    # User List Management
+    path("lists/", list_list, name="list_list"),
+    path("lists/create/", list_create, name="list_create"),
+    path("lists/<int:pk>/", list_detail, name="list_detail"),
+    path("lists/<int:pk>/columns/create/", list_column_create, name="list_column_create"),
+    path("lists/<int:pk>/columns/<int:column_id>/update/", update_column, name="update_column"),
+    path("lists/<int:pk>/columns/<int:column_id>/delete/", delete_column, name="delete_column"),
+    path("lists/<int:pk>/delete/", delete_list, name="delete_list"),
+    path("lists/<int:pk>/rows/create/", list_row_create, name="list_row_create"),
+    path("lists/<int:pk>/rows/update/", update_cell, name="update_cell"),
+    path("lists/<int:pk>/rows/delete/", delete_row, name="delete_row"),
+    path("lists/<int:pk>/export/csv/", export_list_csv, name="export_list_csv"),
+    path("lists/<int:pk>/export/json/", export_list_json, name="export_list_json"),
 ]
