@@ -134,17 +134,7 @@
 
     </div>
 
-    <!-- Debug Info (remove after troubleshooting) -->
-    <!-- <div class="mt-8 bg-gray-100 rounded-lg p-4 text-xs">
-        <h3 class="font-medium mb-2">Debug Info:</h3>
-        <p><strong>run.input:</strong> <code>{{ run.input|truncatechars:200 }}</code></p>
-        <p><strong>run.output:</strong> <code>{{ run.output|truncatechars:100 }}</code></p>
-        <p><strong>run.extracted:</strong> <code>{{ run.extracted|truncatechars:100 }}</code></p>
-        <p><strong>run.scraped:</strong> <code>{{ run.scraped|truncatechars:100 }}</code></p>
-        <div id="js-debug" class="mt-2 p-2 bg-yellow-50 border border-yellow-200 rounded">
-            <strong>JS Debug:</strong> <span id="js-debug-content">Loading...</span>
-        </div>
-    </div> -->
+
 
     <!-- Output Data -->
     <div class="mt-8 bg-white rounded-lg shadow-md p-6">
@@ -251,24 +241,28 @@
                         </div>
                     </div>
                 </div>
-            {% endif %}
+             {% endif %}
 
-            {% if run.scraped %}
-            <div class="border-t pt-4">
-    <button id="scraped-toggle" class="text-sm text-blue-600 hover:text-blue-800 underline" onclick="toggleScrapedData()">
-        Hide Raw Scraped Data
-    </button>
-                <div id="scraped-data" class="mt-2 bg-gray-50 rounded-lg p-4 max-h-96 overflow-y-auto">
-                    <h3 class="text-sm font-medium text-gray-900 mb-2">Raw Scraped Posts</h3>
-                    <pre id="scraped-json" class="text-sm text-gray-800 whitespace-pre-wrap"></pre>
-                </div>
-            </div>
-            {% endif %}
+             {% if run.scraped %}
+              <div class="border-t pt-4">
+      <button id="scraped-toggle" class="text-sm text-blue-600 hover:text-blue-800 underline" onclick="toggleScrapedData()">
+          Hide Raw Scraped Data
+      </button>
+                  <div id="scraped-data" class="mt-2 bg-gray-50 rounded-lg p-4 max-h-96 overflow-y-auto">
+                      <h3 class="text-sm font-medium text-gray-900 mb-2">Raw Scraped Posts</h3>
+                      {% include "core/json_editor.html" with json_data=run_scraped_json %}
+                  </div>
+              </div>
+             {% endif %}
         </div>
     </div>
 </div>
 
 {% load static %}
+
+
+
+
 
 <script>
 let pollingInterval;
@@ -505,21 +499,7 @@ try {
 }
 {% endif %}
 
-{% if run.scraped %}
-try {
-    const scrapedData = {{ run_scraped_json|safe }};
-    // Assume scraped data has a 'result' key with array of JSON objects
-    const scrapedEntities = scrapedData.result || scrapedData.results || scrapedData;
-    if (Array.isArray(scrapedEntities)) {
-        document.getElementById('scraped-json').textContent = JSON.stringify(scrapedEntities, null, 2);
-    } else {
-        document.getElementById('scraped-json').textContent = JSON.stringify(scrapedData, null, 2);
-    }
-} catch (e) {
-    console.error('Failed to format scraped data:', e);
-    document.getElementById('scraped-json').textContent = 'Error formatting data';
-}
-{% endif %}
+
 
 function toggleExtractedData() {
     const extractedDiv = document.getElementById('extracted-data');

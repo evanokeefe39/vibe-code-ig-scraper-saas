@@ -1,0 +1,63 @@
+{% if json_data %}
+<script>
+    window.editorJsonData = {{ json_data|safe }};
+</script>
+{% else %}
+<script>
+    window.editorJsonData = null;
+</script>
+{% endif %}
+
+<div id="json-editor-container" style="height: 500px; border: 1px solid #ccc;"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/monaco-editor@0.45.0/min/vs/loader.js"></script>
+<script>
+require.config({ paths: { vs: 'https://cdn.jsdelivr.net/npm/monaco-editor@0.45.0/min/vs' }});
+require(['vs/editor/editor.main'], function () {
+    const container = document.getElementById('json-editor-container');
+    if (!container) return;
+    
+    console.log('editorJsonData:', window.editorJsonData);
+    if (!window.editorJsonData || window.editorJsonData === 'null') {
+        container.innerHTML = '<p class="text-gray-500">No scraped data available yet.</p>';
+        return;
+    }
+    
+    try {
+        // Recursively replace 'None' with null
+        function replaceNoneWithNull(obj) {
+            if (obj === 'None') return null;
+            if (Array.isArray(obj)) return obj.map(replaceNoneWithNull);
+            if (obj && typeof obj === 'object') {
+                const newObj = {};
+                for (const key in obj) {
+                    newObj[key] = replaceNoneWithNull(obj[key]);
+                }
+                return newObj;
+            }
+            return obj;
+        }
+        
+        const processedData = replaceNoneWithNull(window.editorJsonData);
+        const jsonString = JSON.stringify(processedData, null, 2);
+        
+        monaco.editor.create(container, {
+            value: jsonString,
+            language: 'json',
+            readOnly: true,
+            theme: 'vs-light',
+            folding: true,
+            foldingStrategy: 'indentation',
+            showFoldingControls: 'always',
+            minimap: { enabled: false },
+            scrollBeyondLastLine: false,
+            automaticLayout: true,
+            fontSize: 12,
+            lineNumbers: 'on'
+        });
+    } catch (e) {
+        console.error('Failed to load JSON editor:', e);
+        container.innerHTML = '<p class="text-red-600">Error loading JSON editor: ' + e.message + '</p><pre class="text-sm text-gray-800 whitespace-pre-wrap">' + JSON.stringify(window.editorJsonData) + '</pre>';
+    }
+});
+</script>
