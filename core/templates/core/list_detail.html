@@ -3,7 +3,7 @@
 {% block title %}{{ list.name }} - Vibe Scraper SaaS{% endblock %}
 
 {% block content %}
-<!-- CSRF disabled for development -->
+<!-- CSRF protection enabled -->
 
 <div class="max-w-7xl mx-auto px-4 py-8">
     <div class="mb-8">
@@ -274,6 +274,24 @@
 
 {% block extra_js %}
 <script>
+// CSRF token setup for AJAX requests
+function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+
+const csrftoken = getCookie('csrftoken');
+
 // Global variables
 let currentEditCell = null;
 let currentEditRowId = null;
@@ -313,6 +331,7 @@ function addColumn(type) {
         method: 'POST',
         headers: {
             'Content-Type': 'application/x-www-form-urlencoded',
+            'X-CSRFToken': csrftoken,
         },
         body: `name=${encodeURIComponent(columnName)}&column_type=${type}&required=false`
     })
@@ -396,6 +415,7 @@ function saveCellEdit() {
         method: 'POST',
         headers: {
             'Content-Type': 'application/x-www-form-urlencoded',
+            'X-CSRFToken': csrftoken,
         },
         body: `row_id=${currentEditRowId}&column=${encodeURIComponent(currentEditColumn)}&value=${encodeURIComponent(value)}&type=${currentEditType}`
     })
@@ -435,6 +455,7 @@ function deleteRow(rowId) {
         method: 'POST',
         headers: {
             'Content-Type': 'application/x-www-form-urlencoded',
+            'X-CSRFToken': csrftoken,
         },
         body: `row_id=${rowId}`
     })
@@ -447,7 +468,7 @@ function deleteRow(rowId) {
     });
 }
 
-// CSRF disabled for development - no token needed
+// CSRF protection enabled
 
 // Column dropdown management
 let activeColumnDropdown = null;
@@ -541,6 +562,7 @@ function updateColumnName(columnId) {
         method: 'POST',
         headers: {
             'Content-Type': 'application/x-www-form-urlencoded',
+            'X-CSRFToken': csrftoken,
         },
         body: `name=${encodeURIComponent(newName)}`
     })
@@ -559,6 +581,7 @@ function changeColumnType(columnId, newType) {
         method: 'POST',
         headers: {
             'Content-Type': 'application/x-www-form-urlencoded',
+            'X-CSRFToken': csrftoken,
         },
         body: `column_type=${encodeURIComponent(newType)}`
     })
@@ -580,6 +603,7 @@ function updateColumnDescription(columnId) {
         method: 'POST',
         headers: {
             'Content-Type': 'application/x-www-form-urlencoded',
+            'X-CSRFToken': csrftoken,
         },
         body: `description=${encodeURIComponent(description)}`
     })
@@ -599,6 +623,7 @@ function updateColumnRequired(columnId) {
         method: 'POST',
         headers: {
             'Content-Type': 'application/x-www-form-urlencoded',
+            'X-CSRFToken': csrftoken,
         },
         body: `required=${required}`
     })
@@ -621,6 +646,7 @@ function deleteColumn(columnId, columnName) {
         method: 'POST',
         headers: {
             'Content-Type': 'application/x-www-form-urlencoded',
+            'X-CSRFToken': csrftoken,
         },
         body: ''
     })
@@ -660,6 +686,7 @@ function confirmDeleteList() {
         method: 'POST',
         headers: {
             'Content-Type': 'application/x-www-form-urlencoded',
+            'X-CSRFToken': csrftoken,
         },
         body: `confirmation=${encodeURIComponent(confirmation)}`
     })
