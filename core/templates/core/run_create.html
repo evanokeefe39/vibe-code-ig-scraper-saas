@@ -30,20 +30,33 @@
                     {% endif %}
                 </div>
 
-                <div>
-                    <label for="{{ form.max_results.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-2">
-                        Max Results per Profile
-                    </label>
-                    {{ form.max_results }}
-                    {% if form.max_results.help_text %}
-                        <p class="mt-1 text-sm text-gray-500">{{ form.max_results.help_text }}</p>
-                    {% endif %}
-                    {% if form.max_results.errors %}
-                        <p class="mt-1 text-sm text-red-600">{{ form.max_results.errors.0 }}</p>
-                    {% endif %}
-                </div>
+                 <div>
+                     <label for="{{ form.max_results.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-2">
+                         Max Results per Profile
+                     </label>
+                     {{ form.max_results }}
+                     {% if form.max_results.help_text %}
+                         <p class="mt-1 text-sm text-gray-500">{{ form.max_results.help_text }}</p>
+                     {% endif %}
+                     {% if form.max_results.errors %}
+                         <p class="mt-1 text-sm text-red-600">{{ form.max_results.errors.0 }}</p>
+                     {% endif %}
+                 </div>
 
-                <!-- Hidden for now: Include Comments and Stories options -->
+                 <div>
+                     <label class="flex items-center">
+                         {{ form.enable_extraction }}
+                         <span class="ml-2 text-sm font-medium text-gray-700">{{ form.enable_extraction.label }}</span>
+                     </label>
+                     {% if form.enable_extraction.help_text %}
+                         <p class="mt-1 text-sm text-gray-500">{{ form.enable_extraction.help_text }}</p>
+                     {% endif %}
+                     {% if form.enable_extraction.errors %}
+                         <p class="mt-1 text-sm text-red-600">{{ form.enable_extraction.errors.0 }}</p>
+                     {% endif %}
+                 </div>
+
+                 <!-- Hidden for now: Include Comments and Stories options -->
             </div>
 
             <!-- Right Column: Profiles and Prompt -->
@@ -97,6 +110,8 @@ document.addEventListener('DOMContentLoaded', function() {
     const profilesTextarea = document.getElementById('{{ form.profiles.id_for_label|lower }}');
     const profileTags = document.getElementById('profile-tags');
     const form = document.getElementById('run-form');
+    const enableExtractionCheckbox = document.getElementById('{{ form.enable_extraction.id_for_label|lower }}');
+    const extractionPromptDiv = document.querySelector('label[for="{{ form.extraction_prompt.id_for_label }}"]').closest('div');
 
     // Function to parse profiles
     function parseProfiles(text) {
@@ -125,11 +140,23 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
+    // Function to toggle extraction prompt visibility
+    function toggleExtractionPrompt() {
+        if (enableExtractionCheckbox.checked) {
+            extractionPromptDiv.style.display = 'block';
+        } else {
+            extractionPromptDiv.style.display = 'none';
+        }
+    }
+
     // Update tags on input
     profilesTextarea.addEventListener('input', function() {
         const profiles = parseProfiles(this.value);
         renderProfileTags(profiles);
     });
+
+    // Toggle extraction prompt on checkbox change
+    enableExtractionCheckbox.addEventListener('change', toggleExtractionPrompt);
 
     // Handle tag deletion
     profileTags.addEventListener('click', function(e) {
@@ -173,6 +200,9 @@ document.addEventListener('DOMContentLoaded', function() {
     if (profilesTextarea.value) {
         renderProfileTags(parseProfiles(profilesTextarea.value));
     }
+
+    // Initial toggle for extraction prompt
+    toggleExtractionPrompt();
 });
 </script>
 {% endblock %}

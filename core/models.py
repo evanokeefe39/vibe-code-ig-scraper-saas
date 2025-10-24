@@ -16,6 +16,7 @@ class Run(models.Model):
     user_id = models.BigIntegerField(null=True)
     n8n_execution_id = models.BigIntegerField(blank=True, null=True, db_index=True)
     input = models.JSONField(null=True)  # Scraping parameters (URLs, extraction specs, etc.)
+    enable_extraction = models.BooleanField(default=True, help_text="Whether to run LLM extraction on scraped data")
     scraped = models.JSONField(null=True, help_text="Raw scraped data from Instagram posts")
     extracted = models.JSONField(null=True, help_text="Processed entities extracted from scraped data")
     # Keep output temporarily for backward compatibility

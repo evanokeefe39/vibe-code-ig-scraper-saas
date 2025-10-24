@@ -45,6 +45,14 @@ class RunForm(forms.ModelForm):
         }),
         help_text="Include stories in the extraction (if available)"
     )
+    enable_extraction = forms.BooleanField(
+        required=False,
+        initial=True,
+        widget=forms.CheckboxInput(attrs={
+            'class': 'rounded border-gray-300 text-primary-600 shadow-sm focus:border-primary-300 focus:ring focus:ring-primary-200 focus:ring-opacity-50'
+        }),
+        help_text="Enable AI-powered extraction of entities from scraped posts"
+    )
     extraction_prompt = forms.CharField(
         widget=forms.Textarea(attrs={
             'rows': 6,
@@ -70,6 +78,7 @@ class RunForm(forms.ModelForm):
             # self.fields['include_comments'].initial = data.get('include_comments', True)  # Hidden for now
             # self.fields['include_stories'].initial = data.get('include_stories', False)   # Hidden for now
             self.fields['extraction_prompt'].initial = data.get('extraction_prompt', "Extract location information, business mentions, and contact details from social media posts.")
+            self.fields['enable_extraction'].initial = self.instance.enable_extraction
 
     def clean_profiles(self):
         profiles = self.cleaned_data['profiles']
@@ -86,6 +95,7 @@ class RunForm(forms.ModelForm):
 
     def save(self, commit=True):
         instance = super().save(commit=False)
+        instance.enable_extraction = self.cleaned_data['enable_extraction']
         instance.input = json.dumps({
             'profiles': self.cleaned_data['profiles'],
             'days_since': self.cleaned_data['days_since'],

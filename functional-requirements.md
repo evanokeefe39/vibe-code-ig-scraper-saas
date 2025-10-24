@@ -17,6 +17,7 @@ The Vibe Code IG Scraper SaaS allows users to extract and curate structured data
 ### Data Scraping & Processing
 - **As a user**, I want to trigger scraping of specified profiles so that entities are extracted from posts using LLM processing.
 - **As a user**, I want the agent to automatically extract and validate entities according to my specifications (e.g., locations with geocoding, leads with contact info, etc.) so that I don't have to do manual work.
+- **As a user**, I want to enable/disable AI extraction so that I can choose whether to run LLM processing on scraped data.
 - **As a user**, I want to provide custom system prompts for entity extraction so that I can tailor scraping behavior to different use cases.
 - **As a user**, I want agents to validate and sanitize my prompts to prevent malicious use.
 - **As a user**, I want the agent to handle both web UI storage and MCP server responses with appropriate formatting.
@@ -54,6 +55,7 @@ The Vibe Code IG Scraper SaaS allows users to extract and curate structured data
 ### Backend (Django)
 - User model with Supabase integration.
 - Profile and flexible entity models (JSONB-based for adaptability).
+- Run model with enable_extraction toggle for optional LLM processing.
 - API endpoints for triggering agents and handling MCP requests.
 - Generic entity list views with CRUD operations.
 - Stripe webhook handlers for subscription events with usage tracking.
