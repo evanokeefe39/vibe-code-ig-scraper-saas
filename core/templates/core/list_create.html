@@ -3,16 +3,16 @@
 {% block title %}Create List - Vibe Scraper SaaS{% endblock %}
 
 {% block content %}
-<script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
-<div class="max-w-6xl mx-auto px-4 py-8">
+<div class="max-w-2xl mx-auto px-4 py-8">
     <div class="mb-8">
         <h1 class="text-3xl font-bold text-gray-900 mb-2">Create New List</h1>
-        <p class="text-gray-600">Define a custom list to organize your data</p>
+        <p class="text-gray-600">Create a custom list to organize your scraped data</p>
     </div>
 
     <div class="bg-white rounded-lg shadow-md p-6">
         <form method="post" id="list-create-form">
             {% csrf_token %}
+
             <div class="space-y-6">
                 <div>
                     <label for="name" class="block text-sm font-medium text-gray-700 mb-2">
@@ -32,91 +32,8 @@
                               placeholder="Optional description of what this list contains"></textarea>
                 </div>
 
-                <!-- Column Definition Section -->
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-4">
-                        Define Columns
-                    </label>
-                    <p class="text-sm text-gray-500 mb-4">
-                        Set up the columns for your list. Click on column headers to edit names and types.
-                    </p>
-
-                    <div class="overflow-x-auto border border-gray-200 rounded-lg">
-                        <table id="columns-table" class="min-w-full divide-y divide-gray-200">
-                            <thead class="bg-gray-50">
-                                <tr id="column-headers">
-                                    <!-- Columns will be dynamically added here -->
-                                    <th class="column-header px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100"
-                                        data-column-index="0">
-                                        <div class="flex items-center space-x-2">
-                                            <div class="drag-handle cursor-move text-gray-400 hover:text-gray-600">
-                                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8h16M4 16h16"></path>
-                                                </svg>
-                                            </div>
-                                            <span class="column-name">Column 1</span>
-                                            <svg class="w-4 h-4 text-gray-400 dropdown-arrow" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
-                                            </svg>
-                                        </div>
-                                        <div class="column-dropdown hidden absolute z-10 mt-1 w-64 bg-white border border-gray-200 rounded-md shadow-lg">
-                                            <div class="py-1">
-                                                <div class="px-3 py-2 border-b border-gray-200">
-                                                    <input type="text" class="name-input w-full px-2 py-1 text-sm border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-primary-500" value="Column 1">
-                                                </div>
-                                                <div class="px-3 py-2 hover:bg-gray-50 cursor-pointer type-selector">
-                                                    <span class="text-sm">Edit column type</span>
-                                                    <div class="type-dropdown hidden mt-2">
-                                                        <select class="column-type w-full px-2 py-1 text-sm border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-primary-500">
-                                                            <option value="text">Text</option>
-                                                            <option value="number">Number</option>
-                                                            <option value="date">Date</option>
-                                                            <option value="datetime">Date & Time</option>
-                                                            <option value="boolean">Boolean (Yes/No)</option>
-                                                            <option value="email">Email</option>
-                                                            <option value="phone">Phone</option>
-                                                            <option value="url">URL</option>
-                                                            <option value="address">Address</option>
-                                                            <option value="select">Select (Single choice)</option>
-                                                            <option value="multi_select">Multi-select</option>
-                                                            <option value="json">JSON (Advanced)</option>
-                                                        </select>
-                                                    </div>
-                                                </div>
-                                                <div class="px-3 py-2 hover:bg-gray-50 cursor-pointer insert-left">
-                                                    <span class="text-sm text-blue-600">+ Insert left</span>
-                                                </div>
-                                                <div class="px-3 py-2 hover:bg-gray-50 cursor-pointer insert-right">
-                                                    <span class="text-sm text-blue-600">+ Insert right</span>
-                                                </div>
-                                                <div class="px-3 py-2 hover:bg-gray-50 cursor-pointer delete-column text-red-600">
-                                                    <span class="text-sm">Delete column</span>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </th>
-                                    <th class="add-column-header px-4 py-3 text-center cursor-pointer hover:bg-gray-100">
-                                        <div class="flex items-center justify-center">
-                                            <svg class="w-6 h-6 text-gray-400 hover:text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
-                                            </svg>
-                                        </div>
-                                    </th>
-                                </tr>
-                            </thead>
-                            <tbody class="bg-white divide-y divide-gray-200">
-                                <tr>
-                                    <td colspan="100" class="px-4 py-8 text-center text-gray-500">
-                                        <p class="text-sm">Add columns above to define your list structure</p>
-                                        <p class="text-xs mt-1">Rows will be added after list creation</p>
-                                    </td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-
-                <div class="flex justify-end space-x-4">
+                <!-- Submit Button -->
+                <div class="flex justify-end space-x-4 pt-6 border-t border-gray-200">
                     <a href="{% url 'list_list' %}"
                        class="px-4 py-2 bg-gray-600 hover:bg-gray-700 text-white font-semibold rounded-lg transition-colors duration-200">
                         Cancel
@@ -127,402 +44,44 @@
                     </button>
                 </div>
             </div>
-
-            <!-- Hidden inputs for column data -->
-            <div id="column-data" class="hidden">
-                <!-- Column data will be populated here as hidden inputs -->
-            </div>
         </form>
     </div>
 </div>
 
-<!-- Delete Confirmation Modal -->
-<div id="delete-modal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full hidden z-50">
-    <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
-        <div class="mt-3 text-center">
-            <h3 class="text-lg font-medium text-gray-900" id="modal-title">Delete Column</h3>
-            <div class="mt-2 px-7 py-3">
-                <p class="text-sm text-gray-500" id="modal-message">
-                    Are you sure you want to delete this column?
-                </p>
-            </div>
-            <div class="flex items-center px-4 py-3">
-                <button id="modal-cancel" class="px-4 py-2 bg-gray-300 text-gray-900 text-base font-medium rounded-md w-full mr-2 hover:bg-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-300">
-                    Cancel
-                </button>
-                <button id="modal-confirm" class="px-4 py-2 bg-red-600 text-white text-base font-medium rounded-md w-full hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-300">
-                    Delete
-                </button>
-            </div>
-        </div>
-    </div>
-</div>
-
 <script>
-let columnCounter = 1;
-let columns = [{
-    id: 0,
-    name: 'Column 1',
-    type: 'text',
-    required: false
-}];
-
-function initializeColumnManager() {
-    setupEventListeners();
-    setupDragAndDrop();
-    updateFormData();
-}
-
-function setupEventListeners() {
-    // Add column button
-    document.querySelector('.add-column-header').addEventListener('click', addNewColumn);
-
-    // Column header clicks
-    document.addEventListener('click', handleColumnHeaderClick);
-
-    // Close dropdowns when clicking outside
-    document.addEventListener('click', closeDropdowns);
-
-    // Modal buttons
-    document.getElementById('modal-cancel').addEventListener('click', hideDeleteModal);
-    document.getElementById('modal-confirm').addEventListener('click', confirmDeleteColumn);
-
-    // Form submission
-    document.getElementById('list-create-form').addEventListener('submit', prepareFormData);
-}
-
-function setupDragAndDrop() {
-    const headersContainer = document.getElementById('column-headers');
-
-    // Initialize SortableJS on the headers container
-    new Sortable(headersContainer, {
-        handle: '.drag-handle',
-        direction: 'horizontal',
-        ghostClass: 'sortable-ghost',
-        chosenClass: 'sortable-chosen',
-        filter: '.add-column-header', // Don't allow dragging the add button
-        preventOnFilter: false,
-        onEnd: function(evt) {
-            // Reorder the columns array based on new DOM order
-            const newColumns = [];
-            const headerElements = headersContainer.querySelectorAll('.column-header');
-
-            headerElements.forEach((header, index) => {
-                const oldIndex = parseInt(header.dataset.columnIndex);
-                newColumns.push(columns[oldIndex]);
-            });
-
-            columns = newColumns;
-
-            // Update indices and re-render
-            renderColumns();
-            updateFormData();
-        }
-    });
-}
-
-function handleColumnHeaderClick(e) {
-    const columnHeader = e.target.closest('.column-header');
-    if (!columnHeader) return;
-
-    e.stopPropagation();
-
-    // Close other dropdowns
-    document.querySelectorAll('.column-dropdown').forEach(dropdown => {
-        if (dropdown !== columnHeader.querySelector('.column-dropdown')) {
-            dropdown.classList.add('hidden');
-        }
-    });
-
-    // Toggle this dropdown
-    const dropdown = columnHeader.querySelector('.column-dropdown');
-    dropdown.classList.toggle('hidden');
-
-    // Handle dropdown item clicks
-    if (e.target.closest('.type-selector')) {
-        toggleTypeDropdown(e.target.closest('.type-selector'));
-    } else if (e.target.closest('.insert-left')) {
-        insertColumn(parseInt(columnHeader.dataset.columnIndex), 'left');
-        dropdown.classList.add('hidden');
-    } else if (e.target.closest('.insert-right')) {
-        insertColumn(parseInt(columnHeader.dataset.columnIndex), 'right');
-        dropdown.classList.add('hidden');
-    } else if (e.target.closest('.delete-column')) {
-        showDeleteModal(parseInt(columnHeader.dataset.columnIndex));
-        dropdown.classList.add('hidden');
-    }
-}
-
-function closeDropdowns(e) {
-    if (!e.target.closest('.column-header')) {
-        document.querySelectorAll('.column-dropdown').forEach(dropdown => {
-            dropdown.classList.add('hidden');
-        });
-    }
-}
-
-function addNewColumn() {
-    columnCounter++;
-    const newColumn = {
-        id: Date.now(),
-        name: `Column ${columnCounter}`,
-        type: 'text',
-        required: false
-    };
-
-    columns.push(newColumn);
-    renderColumns();
-    updateFormData();
-}
-
-function insertColumn(index, position) {
-    columnCounter++;
-    const newColumn = {
-        id: Date.now(),
-        name: `Column ${columnCounter}`,
-        type: 'text',
-        required: false
-    };
-
-    const insertIndex = position === 'left' ? index : index + 1;
-    columns.splice(insertIndex, 0, newColumn);
-
-    renderColumns();
-    updateFormData();
-}
-
-function deleteColumn(index) {
-    if (columns.length <= 1) {
-        alert('You must have at least one column.');
-        return;
-    }
-
-    columns.splice(index, 1);
-    renderColumns();
-    updateFormData();
-}
-
-function showDeleteModal(index) {
-    const modal = document.getElementById('delete-modal');
-    const title = document.getElementById('modal-title');
-    const message = document.getElementById('modal-message');
-
-    title.textContent = 'Delete Column';
-    message.textContent = 'Are you sure you want to delete this column? This action cannot be undone.';
-
-    modal.dataset.columnIndex = index;
-    modal.classList.remove('hidden');
-}
-
-function hideDeleteModal() {
-    document.getElementById('delete-modal').classList.add('hidden');
-}
-
-function confirmDeleteColumn() {
-    const index = parseInt(document.getElementById('delete-modal').dataset.columnIndex);
-    deleteColumn(index);
-    hideDeleteModal();
-}
-
-function toggleTypeDropdown(typeSelector) {
-    const typeDropdown = typeSelector.querySelector('.type-dropdown');
-    typeDropdown.classList.toggle('hidden');
-}
-
-function updateColumnName(index, newName) {
-    if (newName.trim()) {
-        columns[index].name = newName.trim();
-        renderColumns();
-        updateFormData();
-    }
-}
-
-function updateColumnType(index, newType) {
-    columns[index].type = newType;
-    updateFormData();
-}
-
-function renderColumns() {
-    const headersContainer = document.getElementById('column-headers');
-
-    // Clear existing headers except the add button
-    const addButton = headersContainer.querySelector('.add-column-header');
-    headersContainer.innerHTML = '';
-
-    // Add column headers
-    columns.forEach((column, index) => {
-        const headerHTML = `
-            <th class="column-header px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100"
-                data-column-index="${index}">
-                <div class="flex items-center space-x-2">
-                    <div class="drag-handle cursor-move text-gray-400 hover:text-gray-600">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8h16M4 16h16"></path>
-                        </svg>
-                    </div>
-                    <span class="column-name">${column.name}</span>
-                    <svg class="w-4 h-4 text-gray-400 dropdown-arrow" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
-                    </svg>
-                </div>
-                <div class="column-dropdown hidden absolute z-10 mt-1 w-64 bg-white border border-gray-200 rounded-md shadow-lg">
-                    <div class="py-1">
-                        <div class="px-3 py-2 border-b border-gray-200">
-                            <input type="text" class="name-input w-full px-2 py-1 text-sm border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-primary-500" value="${column.name}">
-                        </div>
-                        <div class="px-3 py-2 hover:bg-gray-50 cursor-pointer type-selector">
-                            <span class="text-sm">Edit column type</span>
-                            <div class="type-dropdown hidden mt-2">
-                                <select class="column-type w-full px-2 py-1 text-sm border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-primary-500">
-                                    <option value="text" ${column.type === 'text' ? 'selected' : ''}>Text</option>
-                                    <option value="number" ${column.type === 'number' ? 'selected' : ''}>Number</option>
-                                    <option value="date" ${column.type === 'date' ? 'selected' : ''}>Date</option>
-                                    <option value="datetime" ${column.type === 'datetime' ? 'selected' : ''}>Date & Time</option>
-                                    <option value="boolean" ${column.type === 'boolean' ? 'selected' : ''}>Boolean (Yes/No)</option>
-                                    <option value="email" ${column.type === 'email' ? 'selected' : ''}>Email</option>
-                                    <option value="phone" ${column.type === 'phone' ? 'selected' : ''}>Phone</option>
-                                    <option value="url" ${column.type === 'url' ? 'selected' : ''}>URL</option>
-                                    <option value="address" ${column.type === 'address' ? 'selected' : ''}>Address</option>
-                                    <option value="select" ${column.type === 'select' ? 'selected' : ''}>Select (Single choice)</option>
-                                    <option value="multi_select" ${column.type === 'multi_select' ? 'selected' : ''}>Multi-select</option>
-                                    <option value="json" ${column.type === 'json' ? 'selected' : ''}>JSON (Advanced)</option>
-                                </select>
-                            </div>
-                        </div>
-                        <div class="px-3 py-2 hover:bg-gray-50 cursor-pointer insert-left">
-                            <span class="text-sm text-blue-600">+ Insert left</span>
-                        </div>
-                        <div class="px-3 py-2 hover:bg-gray-50 cursor-pointer insert-right">
-                            <span class="text-sm text-blue-600">+ Insert right</span>
-                        </div>
-                        <div class="px-3 py-2 hover:bg-gray-50 cursor-pointer delete-column text-red-600">
-                            <span class="text-sm">Delete column</span>
-                        </div>
-                    </div>
-                </div>
-            </th>
-        `;
-        headersContainer.insertAdjacentHTML('beforeend', headerHTML);
-    });
-
-    // Add the add column button back
-    headersContainer.appendChild(addButton);
-
-    // Re-attach event listeners
-    attachColumnEventListeners();
-
-    // Re-initialize drag and drop
-    setupDragAndDrop();
-}
-
-function attachColumnEventListeners() {
-    // Name input changes
-    document.querySelectorAll('.name-input').forEach(input => {
-        input.addEventListener('blur', function(e) {
-            const columnHeader = e.target.closest('.column-header');
-            const index = parseInt(columnHeader.dataset.columnIndex);
-            updateColumnName(index, e.target.value);
-        });
-
-        input.addEventListener('keypress', function(e) {
-            if (e.key === 'Enter') {
-                e.preventDefault();
-                e.target.blur();
-            }
-        });
-    });
-
-    // Type select changes
-    document.querySelectorAll('.column-type').forEach(select => {
-        select.addEventListener('change', function(e) {
-            const columnHeader = e.target.closest('.column-header');
-            const index = parseInt(columnHeader.dataset.columnIndex);
-            updateColumnType(index, e.target.value);
-        });
-    });
-}
-
-function updateFormData() {
-    const columnDataDiv = document.getElementById('column-data');
-    columnDataDiv.innerHTML = '';
-
-    columns.forEach((column, index) => {
-        columnDataDiv.insertAdjacentHTML('beforeend', `
-            <input type="hidden" name="column_names[]" value="${column.name}">
-            <input type="hidden" name="column_types[]" value="${column.type}">
-            <input type="hidden" name="column_required[]" value="false">
-            <input type="hidden" name="column_order[]" value="${index}">
-        `);
-    });
-}
-
-function prepareFormData(e) {
-    // Ensure form data is up to date
-    updateFormData();
-
-    // Basic validation
-    if (columns.length === 0) {
-        e.preventDefault();
-        alert('You must define at least one column.');
-        return false;
-    }
-
-    const listName = document.getElementById('name').value.trim();
-    if (!listName) {
-        e.preventDefault();
-        alert('Please enter a list name.');
-        return false;
-    }
-}
-
-// Initialize when DOM is ready
 document.addEventListener('DOMContentLoaded', function() {
-    initializeColumnManager();
+    const form = document.getElementById('list-create-form');
+
+    // Form validation
+    form.addEventListener('submit', function(e) {
+        const nameInput = document.getElementById('name');
+        const name = nameInput.value.trim();
+
+        if (!name) {
+            e.preventDefault();
+            alert('Please enter a list name.');
+            nameInput.focus();
+            return;
+        }
+
+        // Show loading state
+        const submitBtn = form.querySelector('button[type="submit"]');
+        const originalText = submitBtn.innerHTML;
+        submitBtn.innerHTML = `
+            <svg class="w-5 h-5 mr-2 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+            </svg>
+            Creating List...
+        `;
+        submitBtn.disabled = true;
+
+        // Re-enable after 5 seconds as fallback
+        setTimeout(() => {
+            submitBtn.innerHTML = originalText;
+            submitBtn.disabled = false;
+        }, 5000);
+    });
 });
 </script>
 
-<style>
-.column-header {
-    position: relative;
-    min-width: 200px;
-}
-
-.column-dropdown {
-    min-width: 240px;
-}
-
-.drag-handle {
-    opacity: 0.5;
-}
-
-.column-header:hover .drag-handle {
-    opacity: 1;
-}
-
-.sortable-ghost {
-    opacity: 0.4;
-    background-color: #e5e7eb;
-    border: 2px dashed #9ca3af;
-}
-
-.sortable-chosen {
-    background-color: #f3f4f6;
-    transform: rotate(5deg);
-}
-
-.sortable-chosen .drag-handle {
-    opacity: 1;
-}
-
-.add-column-header {
-    min-width: 60px;
-}
-
-/* Ensure table doesn't break on small screens */
-@media (max-width: 768px) {
-    .column-header {
-        min-width: 150px;
-    }
-}
-</style>
 {% endblock %}

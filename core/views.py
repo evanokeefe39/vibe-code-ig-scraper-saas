@@ -214,54 +214,24 @@ def list_create(request):
         name = request.POST.get('name')
         description = request.POST.get('description', '')
 
-        # Get column data from form
-        column_names = request.POST.getlist('column_names[]')
-        column_types = request.POST.getlist('column_types[]')
-        column_required = request.POST.getlist('column_required[]')
-        column_orders = request.POST.getlist('column_order[]')
-
-        if name and column_names:
+        if name:
             # Get or create the dummy user
             user, created = User.objects.get_or_create(
                 id=1,
                 defaults={'username': 'dev', 'email': 'dev@example.com'}
             )
 
-            # Create the list
+            # Create the list (without columns)
             user_list = UserList.objects.create(
                 user=user,
                 name=name,
                 description=description
             )
 
-            # Create columns from form data
-            for i, col_name in enumerate(column_names):
-                if col_name.strip():  # Only create non-empty columns
-                    col_type = column_types[i] if i < len(column_types) else 'text'
-                    required = column_required[i].lower() == 'true' if i < len(column_required) else False
-                    order = int(column_orders[i]) if i < len(column_orders) else i
-
-                    # Set default options for select types
-                    options = None
-                    if col_type == 'select':
-                        options = ['Active', 'Pending', 'Completed', 'Archived']
-                    elif col_type == 'multi_select':
-                        options = []
-
-                    ListColumn.objects.create(
-                        user_list=user_list,
-                        name=col_name.strip(),
-                        column_type=col_type,
-                        description='',  # Provide empty string for description
-                        required=required,
-                        order=order,
-                        options=options
-                    )
-
-            messages.success(request, f'List "{name}" created successfully with {len([n for n in column_names if n.strip()])} columns!')
+            messages.success(request, f'List "{name}" created successfully! Add columns in the detail view.')
             return redirect('list_detail', pk=user_list.pk)
         else:
-            messages.error(request, 'Please provide a list name and at least one column.')
+            messages.error(request, 'Please provide a list name.')
     return render(request, 'core/list_create.html')
 
 def list_column_create(request, pk):
