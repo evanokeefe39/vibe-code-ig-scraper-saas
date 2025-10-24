@@ -1,9 +1,9 @@
 # Non-Functional Requirements
 
 ## Performance
-- **Response Time**: API responses <2s for user actions; scraping triggers <5s acknowledgment; geocoding <3s per request; agent decisions <10s.
+- **Response Time**: API responses <2s for user actions; scraping triggers <5s acknowledgment; geocoding <3s per request; agent decisions <10s; JSON rendering <1s for datasets up to 1000 items.
 - **Throughput**: Handle 100 concurrent users; scale to 1000 with n8n/LangChain.
-- **Scalability**: Horizontal scaling via Render containers; agent orchestration for efficient resource use.
+- **Scalability**: Horizontal scaling via Render containers; agent orchestration for efficient resource use; sub-workflow architecture supports horizontal scaling of individual components.
 - **Availability**: 99% uptime; graceful degradation for external API failures; agent fallbacks for tool unavailability.
 
 ## Security
@@ -15,7 +15,7 @@
 
 ## Usability
 - **Accessibility**: WCAG 2.1 AA compliance; mobile-responsive design.
-- **User Experience**: Intuitive UI with clear error messages; onboarding flow.
+- **User Experience**: Intuitive UI with clear error messages; onboarding flow; interactive JSON viewers with expand/collapse for data inspection; platform-organized data display.
 - **Localization**: Support English initially; plan for multi-language.
 
 ## Reliability
@@ -26,7 +26,7 @@
 ## Maintainability
 - **Code Quality**: Follow PEP 8; 80% test coverage; lint with flake8/black.
 - **Documentation**: Inline comments; API docs with DRF; README for setup.
-- **Modularity**: Loose coupling; Poetry for dependency management.
+- **Modularity**: Loose coupling; Poetry for dependency management; modular n8n workflows with sub-workflow architecture for easier updates and testing.
 
 ## Compatibility
 - **Browsers**: Support latest Chrome, Firefox, Safari, Edge.
