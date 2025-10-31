@@ -1,6 +1,7 @@
 # Project Rules
 - Don't make any changes to @n8n/workflows/*
 - Refer to below locaitons for important documents about the project
+- When making Django code changes, restart the Docker container in detached mode (-d) (volumes are mounted for live updates)
 
 # Solution Requirements
 - Function requirements are documented in @functional-requirements.md
@@ -13,8 +14,8 @@
 # Project Description Usage & How to Run
 - defined in @README.md
 
-# Proof Of Concept Plan
-- defined in @poc_plan.md 
+# MVP Plan
+- defined in @mvp_plan.md
 - also should be defined in issues in github
 
 # Architecture

@@ -13,6 +13,10 @@ https://docs.djangoproject.com/en/5.2/ref/settings/
 import os
 from pathlib import Path
 import dj_database_url
+from dotenv import load_dotenv
+
+# Load environment variables from .env file
+load_dotenv()
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -129,8 +133,14 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 # Custom user model
 AUTH_USER_MODEL = 'core.User'
 
-# N8N webhook URL
-N8N_WEBHOOK_URL = os.getenv('N8N_WEBHOOK_URL', 'http://n8n:5678/webhook/scrape')
+# N8N base URL
+N8N_BASE_URL = os.getenv('N8N_BASE_URL', 'http://n8n:5678')
+
+# N8N webscrape URL
+N8N_WEBSCRAPE_URL = N8N_BASE_URL + '/webhook/scrape'
+
+# N8N API key for REST API authentication
+N8N_API_KEY = os.getenv('N8N_API_KEY')
 
 # Logging
 LOGGING = {
