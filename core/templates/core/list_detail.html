@@ -152,6 +152,9 @@ function tableEditor() {
         selectedRows: new Set(),
         selectAll: false,
         isIndeterminate: false,
+        // Column editing
+        editingColumnName: null,
+        tempColumnName: '',
         // Column resizing
         isResizing: false,
         resizingColumnId: null,
@@ -174,6 +177,9 @@ function tableEditor() {
         },
 
         getCellValue(row, column) {
+            if (!row || !row.data || !column || !column.name) {
+                return '';
+            }
             return row.data[column.name] || '';
         },
 
@@ -193,13 +199,15 @@ function tableEditor() {
         },
 
         renderInlineEditor(row, column) {
-            const currentValue = this.getCellValue(row, column);
+            // Debug logging
+            console.log('renderInlineEditor:', { row, column });
+            const currentValue = this.getCellValue(row, column) || '';
 
             switch (column.type) {
                 case 'text':
                     return `<textarea
                         x-model="tempValue"
-                        x-init="tempValue = '${currentValue.replace(/'/g, "\\'")}'"
+                        x-init="tempValue = '${(currentValue || '').replace(/'/g, "\\'")}'"
                         @keydown.enter.stop="saveInlineEdit($el, ${row.id}, ${column.id})"
                         @keydown.escape.stop="cancelInlineEdit($el)"
                         class="w-full px-2 py-1 border border-blue-500 rounded focus:outline-none bg-white"
@@ -210,7 +218,7 @@ function tableEditor() {
                     return `<input
                         type="number"
                         x-model="tempValue"
-                        x-init="tempValue = '${currentValue}'"
+                        x-init="tempValue = '${currentValue || ''}'"
                         @keydown.enter.stop="saveInlineEdit($el, ${row.id}, ${column.id})"
                         @keydown.escape.stop="cancelInlineEdit($el)"
                         class="w-full px-2 py-1 border border-blue-500 rounded focus:outline-none bg-white"
@@ -221,7 +229,7 @@ function tableEditor() {
                         <input
                             type="checkbox"
                             x-model="tempValue"
-                            x-init="tempValue = ${currentValue === 'true' || currentValue === true}"
+                            x-init="tempValue = ${(currentValue === 'true' || currentValue === true)}"
                             @change="saveInlineEdit($el, ${row.id}, ${column.id})"
                             class="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
                         >
@@ -230,14 +238,14 @@ function tableEditor() {
                     return `<input
                         type="date"
                         x-model="tempValue"
-                        x-init="tempValue = '${currentValue}'"
+                        x-init="tempValue = '${currentValue || ''}'"
                         @change="saveInlineEdit($el, ${row.id}, ${column.id})"
                         class="w-full px-2 py-1 border border-blue-500 rounded focus:outline-none bg-white"
                     >`;
                 case 'select':
                     return `<select
                         x-model="tempValue"
-                        x-init="tempValue = '${currentValue}'"
+                        x-init="tempValue = '${currentValue || ''}'"
                         @change="saveInlineEdit($el, ${row.id}, ${column.id})"
                         class="w-full px-2 py-1 border border-blue-500 rounded focus:outline-none bg-white"
                     >
@@ -250,7 +258,7 @@ function tableEditor() {
                     return `<input
                         type="text"
                         x-model="tempValue"
-                        x-init="tempValue = '${currentValue.replace(/'/g, "\\'")}'"
+                        x-init="tempValue = '${(currentValue || '').replace(/'/g, "\\'")}'"
                         @keydown.enter.stop="saveInlineEdit($el, ${row.id}, ${column.id})"
                         @keydown.escape.stop="cancelInlineEdit($el)"
                         class="w-full px-2 py-1 border border-blue-500 rounded focus:outline-none bg-white"
@@ -265,8 +273,20 @@ function tableEditor() {
                                   element.closest('td').querySelector('[x-model="tempValue"]')?.checked;
 
                 // Record the change for undo functionality
-                const oldValue = this.getCellValue({id: rowId}, {id: columnId});
+                const row = this.rows.find(r => r.id === rowId);
+                const column = this.columns.find(c => c.id === columnId);
+                
+                // Debug logging
+                console.log('saveInlineEdit:', { rowId, columnId, row, column, tempValue });
+                
+                const oldValue = row && column ? this.getCellValue(row, column) : '';
                 this.recordChange(rowId, columnId, oldValue, tempValue);
+
+                // Update local data immediately for UI update
+                if (row && column && row.data && column.name) {
+                    row.data[column.name] = tempValue;
+                    this.applyFilters(); // Update filteredRows
+                }
 
                 // Auto-save the change
                 this.debouncedAutoSave(rowId, columnId, tempValue);
@@ -318,7 +338,15 @@ function tableEditor() {
             if (this.currentHistoryIndex >= 0) {
                 const change = this.changeHistory[this.currentHistoryIndex];
 
-                // Revert the change
+                // Update local data immediately
+                const row = this.rows.find(r => r.id === change.rowId);
+                const column = this.columns.find(c => c.id === change.columnId);
+                if (row && column) {
+                    row.data[column.name] = change.oldValue;
+                    this.applyFilters(); // Update filteredRows
+                }
+
+                // Revert the change on server
                 this.debouncedAutoSave(change.rowId, change.columnId, change.oldValue);
 
                 // Move back in history
@@ -365,11 +393,31 @@ function tableEditor() {
             .then(response => {
                 if (!response.ok) {
                     console.error('Auto-save failed:', response.status);
+                    // Revert local change on failure
+                    this.revertLocalChange(rowId, columnId, value);
                 }
             })
             .catch(error => {
                 console.error('Auto-save error:', error);
+                // Revert local change on error
+                this.revertLocalChange(rowId, columnId, value);
             });
+        },
+
+        revertLocalChange(rowId, columnId, originalValue) {
+            // Find the most recent change for this cell and revert to the previous value
+            const recentChange = [...this.changeHistory]
+                .reverse()
+                .find(change => change.rowId === rowId && change.columnId === columnId);
+
+            if (recentChange) {
+                const row = this.rows.find(r => r.id === rowId);
+                const column = this.columns.find(c => c.id === columnId);
+                if (row && column) {
+                    row.data[column.name] = recentChange.oldValue;
+                    this.applyFilters();
+                }
+            }
         },
 
         // Row Selection Methods
@@ -422,35 +470,52 @@ function tableEditor() {
             if (count === 0) return;
 
             if (confirm(`Are you sure you want to delete ${count} selected row${count === 1 ? '' : 's'}? This action cannot be undone.`)) {
-                // This would typically make an HTMX request to delete multiple rows
-                console.log('Delete selected rows:', [...this.selectedRows]);
-                this.clearSelection();
-                // TODO: Implement actual bulk delete via HTMX
+                const selectedIds = [...this.selectedRows];
+                const listId = {{ list.pk }};
+                let completed = 0;
+                const total = selectedIds.length;
+
+                // Delete each row individually
+                selectedIds.forEach(rowId => {
+                    fetch(`/lists/${listId}/rows/delete/`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/x-www-form-urlencoded',
+                            'X-CSRFToken': csrftoken,
+                        },
+                        body: `row_id=${rowId}`
+                    })
+                    .then(response => {
+                        completed++;
+                        if (response.ok) {
+                            // Remove from local data
+                            this.rows = this.rows.filter(row => row.id !== rowId);
+                        } else {
+                            console.error(`Failed to delete row ${rowId}`);
+                        }
+
+                        // Update UI when all requests complete
+                        if (completed === total) {
+                            this.applyFilters();
+                            this.clearSelection();
+                        }
+                    })
+                    .catch(error => {
+                        completed++;
+                        console.error(`Error deleting row ${rowId}:`, error);
+
+                        // Update UI when all requests complete
+                        if (completed === total) {
+                            this.applyFilters();
+                            this.clearSelection();
+                        }
+                    });
+                });
             }
         },
 
         addRow() {
             // HTMX handles the request, response is handled by the event listener below
-        },
-
-        init() {
-            // HTMX event listener for add row response
-            document.addEventListener('htmx:afterRequest', (event) => {
-                if (event.detail.xhr && event.detail.xhr.responseURL &&
-                    event.detail.xhr.responseURL.includes('add-blank-row')) {
-                    try {
-                        const response = JSON.parse(event.detail.xhr.response);
-                        if (response.success && response.row) {
-                            // Add the new row to the data arrays
-                            this.rows.push(response.row);
-                            this.filteredRows.push(response.row);
-                            this.updateSelectAllState();
-                        }
-                    } catch (e) {
-                        console.error('Error parsing add row response:', e);
-                    }
-                }
-            });
         },
 
         insertRowBelow(rowId) {
@@ -459,38 +524,139 @@ function tableEditor() {
             window.location.href = `/lists/${listId}/rows/create/?insert_after=${rowId}`;
         },
 
-        deleteRow(rowId) {
-            // HTMX handles the deletion now - this function is kept for potential future enhancements
-            console.log('Delete row:', rowId);
+
+
+        addNewColumn() {
+            const listId = {{ list.pk }};
+            const defaultName = `Column ${this.columns.length + 1}`;
+            const defaultType = 'text';
+
+            fetch(`/lists/${listId}/columns/create/`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                    'X-CSRFToken': csrftoken,
+                },
+                body: `name=${encodeURIComponent(defaultName)}&column_type=${defaultType}&required=false`
+            })
+            .then(response => {
+                if (response.ok) {
+                    // Reload page to show new column
+                    location.reload();
+                } else {
+                    alert('Error adding column');
+                }
+            })
+            .catch(error => {
+                console.error('Add column error:', error);
+                alert('Error adding column');
+            });
         },
 
-        addColumn() {
-            // Simple prompt for column creation (could be replaced with a modal)
-            const columnName = prompt('Enter column name:');
-            const columnType = prompt('Enter column type (text, number, boolean, date, url, select):', 'text');
+        startEditColumnName(columnId) {
+            this.editingColumnName = columnId;
+        },
 
-            if (columnName && columnType) {
-                // For now, just redirect to refresh the page
-                const listId = {{ list.pk }};
-                window.location.href = `/lists/${listId}/columns/create/?name=${encodeURIComponent(columnName)}&column_type=${columnType}`;
-            }
+        cancelEditColumnName() {
+            this.editingColumnName = null;
+        },
+
+        saveColumnName(columnId, newName) {
+            if (!newName.trim()) return;
+            
+            const listId = {{ list.pk }};
+            fetch(`/lists/${listId}/columns/${columnId}/update/`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                    'X-CSRFToken': csrftoken,
+                },
+                body: `name=${encodeURIComponent(newName.trim())}`
+            })
+            .then(response => {
+                if (response.ok) {
+                    // Update local data
+                    const column = this.columns.find(c => c.id === columnId);
+                    if (column) {
+                        column.name = newName.trim();
+                    }
+                    this.editingColumnName = null;
+                } else {
+                    alert('Error updating column name');
+                }
+            })
+            .catch(error => {
+                console.error('Update column error:', error);
+                alert('Error updating column name');
+            });
         },
 
         editColumn(columnId) {
-            // This would typically open a modal or make an HTMX request
-            console.log('Edit column:', columnId);
+            // For now, just focus on the column name for inline editing
+            this.startEditColumnName(columnId);
         },
 
         deleteColumn(columnId) {
             if (confirm('Are you sure you want to delete this column? This action cannot be undone.')) {
-                // This would typically make an HTMX request to delete the column
-                console.log('Delete column:', columnId);
+                const listId = {{ list.pk }};
+                fetch(`/lists/${listId}/columns/${columnId}/delete/`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                        'X-CSRFToken': csrftoken,
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        // Remove column from local data and reload page
+                        location.reload();
+                    } else {
+                        alert(data.error || 'Error deleting column');
+                    }
+                })
+                .catch(error => {
+                    console.error('Delete column error:', error);
+                    alert('Error deleting column');
+                });
             }
         },
 
         insertColumn(columnId, position) {
-            // This would typically make an HTMX request to insert a column
-            console.log('Insert column:', columnId, position);
+            const listId = {{ list.pk }};
+            const column = this.columns.find(c => c.id === columnId);
+            const currentIndex = this.columns.findIndex(c => c.id === columnId);
+            
+            let newName = `Column ${this.columns.length + 1}`;
+            let newOrder;
+            
+            if (position === 'left') {
+                newOrder = currentIndex;
+            } else {
+                newOrder = currentIndex + 1;
+            }
+            
+            // Create new column with specific order
+            fetch(`/lists/${listId}/columns/create/`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                    'X-CSRFToken': csrftoken,
+                },
+                body: `name=${encodeURIComponent(newName)}&column_type=text&required=false&order=${newOrder}`
+            })
+            .then(response => {
+                if (response.ok) {
+                    // Reload page to show new column in correct position
+                    location.reload();
+                } else {
+                    alert('Error inserting column');
+                }
+            })
+            .catch(error => {
+                console.error('Insert column error:', error);
+                alert('Error inserting column');
+            });
         },
 
         sortByColumn(columnId) {
@@ -603,14 +769,16 @@ function tableEditor() {
             // HTMX event listener for add row response
             document.addEventListener('htmx:afterRequest', (event) => {
                 if (event.detail.xhr && event.detail.xhr.responseURL &&
-                    event.detail.xhr.responseURL.includes('add-blank-row')) {
+                    event.detail.xhr.responseURL.includes('add-blank')) {
                     try {
                         const response = JSON.parse(event.detail.xhr.response);
+                        console.log('Add row response:', response);
                         if (response.success && response.row) {
                             // Add the new row to the data arrays
                             this.rows.push(response.row);
                             this.filteredRows.push(response.row);
                             this.updateSelectAllState();
+                            console.log('Row added. New rows count:', this.rows.length);
                         }
                     } catch (e) {
                         console.error('Error parsing add row response:', e);
@@ -637,180 +805,9 @@ function tableEditor() {
     }
 }
 
-// Global variables
-let currentEditCell = null;
-let currentEditRowId = null;
-let currentEditColumn = null;
-let currentEditType = null;
-
-
-
-// Cell editing functions
-function editCell(rowId, columnName, columnType, cellElement) {
-    // Set global variables
-    currentEditRowId = rowId;
-    currentEditColumn = columnName;
-    currentEditType = columnType;
-
-    // Get current value
-    let currentValue = '';
-    if (columnType === 'boolean') {
-        const checkbox = cellElement.querySelector('input[type="checkbox"]');
-        currentValue = checkbox ? checkbox.checked : false;
-    } else {
-        currentValue = cellElement.textContent.trim();
-    }
-
-    // Create input HTML based on type
-    let inputHtml = '';
-    if (columnType === 'boolean') {
-        inputHtml = `<input type="checkbox" id="edit-input" ${currentValue ? 'checked' : ''} class="rounded border-gray-300 text-blue-600 focus:ring-blue-500">`;
-    } else {
-        inputHtml = `<input type="text" id="edit-input" value="${currentValue}" class="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">`;
-    }
-
-    // Show modal
-    const modal = document.getElementById('edit-modal');
-    const content = document.getElementById('edit-modal-content');
-    const title = document.getElementById('edit-modal-title');
-
-    title.textContent = `Edit ${columnName}`;
-    content.innerHTML = inputHtml;
-    modal.classList.remove('hidden');
-
-    // Focus the input
-    setTimeout(() => {
-        const input = document.getElementById('edit-input');
-        if (input) {
-            input.focus();
-            if (input.type !== 'checkbox') {
-                input.select();
-            }
-        }
-    }, 100);
-}
-
-// Save cell edit
-function saveCellEdit() {
-    const input = document.getElementById('edit-input');
-    if (!input) return;
-
-    let value;
-    if (currentEditType === 'boolean') {
-        value = input.checked;
-    } else {
-        value = input.value;
-    }
-
-    // Send AJAX request to update the cell
-    const listId = {{ list.pk }};
-    fetch(`/lists/${listId}/rows/update/`, {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/x-www-form-urlencoded',
-            'X-CSRFToken': csrftoken,
-        },
-        body: `row_id=${currentEditRowId}&column=${encodeURIComponent(currentEditColumn)}&value=${encodeURIComponent(value)}&type=${currentEditType}`
-    })
-    .then(response => {
-        if (response.ok) {
-            location.reload();
-        } else {
-            alert('Error updating cell');
-        }
-    });
-
-    closeEditModal();
-}
-
-// Close edit modal
-function closeEditModal() {
-    document.getElementById('edit-modal').classList.add('hidden');
-    currentEditCell = null;
-    currentEditRowId = null;
-    currentEditColumn = null;
-    currentEditType = null;
-}
-
-// Add new row
-function addNewRow() {
-    const listId = {{ list.pk }};
-    // Redirect to the row creation page
-    window.location.href = `/lists/${listId}/rows/create/`;
-}
-
-// Delete row
-function deleteRow(rowId) {
-    if (!confirm('Are you sure you want to delete this row?')) return;
-
-    const listId = {{ list.pk }};
-    fetch(`/lists/${listId}/rows/delete/`, {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/x-www-form-urlencoded',
-            'X-CSRFToken': csrftoken,
-        },
-        body: `row_id=${rowId}`
-    })
-    .then(response => {
-        if (response.ok) {
-            location.reload();
-        } else {
-            alert('Error deleting row');
-        }
-    });
-}
-
 // CSRF protection enabled
 
-// Column resizing functionality
-function setupColumnResizing() {
-    const table = document.getElementById('notion-table');
-    const ths = table.querySelectorAll('th.resizable');
 
-    ths.forEach(th => {
-        th.addEventListener('mousedown', function(e) {
-            if (e.offsetX > th.offsetWidth - 10) { // Only resize if clicking on the right edge
-                isResizing = true;
-                currentResizingTh = th;
-                startX = e.pageX;
-                startWidth = th.offsetWidth;
-                document.body.style.cursor = 'col-resize';
-                document.body.style.userSelect = 'none';
-            }
-        });
-    });
-
-    document.addEventListener('mousemove', function(e) {
-        if (isResizing && currentResizingTh) {
-            const newWidth = startWidth + (e.pageX - startX);
-            if (newWidth >= 80 && newWidth <= 400) { // Min 80px, max 400px
-                currentResizingTh.style.width = newWidth + 'px';
-                // Save to localStorage for persistence
-                const columnId = currentResizingTh.dataset.columnId;
-                localStorage.setItem(`column-width-${columnId}`, newWidth);
-            }
-        }
-    });
-
-    document.addEventListener('mouseup', function() {
-        if (isResizing) {
-            isResizing = false;
-            currentResizingTh = null;
-            document.body.style.cursor = '';
-            document.body.style.userSelect = '';
-        }
-    });
-
-    // Load saved widths on page load
-    ths.forEach(th => {
-        const columnId = th.dataset.columnId;
-        const savedWidth = localStorage.getItem(`column-width-${columnId}`);
-        if (savedWidth) {
-            th.style.width = savedWidth + 'px';
-        }
-    });
-}
 
 
 

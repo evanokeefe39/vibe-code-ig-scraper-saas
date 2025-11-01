@@ -252,16 +252,16 @@ def list_create(request):
             # Create default columns
             ListColumn.objects.create(
                 user_list=user_list,
-                name='Source',
+                name='source',
                 column_type='text',
                 description='Where this data came from',
                 order=0
             )
             ListColumn.objects.create(
                 user_list=user_list,
-                name='Created At',
+                name='last_updated',
                 column_type='date',
-                description='When this entry was created',
+                description='When this entry was last updated',
                 order=1
             )
 
@@ -534,10 +534,13 @@ def delete_row(request, pk):
         row_id = request.POST.get('row_id')
 
         try:
+            # Convert row_id to int if it's a string
+            if isinstance(row_id, str):
+                row_id = int(row_id)
             row = ListRow.objects.get(pk=row_id, user_list=list_obj)
             row.delete()
             return JsonResponse({'success': True})
-        except ListRow.DoesNotExist:
+        except (ListRow.DoesNotExist, ValueError):
             return JsonResponse({'success': False, 'error': 'Row not found'})
     return JsonResponse({'success': False, 'error': 'Invalid request'})
 
