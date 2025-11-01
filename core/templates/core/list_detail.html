@@ -174,10 +174,6 @@ function tableEditor() {
         },
 
         getCellValue(row, column) {
-            // Check for unsaved changes first
-            if (this.unsavedChanges[row.id] && this.unsavedChanges[row.id][column.id] !== undefined) {
-                return this.unsavedChanges[row.id][column.id];
-            }
             return row.data[column.name] || '';
         },
 
@@ -434,8 +430,27 @@ function tableEditor() {
         },
 
         addRow() {
-            // HTMX handles the row addition now - this function is kept for potential future enhancements
-            console.log('Add row');
+            // HTMX handles the request, response is handled by the event listener below
+        },
+
+        init() {
+            // HTMX event listener for add row response
+            document.addEventListener('htmx:afterRequest', (event) => {
+                if (event.detail.xhr && event.detail.xhr.responseURL &&
+                    event.detail.xhr.responseURL.includes('add-blank-row')) {
+                    try {
+                        const response = JSON.parse(event.detail.xhr.response);
+                        if (response.success && response.row) {
+                            // Add the new row to the data arrays
+                            this.rows.push(response.row);
+                            this.filteredRows.push(response.row);
+                            this.updateSelectAllState();
+                        }
+                    } catch (e) {
+                        console.error('Error parsing add row response:', e);
+                    }
+                }
+            });
         },
 
         insertRowBelow(rowId) {
@@ -582,6 +597,42 @@ function tableEditor() {
             // Restore cursor and text selection
             document.body.style.userSelect = '';
             document.body.style.cursor = '';
+        },
+
+        init() {
+            // HTMX event listener for add row response
+            document.addEventListener('htmx:afterRequest', (event) => {
+                if (event.detail.xhr && event.detail.xhr.responseURL &&
+                    event.detail.xhr.responseURL.includes('add-blank-row')) {
+                    try {
+                        const response = JSON.parse(event.detail.xhr.response);
+                        if (response.success && response.row) {
+                            // Add the new row to the data arrays
+                            this.rows.push(response.row);
+                            this.filteredRows.push(response.row);
+                            this.updateSelectAllState();
+                        }
+                    } catch (e) {
+                        console.error('Error parsing add row response:', e);
+                    }
+                }
+            });
+
+            // HTMX event listener for delete row response
+            document.addEventListener('htmx:afterRequest', (event) => {
+                if (event.detail.xhr && event.detail.xhr.responseURL &&
+                    event.detail.xhr.responseURL.includes('delete')) {
+                    try {
+                        const response = JSON.parse(event.detail.xhr.response);
+                        if (response.success) {
+                            // Row was deleted successfully, HTMX already removed it from DOM
+                            // No additional action needed for data arrays since HTMX handles DOM updates
+                        }
+                    } catch (e) {
+                        // HTMX delete responses might not be JSON, ignore parsing errors
+                    }
+                }
+            });
         }
     }
 }

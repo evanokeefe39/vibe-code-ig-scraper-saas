@@ -567,15 +567,12 @@ def add_blank_row(request, pk):
             data=row_data
         )
 
-        # Return HTML snippet for the new row
-        from django.template.loader import render_to_string
-        context = {
-            'list': list_obj,
-            'row': new_row,
-            'columns': columns,
+        # Return JSON data for the new row
+        row_json = {
+            'id': new_row.pk,
+            'data': row_data
         }
-        html = render_to_string('snippets/_table_row.html', context, request)
-        return HttpResponse(html)
+        return JsonResponse({'success': True, 'row': row_json})
 
     return JsonResponse({'success': False, 'error': 'Invalid request'})
 

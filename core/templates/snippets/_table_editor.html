@@ -5,6 +5,7 @@ Built according to table_editor_spec.md
 
 <div
     x-data="tableEditor()"
+    x-init="init()"
     class="bg-white rounded-lg shadow-md overflow-hidden"
     hx-boost="true"
     @keydown.ctrl.z.prevent="undo()"
@@ -247,8 +248,7 @@ Built according to table_editor_spec.md
                         <button @click="addRow()"
                                 hx-post="{% url 'add_blank_row' list.pk %}"
                                 hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'
-                                hx-target="closest tr"
-                                hx-swap="beforebegin"
+                                hx-swap="none"
                                 class="text-blue-600 hover:text-blue-800 transition-colors p-1 rounded hover:bg-blue-50">
                             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/>
@@ -259,8 +259,7 @@ Built according to table_editor_spec.md
                         <button @click="addRow()"
                                 hx-post="{% url 'add_blank_row' list.pk %}"
                                 hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'
-                                hx-target="closest tr"
-                                hx-swap="beforebegin"
+                                hx-swap="none"
                                 class="inline-flex items-center text-blue-600 hover:text-blue-800 transition-colors font-medium text-sm">
                             <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/>
