@@ -33,16 +33,17 @@ Built according to table_editor_spec.md
                 </div>
 
                 <!-- Save Changes Button -->
-                <button
-                    x-show="hasUnsavedChanges"
-                    @click="saveChanges()"
-                    :disabled="isSaving"
-                    class="inline-flex items-center px-4 py-2 bg-green-600 hover:bg-green-700 disabled:bg-green-400 text-white text-sm font-medium rounded-md transition-colors"
-                    hx-post="{% url 'table_save' list.pk %}"
-                    hx-vals="js:{data: JSON.stringify(unsavedChanges)}"
-                    hx-target="#table-editor"
-                    hx-swap="innerHTML"
-                >
+                 <button
+                     x-show="hasUnsavedChanges"
+                     @click="saveChanges()"
+                     :disabled="isSaving"
+                     class="inline-flex items-center px-4 py-2 bg-green-600 hover:bg-green-700 disabled:bg-green-400 text-white text-sm font-medium rounded-md transition-colors"
+                     hx-post="{% url 'table_save' list.pk %}"
+                     hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'
+                     :hx-vals="JSON.stringify({data: unsavedChanges})"
+                     hx-target="#table-editor"
+                     hx-swap="innerHTML"
+                 >
                     <svg x-show="!isSaving" class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
                     </svg>
@@ -109,10 +110,10 @@ Built according to table_editor_spec.md
                                 <div class="relative" x-data="{ open: false }">
                                     <button
                                         @click="open = !open"
-                                        class="p-1 rounded hover:bg-gray-200 transition-colors opacity-0 group-hover:opacity-100"
+                                        class="p-1 rounded hover:bg-gray-200 transition-colors"
                                     >
                                         <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 5v.01M12 12v.01M12 19v.01"/>
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
                                         </svg>
                                     </button>
 
@@ -152,11 +153,14 @@ Built according to table_editor_spec.md
                                         </div>
                                     </div>
                                 </div>
-                            </div>
+                             </div>
 
-                            <!-- Column Resize Handle -->
-                            <div class="column-resize-handle"></div>
-                        </th>
+                             <!-- Column Resize Handle -->
+                             <div
+                                 class="column-resize-handle absolute right-0 top-0 bottom-0 w-1 bg-gray-300 cursor-col-resize opacity-0 hover:opacity-100 transition-opacity"
+                                 @mousedown="startColumnResize($event, column.id)"
+                             ></div>
+                         </th>
                     </template>
 
                     <!-- Add Column Button -->
@@ -183,7 +187,7 @@ Built according to table_editor_spec.md
                             <input
                                 type="text"
                                 :placeholder="`Filter ${column.name}...`"
-                                x-model="columnFilters[column.id]"
+                                x-model="columnFilters[column.id.toString()]"
                                 @input.debounce.300ms="applyFilters()"
                                 class="w-full px-2 py-1 text-xs border border-gray-300 rounded focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
                             >
@@ -199,12 +203,23 @@ Built according to table_editor_spec.md
                     <tr class="hover:bg-gray-50" :class="{ 'bg-yellow-50': hasUnsavedChanges && unsavedChanges[row.id], 'bg-blue-50': selectedRows.has(row.id) }">
                         <!-- Selection Column -->
                         <td class="w-12 px-3 py-3 text-center">
-                            <input
-                                type="checkbox"
-                                :checked="selectedRows.has(row.id)"
-                                @change="toggleRowSelection(row.id)"
-                                class="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
-                            >
+                            <div class="flex items-center justify-center space-x-1">
+                                <input
+                                    type="checkbox"
+                                    :checked="selectedRows.has(row.id)"
+                                    @change="toggleRowSelection(row.id)"
+                                    class="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                                >
+                                <button
+                                    @click="insertRowBelow(row.id)"
+                                    class="text-blue-500 hover:text-blue-700 transition-colors"
+                                    title="Insert row below"
+                                >
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/>
+                                    </svg>
+                                </button>
+                            </div>
                         </td>
 
                         <!-- Data Cells -->
@@ -303,18 +318,7 @@ Built according to table_editor_spec.md
         </div>
 
         <!-- Default Footer -->
-        <div class="flex justify-between items-center">
-            <button
-                @click="addRow()"
-                x-show="selectedRows.size === 0"
-                class="inline-flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-md transition-colors"
-            >
-                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/>
-                </svg>
-                Add Row
-            </button>
-
+        <div class="flex justify-end items-center">
             <div class="text-sm text-gray-500">
                 <span x-text="`Showing ${filteredRows.length} of ${rows.length} rows`"></span>
             </div>
@@ -323,314 +327,3 @@ Built according to table_editor_spec.md
 </div>
 
 
-
-<script>
-function tableEditor() {
-    return {
-        // Data
-        columns: {{ columns_json|safe }},
-        rows: {{ rows_json|safe }},
-        filteredRows: {{ rows_json|safe }},
-
-        // State
-        unsavedChanges: {},
-        isSaving: false,
-        globalSearch: '',
-        columnFilters: {},
-        selectedRows: new Set(),
-        selectAll: false,
-        isIndeterminate: false,
-
-        // Computed
-        hasUnsavedChanges() {
-            return Object.keys(this.unsavedChanges).length > 0;
-        },
-
-        isCellUnsaved(rowId, columnId) {
-            return this.unsavedChanges[rowId] && this.unsavedChanges[rowId][columnId] !== undefined;
-        },
-
-        // Methods
-        renderCellValue(row, column) {
-            const value = this.getCellValue(row, column);
-            return this.formatCellValue(value, column);
-        },
-
-        getCellValue(row, column) {
-            // Check for unsaved changes first
-            if (this.unsavedChanges[row.id] && this.unsavedChanges[row.id][column.id] !== undefined) {
-                return this.unsavedChanges[row.id][column.id];
-            }
-            return row.data[column.name] || '';
-        },
-
-        formatCellValue(value, column) {
-            if (!value) return '<span class="text-gray-400 italic">Empty</span>';
-
-            switch (column.type) {
-                case 'boolean':
-                    return `<input type="checkbox" ${value ? 'checked' : ''} disabled class="rounded border-gray-300 text-blue-600">`;
-                case 'select':
-                    return `<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">${value}</span>`;
-                case 'url':
-                    return `<a href="${value}" target="_blank" class="text-blue-600 hover:text-blue-800 underline">${value.length > 30 ? value.substring(0, 30) + '...' : value}</a>`;
-                default:
-                    return value;
-            }
-        },
-
-        renderInlineEditor(row, column) {
-            const currentValue = this.getCellValue(row, column);
-
-            switch (column.type) {
-                case 'text':
-                    return `<textarea
-                        x-model="tempValue"
-                        x-init="tempValue = '${currentValue.replace(/'/g, "\\'")}'"
-                        @keydown.enter.stop="saveInlineEdit($el, ${row.id}, ${column.id})"
-                        @keydown.escape.stop="cancelInlineEdit($el)"
-                        class="w-full px-2 py-1 border border-blue-500 rounded focus:outline-none bg-white"
-                        rows="2"
-                        placeholder="Enter text..."
-                    ></textarea>`;
-                case 'number':
-                    return `<input
-                        type="number"
-                        x-model="tempValue"
-                        x-init="tempValue = '${currentValue}'"
-                        @keydown.enter.stop="saveInlineEdit($el, ${row.id}, ${column.id})"
-                        @keydown.escape.stop="cancelInlineEdit($el)"
-                        class="w-full px-2 py-1 border border-blue-500 rounded focus:outline-none bg-white"
-                        placeholder="Enter number..."
-                    >`;
-                case 'boolean':
-                    return `<div class="flex items-center justify-center">
-                        <input
-                            type="checkbox"
-                            x-model="tempValue"
-                            x-init="tempValue = ${currentValue === 'true' || currentValue === true}"
-                            @change="saveInlineEdit($el, ${row.id}, ${column.id})"
-                            class="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
-                        >
-                    </div>`;
-                case 'date':
-                    return `<input
-                        type="date"
-                        x-model="tempValue"
-                        x-init="tempValue = '${currentValue}'"
-                        @change="saveInlineEdit($el, ${row.id}, ${column.id})"
-                        class="w-full px-2 py-1 border border-blue-500 rounded focus:outline-none bg-white"
-                    >`;
-                case 'select':
-                    return `<select
-                        x-model="tempValue"
-                        x-init="tempValue = '${currentValue}'"
-                        @change="saveInlineEdit($el, ${row.id}, ${column.id})"
-                        class="w-full px-2 py-1 border border-blue-500 rounded focus:outline-none bg-white"
-                    >
-                        <option value="">Select...</option>
-                        <option value="Option 1">Option 1</option>
-                        <option value="Option 2">Option 2</option>
-                        <option value="Option 3">Option 3</option>
-                    </select>`;
-                default:
-                    return `<input
-                        type="text"
-                        x-model="tempValue"
-                        x-init="tempValue = '${currentValue.replace(/'/g, "\\'")}'"
-                        @keydown.enter.stop="saveInlineEdit($el, ${row.id}, ${column.id})"
-                        @keydown.escape.stop="cancelInlineEdit($el)"
-                        class="w-full px-2 py-1 border border-blue-500 rounded focus:outline-none bg-white"
-                        placeholder="Enter value..."
-                    >`;
-            }
-        },
-
-        saveInlineEdit(element, rowId, columnId) {
-            try {
-                const tempValue = element.closest('td').querySelector('[x-model="tempValue"]')?.value ||
-                                 element.closest('td').querySelector('[x-model="tempValue"]')?.checked;
-
-                // Initialize unsaved changes for this row if needed
-                if (!this.unsavedChanges[rowId]) {
-                    this.unsavedChanges[rowId] = {};
-                }
-
-                // Store the change
-                this.unsavedChanges[rowId][columnId] = tempValue;
-
-                // Exit edit mode
-                element.closest('td')._x_dataStack[0].editing = false;
-            } catch (error) {
-                console.error('Error saving inline edit:', error);
-                // Force exit edit mode
-                element.closest('td')._x_dataStack[0].editing = false;
-            }
-        },
-
-        cancelInlineEdit(element) {
-            try {
-                // Just exit edit mode without saving
-                element.closest('td')._x_dataStack[0].editing = false;
-            } catch (error) {
-                console.error('Error canceling inline edit:', error);
-                // Force exit edit mode
-                element.closest('td')._x_dataStack[0].editing = false;
-            }
-        },
-
-        saveChanges() {
-            this.isSaving = true;
-            // HTMX will handle the actual save via the button's hx-post
-        },
-
-        // Row Selection Methods
-        toggleRowSelection(rowId) {
-            if (this.selectedRows.has(rowId)) {
-                this.selectedRows.delete(rowId);
-            } else {
-                this.selectedRows.add(rowId);
-            }
-            this.updateSelectAllState();
-        },
-
-        toggleSelectAll() {
-            if (this.selectAll) {
-                // Deselect all
-                this.selectedRows.clear();
-            } else {
-                // Select all visible rows
-                this.filteredRows.forEach(row => {
-                    this.selectedRows.add(row.id);
-                });
-            }
-            this.updateSelectAllState();
-        },
-
-        updateSelectAllState() {
-            const visibleRowIds = new Set(this.filteredRows.map(row => row.id));
-            const selectedVisibleRows = [...this.selectedRows].filter(id => visibleRowIds.has(id));
-
-            if (selectedVisibleRows.length === 0) {
-                this.selectAll = false;
-                this.isIndeterminate = false;
-            } else if (selectedVisibleRows.length === this.filteredRows.length) {
-                this.selectAll = true;
-                this.isIndeterminate = false;
-            } else {
-                this.selectAll = false;
-                this.isIndeterminate = true;
-            }
-        },
-
-        clearSelection() {
-            this.selectedRows.clear();
-            this.selectAll = false;
-            this.isIndeterminate = false;
-        },
-
-        deleteSelectedRows() {
-            const count = this.selectedRows.size;
-            if (count === 0) return;
-
-            if (confirm(`Are you sure you want to delete ${count} selected row${count === 1 ? '' : 's'}? This action cannot be undone.`)) {
-                // This would typically make an HTMX request to delete multiple rows
-                console.log('Delete selected rows:', [...this.selectedRows]);
-                this.clearSelection();
-                // TODO: Implement actual bulk delete via HTMX
-            }
-        },
-
-        addRow() {
-            // This would typically make an HTMX request to add a row
-            console.log('Add row clicked');
-        },
-
-        deleteRow(rowId) {
-            if (confirm('Are you sure you want to delete this row?')) {
-                // This would typically make an HTMX request to delete the row
-                console.log('Delete row:', rowId);
-            }
-        },
-
-        addColumn() {
-            // This would typically open a modal or make an HTMX request
-            console.log('Add column clicked');
-        },
-
-        editColumn(columnId) {
-            // This would typically open a modal or make an HTMX request
-            console.log('Edit column:', columnId);
-        },
-
-        deleteColumn(columnId) {
-            if (confirm('Are you sure you want to delete this column? This action cannot be undone.')) {
-                // This would typically make an HTMX request to delete the column
-                console.log('Delete column:', columnId);
-            }
-        },
-
-        insertColumn(columnId, position) {
-            // This would typically make an HTMX request to insert a column
-            console.log('Insert column:', columnId, position);
-        },
-
-        sortByColumn(columnId) {
-            if (this.sortedColumn === columnId) {
-                this.sortDirection = this.sortDirection === 'asc' ? 'desc' : 'asc';
-            } else {
-                this.sortedColumn = columnId;
-                this.sortDirection = 'asc';
-            }
-            this.applySorting();
-        },
-
-        applySorting() {
-            if (!this.sortedColumn) return;
-
-            const column = this.columns.find(c => c.id === this.sortedColumn);
-            if (!column) return;
-
-            this.filteredRows.sort((a, b) => {
-                const aVal = this.getCellValue(a, column);
-                const bVal = this.getCellValue(b, column);
-
-                let result = 0;
-                if (aVal < bVal) result = -1;
-                if (aVal > bVal) result = 1;
-
-                return this.sortDirection === 'asc' ? result : -result;
-            });
-        },
-
-        applyFilters() {
-            this.filteredRows = this.rows.filter(row => {
-                // Global search
-                if (this.globalSearch) {
-                    const searchTerm = this.globalSearch.toLowerCase();
-                    const rowText = Object.values(row.data).join(' ').toLowerCase();
-                    if (!rowText.includes(searchTerm)) return false;
-                }
-
-                // Column filters
-                for (const [columnId, filterValue] of Object.entries(this.columnFilters)) {
-                    if (!filterValue) continue;
-
-                    const column = this.columns.find(c => c.id === columnId);
-                    if (!column) continue;
-
-                    const cellValue = this.getCellValue(row, column);
-                    if (!cellValue || !cellValue.toString().toLowerCase().includes(filterValue.toLowerCase())) {
-                        return false;
-                    }
-                }
-
-                return true;
-            });
-
-            this.applySorting();
-            this.updateSelectAllState(); // Update selection state when filters change
-        }
-    }
-}
-</script>

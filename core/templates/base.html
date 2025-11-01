@@ -7,6 +7,10 @@
     {% csrf_token %}
     <title>{% block title %}Vibe Scraper SaaS{% endblock %}</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <!-- HTMX for dynamic interactions -->
+    <script src="https://unpkg.com/htmx.org@1.9.10"></script>
+    <!-- Alpine.js for reactive components -->
+    <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
     <script>
         tailwind.config = {
             theme: {

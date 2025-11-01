@@ -226,8 +226,8 @@ def list_detail(request, pk):
         'list': list_obj,
         'columns': columns,
         'rows': rows,
-        'columns_json': columns_data,
-        'rows_json': rows_data
+        'columns_json': json.dumps(columns_data),
+        'rows_json': json.dumps(rows_data)
     })
 
 def list_create(request):
@@ -296,6 +296,42 @@ def list_column_create(request, pk):
                 order=order,
                 options=options
             )
+
+            # Check if this is an HTMX request
+            if request.headers.get('HX-Request'):
+                # Re-render the table editor with updated data
+                columns = list_obj.columns.all().order_by('order')
+                rows = list_obj.rows.all()
+
+                # Serialize data for Alpine.js table editor
+                columns_data = []
+                for column in columns:
+                    columns_data.append({
+                        'id': column.pk,
+                        'name': column.name,
+                        'type': column.column_type,
+                        'options': column.options or {}
+                    })
+
+                rows_data = []
+                for row in rows:
+                    rows_data.append({
+                        'id': row.pk,
+                        'data': row.data or {}
+                    })
+
+                context = {
+                    'list': list_obj,
+                    'columns': columns,
+                    'rows': rows,
+                    'columns_json': columns_data,
+                    'rows_json': rows_data
+                }
+
+                from django.template.loader import render_to_string
+                html = render_to_string('snippets/_table_editor.html', context, request)
+                return HttpResponse(html)
+
             messages.success(request, 'Column added successfully!')
             return JsonResponse({'success': True})
     return JsonResponse({'success': False})
@@ -331,10 +367,66 @@ def list_row_create(request, pk):
             else:
                 row_data[column.name] = value or None
 
-        ListRow.objects.create(
-            user_list=list_obj,
-            data=row_data
-        )
+        # Handle insert_after parameter for positioning
+        insert_after = request.POST.get('insert_after')
+        if insert_after:
+            try:
+                after_row = ListRow.objects.get(pk=int(insert_after), user_list=list_obj)
+                # For now, just create at the end. Could implement proper ordering later
+                ListRow.objects.create(
+                    user_list=list_obj,
+                    data=row_data
+                )
+            except (ListRow.DoesNotExist, ValueError):
+                ListRow.objects.create(
+                    user_list=list_obj,
+                    data=row_data
+                )
+        else:
+            ListRow.objects.create(
+                user_list=list_obj,
+                data=row_data
+            )
+
+        # Check if this is an HTMX request
+        if request.headers.get('HX-Request'):
+            # Re-render the table editor with updated data
+            columns = list_obj.columns.all().order_by('order')
+            rows = list_obj.rows.all()
+
+            # Serialize data for Alpine.js table editor
+            columns_data = []
+            for column in columns:
+                columns_data.append({
+                    'id': column.pk,
+                    'name': column.name,
+                    'type': column.column_type,
+                    'options': column.options or {}
+                })
+
+            rows_data = []
+            for row in rows:
+                # Ensure data is a dict and handle None values properly
+                row_data = row.data or {}
+                # Convert any None values to None (they should already be None, but ensure consistency)
+                cleaned_data = {k: v for k, v in row_data.items()}
+                rows_data.append({
+                    'id': row.pk,
+                    'data': cleaned_data
+                })
+
+            context = {
+                'list': list_obj,
+                'columns': columns,
+                'rows': rows,
+                'columns_json': json.dumps(columns_data),
+                'rows_json': json.dumps(rows_data)
+            }
+
+            from django.template.loader import render_to_string
+            html = render_to_string('snippets/_table_editor.html', context, request)
+            return HttpResponse(html)
+
         messages.success(request, 'Row added successfully!')
         return redirect('list_detail', pk=pk)
 
@@ -456,6 +548,8 @@ def table_save(request, pk):
         list_obj = get_object_or_404(UserList, pk=pk, user__id=1)
         data = json.loads(request.POST.get('data', '{}'))
 
+        logger.info(f"Table save request for list {pk} with data: {data}")
+
         updated_rows = 0
 
         # Process each row's changes
@@ -485,18 +579,56 @@ def table_save(request, pk):
                 row.data = row_data
                 row.save()
                 updated_rows += 1
+                logger.info(f"Updated row {row_id} with changes: {changes}")
 
             except ListRow.DoesNotExist:
+                logger.warning(f"Row {row_id} does not exist")
                 continue  # Skip rows that don't exist
 
-        messages.success(request, f'Successfully saved {updated_rows} row(s)')
-        return JsonResponse({'success': True, 'updated_rows': updated_rows})
+        logger.info(f"Successfully updated {updated_rows} rows")
 
-    except json.JSONDecodeError:
-        return JsonResponse({'success': False, 'error': 'Invalid data format'})
+        # Re-render the table editor with updated data
+        columns = list_obj.columns.all().order_by('order')
+        rows = list_obj.rows.all()
+
+        # Serialize data for Alpine.js table editor
+        columns_data = []
+        for column in columns:
+            columns_data.append({
+                'id': column.pk,
+                'name': column.name,
+                'type': column.column_type,
+                'options': column.options or {}
+            })
+
+        rows_data = []
+        for row in rows:
+            rows_data.append({
+                'id': row.pk,
+                'data': row.data or {}
+            })
+
+        context = {
+            'list': list_obj,
+            'columns': columns,
+            'rows': rows,
+            'columns_json': columns_data,
+            'rows_json': rows_data
+        }
+
+        from django.template.loader import render_to_string
+        html = render_to_string('snippets/_table_editor.html', context, request)
+        logger.info(f"Rendered HTML response, length: {len(html)}")
+        return HttpResponse(html)
+
+    except json.JSONDecodeError as e:
+        logger.error(f"JSON decode error: {e}")
+        return HttpResponse('<div class="text-red-600">Error: Invalid data format</div>', status=400)
     except Exception as e:
         logger.error(f"Error saving table data: {e}")
-        return JsonResponse({'success': False, 'error': 'Failed to save data'})
+        import traceback
+        logger.error(traceback.format_exc())
+        return HttpResponse('<div class="text-red-600">Error: Failed to save data</div>', status=500)
 
 def update_column(request, pk, column_id):
     if request.method == 'POST':
