@@ -2,10 +2,12 @@
 
 {% block title %}{{ list.name }} - Vibe Scraper SaaS{% endblock %}
 
+{% block footer %}{% endblock %}
+
 {% block content %}
 <!-- CSRF protection enabled -->
 
-<div class="max-w-7xl mx-auto px-4 py-8">
+<div class="w-full max-w-screen-2xl mx-auto px-4 py-8">
     <div class="mb-8">
         <div class="flex justify-between items-start">
             <div>
@@ -20,15 +22,6 @@
                    class="inline-flex items-center px-4 py-2 bg-gray-600 hover:bg-gray-700 text-white font-semibold rounded-lg transition-colors duration-200">
                     ← Back to Lists
                 </a>
-                {% if rows %}
-                <a href="{% url 'export_list_csv' list.pk %}"
-                   class="inline-flex items-center px-4 py-2 bg-green-600 hover:bg-green-700 text-white font-semibold rounded-lg transition-colors duration-200">
-                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
-                    </svg>
-                    Export CSV
-                </a>
-                {% endif %}
                 <button onclick="showDeleteListModal()"
                         class="inline-flex items-center px-4 py-2 bg-red-600 hover:bg-red-700 text-white font-semibold rounded-lg transition-colors duration-200">
                     <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -41,142 +34,38 @@
     </div>
 
     <div class="bg-white rounded-lg shadow-md overflow-hidden">
-        <div class="overflow-x-auto">
+        <div class="table-container">
             <table id="notion-table" class="min-w-full divide-y divide-gray-200">
-                <thead class="bg-gray-50">
-                    <tr>
-                        {% for column in columns %}
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border-r border-gray-200 relative group column-header" data-column-id="{{ column.pk }}">
-                            <div class="flex items-center justify-between">
-                                <span class="cursor-pointer hover:text-gray-700 column-name" onclick="toggleColumnDropdown({{ column.pk }})">
-                                    {{ column.name }}
-                                    {% if column.required %}<span class="text-red-500 ml-1">*</span>{% endif %}
-                                </span>
-                                <span class="text-xs text-gray-400 ml-2">({{ column.get_column_type_display }})</span>
-                                <button onclick="toggleColumnDropdown({{ column.pk }})" class="ml-2 opacity-0 group-hover:opacity-100 p-1 rounded hover:bg-gray-200 transition-opacity">
-                                    <svg class="w-3 h-3 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
-                                    </svg>
-                                </button>
-                            </div>
-
-                            <!-- Column Dropdown -->
-                            <div id="column-dropdown-{{ column.pk }}" class="absolute bottom-full left-0 mb-1 w-64 bg-white border border-gray-200 rounded-md shadow-lg z-20 hidden column-dropdown">
-                                <div class="py-2">
-                                    <!-- Edit Name -->
-                                    <div class="px-4 py-2 border-b border-gray-100">
-                                        <div class="flex items-center space-x-2">
-                                            <span class="text-sm text-gray-600">✏️</span>
-                                            <input type="text" id="column-name-input-{{ column.pk }}"
-                                                   class="flex-1 text-sm border border-gray-300 rounded px-2 py-1 focus:outline-none focus:border-blue-500"
-                                                   value="{{ column.name }}"
-                                                   onblur="updateColumnName({{ column.pk }})"
-                                                   onkeypress="handleNameKeypress(event, {{ column.pk }})">
-                                        </div>
-                                    </div>
-
-                                    <!-- Change Type -->
-                                    <div class="px-4 py-2 border-b border-gray-100">
-                                        <div class="relative">
-                                            <button onclick="toggleTypeDropdown({{ column.pk }})" class="flex items-center justify-between w-full text-sm text-gray-700 hover:bg-gray-50 px-2 py-1 rounded">
-                                                <div class="flex items-center space-x-2">
-                                                    <span>🔄</span>
-                                                    <span>Change Type</span>
-                                                </div>
-                                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
-                                                </svg>
-                                            </button>
-                                            <!-- Type Dropdown -->
-                                            <div id="type-dropdown-{{ column.pk }}" class="absolute left-full top-0 ml-1 w-40 bg-white border border-gray-200 rounded-md shadow-lg hidden">
-                                                <div class="py-1">
-                                                    <button onclick="changeColumnType({{ column.pk }}, 'text')" class="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Text</button>
-                                                    <button onclick="changeColumnType({{ column.pk }}, 'number')" class="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Number</button>
-                                                    <button onclick="changeColumnType({{ column.pk }}, 'date')" class="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Date</button>
-                                                    <button onclick="changeColumnType({{ column.pk }}, 'boolean')" class="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Checkbox</button>
-                                                    <button onclick="changeColumnType({{ column.pk }}, 'select')" class="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Select</button>
-                                                    <button onclick="changeColumnType({{ column.pk }}, 'multi_select')" class="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Multi Select</button>
-                                                    <button onclick="changeColumnType({{ column.pk }}, 'url')" class="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">URL</button>
-        </div>
-
-        {% if not columns %}
-        <div class="text-center py-8 border-t border-gray-200 bg-gray-50">
-            <svg class="mx-auto h-8 w-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
-            </svg>
-            <h3 class="mt-2 text-sm font-medium text-gray-900">No columns defined yet</h3>
-            <p class="mt-1 text-sm text-gray-500">Click the + button above to add your first column and start organizing your data.</p>
-        </div>
-        {% endif %}
-    </div>
-</div>
-                                    </div>
-
-                                    <!-- Description -->
-                                    <div class="px-4 py-2 border-b border-gray-100">
-                                        <div class="flex items-center space-x-2 mb-1">
-                                            <span class="text-sm text-gray-600">📝</span>
-                                            <span class="text-sm text-gray-700">Description</span>
-                                        </div>
-                                        <textarea id="column-description-{{ column.pk }}"
-                                                  class="w-full text-sm border border-gray-300 rounded px-2 py-1 focus:outline-none focus:border-blue-500 resize-none"
-                                                  rows="2"
-                                                  placeholder="Optional description"
-                                                  onblur="updateColumnDescription({{ column.pk }})">{{ column.description|default:"" }}</textarea>
-                                    </div>
-
-                                    <!-- Required -->
-                                    <div class="px-4 py-2 border-b border-gray-100">
-                                        <label class="flex items-center space-x-2 cursor-pointer">
-                                            <input type="checkbox" id="column-required-{{ column.pk }}"
-                                                   {% if column.required %}checked{% endif %}
-                                                   onchange="updateColumnRequired({{ column.pk }})"
-                                                   class="rounded border-gray-300 text-blue-600 focus:ring-blue-500">
-                                            <span class="text-sm text-gray-700">Required field</span>
-                                        </label>
-                                    </div>
-
-                                    <!-- Delete Column -->
-                                    <div class="px-4 py-2">
-                                        <button onclick="deleteColumn({{ column.pk }}, '{{ column.name }}')"
-                                                class="flex items-center space-x-2 text-red-600 hover:text-red-800 text-sm w-full text-left">
-                                            <span>🗑️</span>
-                                            <span>Delete Column</span>
-                                        </button>
-                                    </div>
-                                </div>
-                            </div>
-                        </th>
-                        {% endfor %}
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-16">
-                            <div class="relative">
-                                <button id="add-column-btn" class="p-1 rounded hover:bg-gray-200 transition-colors text-gray-500 text-lg font-bold">
-                                    +
-                                </button>
-                                <!-- Column Type Dropdown -->
-                                <div id="column-type-dropdown" class="absolute right-0 top-full mt-1 w-48 bg-white border border-gray-200 rounded-md shadow-lg z-10 hidden">
-                                    <div class="py-1">
-                                        <button onclick="addColumn('text')" class="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Text</button>
-                                        <button onclick="addColumn('number')" class="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Number</button>
-                                        <button onclick="addColumn('date')" class="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Date</button>
-                                        <button onclick="addColumn('boolean')" class="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Checkbox</button>
-                                        <button onclick="addColumn('select')" class="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Select</button>
-                                        <button onclick="addColumn('multi_select')" class="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Multi Select</button>
-                                        <button onclick="addColumn('url')" class="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">URL</button>
-                                    </div>
-                                </div>
-                            </div>
-                        </th>
-                    </tr>
-                </thead>
+                 <thead class="bg-gray-50">
+                     <tr>
+                         {% for column in columns %}
+                          <th class="px-2 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border-r border-gray-200 relative" data-column-id="{{ column.pk }}">
+                             <div class="flex items-center justify-between">
+                                  <span class="font-semibold text-gray-900 truncate text-xs">{{ column.name }}</span>
+                                 <span class="text-xs text-gray-400 flex-shrink-0">({{ column.get_column_type_display }})</span>
+                             </div>
+                             <div class="column-resize-handle" data-resize-index="{{ forloop.counter0 }}"></div>
+                         </th>
+                         {% endfor %}
+                         <!-- Add Column Placeholder -->
+                         <th class="px-2 py-3 text-center border-r border-gray-200 bg-gray-50 hover:bg-blue-50 transition-colors">
+                             <button onclick="showAddColumnModal()" class="flex flex-col items-center justify-center w-full py-2 text-gray-400 hover:text-blue-600 transition-colors">
+                                 <svg class="w-6 h-6 mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/>
+                                 </svg>
+                                 <span class="text-xs font-medium">Add</span>
+                             </button>
+                         </th>
+                     </tr>
+                 </thead>
                 <tbody class="bg-white divide-y divide-gray-200">
                     {% for row in rows %}
-                    <tr class="hover:bg-gray-50 group" data-row-id="{{ row.pk }}">
+                    <tr class="hover:bg-gray-50" data-row-id="{{ row.pk }}">
                         {% for column in columns %}
-                        <td class="px-6 py-3 whitespace-nowrap text-sm text-gray-900 border-r border-gray-100 cursor-pointer hover:bg-blue-50 transition-colors"
-                            onclick="editCell({{ row.pk }}, '{{ column.name }}', '{{ column.column_type }}', this)"
-                            data-column="{{ column.name }}"
-                            data-type="{{ column.column_type }}">
+                         <td class="px-3 py-3 whitespace-nowrap text-sm text-gray-900 border-r border-gray-100 cursor-pointer hover:bg-blue-50 transition-colors"
+                             onclick="editCell({{ row.pk }}, '{{ column.name }}', '{{ column.column_type }}', this)"
+                             data-column="{{ column.name }}"
+                             data-type="{{ column.column_type }}">
                             {% load custom_filters %}
                             {% get_dict_value row.data column.name as value %}
                             {% if value %}
@@ -204,35 +93,17 @@
                             {% endif %}
                         </td>
                         {% endfor %}
-                        <td class="px-6 py-3 whitespace-nowrap text-sm text-gray-500 w-16">
-                            <button onclick="deleteRow({{ row.pk }})" class="opacity-0 group-hover:opacity-100 p-1 rounded hover:bg-red-100 transition-all">
-                                <svg class="w-4 h-4 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
-                                </svg>
-                            </button>
-                        </td>
-                    </tr>
-                    {% endfor %}
-                    <!-- Add new row -->
-                    <tr id="new-row-template" class="hover:bg-gray-50 border-t-2 border-dashed border-gray-300">
-                        {% for column in columns %}
-                        <td class="px-6 py-3 whitespace-nowrap text-sm border-r border-gray-100">
-                            <span class="text-gray-400 italic">Click to add</span>
-                        </td>
-                        {% endfor %}
-                        <td class="px-6 py-3 whitespace-nowrap text-sm text-gray-500 w-16">
-                            <button onclick="addNewRow()" class="p-1 rounded hover:bg-green-100 transition-colors">
-                                <svg class="w-4 h-4 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/>
-                                </svg>
-                            </button>
-                        </td>
-                    </tr>
-                </tbody>
-            </table>
-        </div>
-    </div>
-</div>
+                         <td class="px-3 py-3 whitespace-nowrap text-sm text-gray-400 border-r border-gray-100">
+                             <!-- Placeholder for add column -->
+                         </td>
+                     </tr>
+                     {% endfor %}
+
+                 </tbody>
+              </table>
+          </div>
+          </div>
+      </div>
 
 <!-- Inline Edit Modal -->
 <div id="edit-modal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full hidden z-50">
@@ -270,6 +141,39 @@
     </div>
 </div>
 
+<!-- Add Column Modal -->
+<div id="add-column-modal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full hidden z-50">
+    <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
+        <div class="mt-3">
+            <h3 class="text-lg font-medium text-gray-900 mb-4">Add New Column</h3>
+            <div class="mb-4">
+                <label for="column-name" class="block text-sm font-medium text-gray-700 mb-2">Column Name</label>
+                <input type="text" id="column-name"
+                       class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 mb-4"
+                       placeholder="Enter column name">
+                <label for="column-type" class="block text-sm font-medium text-gray-700 mb-2">Column Type</label>
+                <select id="column-type" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+                    <option value="text">Text</option>
+                    <option value="number">Number</option>
+                    <option value="boolean">Checkbox</option>
+                    <option value="date">Date</option>
+                    <option value="url">URL</option>
+                    <option value="select">Select</option>
+                    <option value="multi_select">Multi-Select</option>
+                </select>
+            </div>
+            <div class="flex justify-end space-x-3">
+                <button onclick="hideAddColumnModal()" class="px-4 py-2 bg-gray-300 text-gray-800 rounded hover:bg-gray-400">Cancel</button>
+                <button onclick="confirmAddColumn()" class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">Add Column</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block extra_css %}
+
 {% endblock %}
 
 {% block extra_js %}
@@ -298,102 +202,50 @@ let currentEditRowId = null;
 let currentEditColumn = null;
 let currentEditType = null;
 
-// Initialize the page
-document.addEventListener('DOMContentLoaded', function() {
-    setupColumnDropdown();
-});
 
-// Setup column dropdown toggle
-function setupColumnDropdown() {
-    const btn = document.getElementById('add-column-btn');
-    const dropdown = document.getElementById('column-type-dropdown');
 
-    btn.addEventListener('click', function(e) {
-        e.stopPropagation();
-        dropdown.classList.toggle('hidden');
-    });
-
-    // Close dropdown when clicking outside
-    document.addEventListener('click', function(e) {
-        if (!btn.contains(e.target) && !dropdown.contains(e.target)) {
-            dropdown.classList.add('hidden');
-        }
-    });
-}
-
-// Add new column
-function addColumn(type) {
-    const listId = {{ list.pk }};
-    const columnName = prompt(`Enter ${type} column name:`);
-    if (!columnName) return;
-
-    fetch(`/lists/${listId}/columns/create/`, {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/x-www-form-urlencoded',
-            'X-CSRFToken': csrftoken,
-        },
-        body: `name=${encodeURIComponent(columnName)}&column_type=${type}&required=false`
-    })
-    .then(response => {
-        if (response.ok) {
-            location.reload();
-        } else {
-            alert('Error adding column');
-        }
-    });
-}
-
-// Edit cell inline
+// Cell editing functions
 function editCell(rowId, columnName, columnType, cellElement) {
-    currentEditCell = cellElement;
+    // Set global variables
     currentEditRowId = rowId;
     currentEditColumn = columnName;
     currentEditType = columnType;
 
-    const currentValue = cellElement.textContent.trim();
-    const modal = document.getElementById('edit-modal');
-    const content = document.getElementById('edit-modal-content');
-
-    let inputHtml = '';
-
-    switch(columnType) {
-        case 'text':
-            inputHtml = `<input type="text" id="edit-input" class="w-full px-3 py-2 border border-gray-300 rounded-md" value="${currentValue === 'Empty' ? '' : currentValue}">`;
-            break;
-        case 'number':
-            inputHtml = `<input type="number" id="edit-input" class="w-full px-3 py-2 border border-gray-300 rounded-md" value="${currentValue === 'Empty' ? '' : currentValue}">`;
-            break;
-        case 'date':
-            inputHtml = `<input type="date" id="edit-input" class="w-full px-3 py-2 border border-gray-300 rounded-md" value="${currentValue === 'Empty' ? '' : currentValue}">`;
-            break;
-        case 'boolean':
-            const isChecked = cellElement.querySelector('input')?.checked || false;
-            inputHtml = `<input type="checkbox" id="edit-input" ${isChecked ? 'checked' : ''} class="rounded border-gray-300 text-blue-600">`;
-            break;
-        case 'url':
-            inputHtml = `<input type="url" id="edit-input" class="w-full px-3 py-2 border border-gray-300 rounded-md" value="${currentValue === 'Empty' ? '' : currentValue}">`;
-            break;
-        case 'select':
-            inputHtml = `<select id="edit-input" class="w-full px-3 py-2 border border-gray-300 rounded-md">
-                <option value="">Select...</option>
-                <option value="Active" ${currentValue === 'Active' ? 'selected' : ''}>Active</option>
-                <option value="Pending" ${currentValue === 'Pending' ? 'selected' : ''}>Pending</option>
-                <option value="Completed" ${currentValue === 'Completed' ? 'selected' : ''}>Completed</option>
-                <option value="Archived" ${currentValue === 'Archived' ? 'selected' : ''}>Archived</option>
-            </select>`;
-            break;
-        default:
-            inputHtml = `<input type="text" id="edit-input" class="w-full px-3 py-2 border border-gray-300 rounded-md" value="${currentValue === 'Empty' ? '' : currentValue}">`;
+    // Get current value
+    let currentValue = '';
+    if (columnType === 'boolean') {
+        const checkbox = cellElement.querySelector('input[type="checkbox"]');
+        currentValue = checkbox ? checkbox.checked : false;
+    } else {
+        currentValue = cellElement.textContent.trim();
     }
 
+    // Create input HTML based on type
+    let inputHtml = '';
+    if (columnType === 'boolean') {
+        inputHtml = `<input type="checkbox" id="edit-input" ${currentValue ? 'checked' : ''} class="rounded border-gray-300 text-blue-600 focus:ring-blue-500">`;
+    } else {
+        inputHtml = `<input type="text" id="edit-input" value="${currentValue}" class="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">`;
+    }
+
+    // Show modal
+    const modal = document.getElementById('edit-modal');
+    const content = document.getElementById('edit-modal-content');
+    const title = document.getElementById('edit-modal-title');
+
+    title.textContent = `Edit ${columnName}`;
     content.innerHTML = inputHtml;
     modal.classList.remove('hidden');
 
     // Focus the input
     setTimeout(() => {
         const input = document.getElementById('edit-input');
-        if (input) input.focus();
+        if (input) {
+            input.focus();
+            if (input.type !== 'checkbox') {
+                input.select();
+            }
+        }
     }, 100);
 }
 
@@ -470,193 +322,100 @@ function deleteRow(rowId) {
 
 // CSRF protection enabled
 
-// Column dropdown management
-let activeColumnDropdown = null;
-let activeTypeDropdown = null;
+// Column resizing functionality
+function setupColumnResizing() {
+    const table = document.getElementById('notion-table');
+    const ths = table.querySelectorAll('th.resizable');
 
-function toggleColumnDropdown(columnId) {
-    const dropdown = document.getElementById(`column-dropdown-${columnId}`);
+    ths.forEach(th => {
+        th.addEventListener('mousedown', function(e) {
+            if (e.offsetX > th.offsetWidth - 10) { // Only resize if clicking on the right edge
+                isResizing = true;
+                currentResizingTh = th;
+                startX = e.pageX;
+                startWidth = th.offsetWidth;
+                document.body.style.cursor = 'col-resize';
+                document.body.style.userSelect = 'none';
+            }
+        });
+    });
 
-    // Close any other open dropdowns
-    if (activeColumnDropdown && activeColumnDropdown !== dropdown) {
-        activeColumnDropdown.classList.add('hidden');
-    }
-
-    // Close any open type dropdowns
-    if (activeTypeDropdown) {
-        activeTypeDropdown.classList.add('hidden');
-        activeTypeDropdown = null;
-    }
-
-    // Toggle current dropdown
-    dropdown.classList.toggle('hidden');
-
-    if (!dropdown.classList.contains('hidden')) {
-        activeColumnDropdown = dropdown;
-        // Focus the name input
-        const nameInput = document.getElementById(`column-name-input-${columnId}`);
-        if (nameInput) {
-            nameInput.focus();
-            nameInput.select();
+    document.addEventListener('mousemove', function(e) {
+        if (isResizing && currentResizingTh) {
+            const newWidth = startWidth + (e.pageX - startX);
+            if (newWidth >= 80 && newWidth <= 400) { // Min 80px, max 400px
+                currentResizingTh.style.width = newWidth + 'px';
+                // Save to localStorage for persistence
+                const columnId = currentResizingTh.dataset.columnId;
+                localStorage.setItem(`column-width-${columnId}`, newWidth);
+            }
         }
-    } else {
-        activeColumnDropdown = null;
-    }
+    });
+
+    document.addEventListener('mouseup', function() {
+        if (isResizing) {
+            isResizing = false;
+            currentResizingTh = null;
+            document.body.style.cursor = '';
+            document.body.style.userSelect = '';
+        }
+    });
+
+    // Load saved widths on page load
+    ths.forEach(th => {
+        const columnId = th.dataset.columnId;
+        const savedWidth = localStorage.getItem(`column-width-${columnId}`);
+        if (savedWidth) {
+            th.style.width = savedWidth + 'px';
+        }
+    });
 }
 
-function toggleTypeDropdown(columnId) {
-    const dropdown = document.getElementById(`type-dropdown-${columnId}`);
 
-    // Close any other type dropdowns
-    if (activeTypeDropdown && activeTypeDropdown !== dropdown) {
-        activeTypeDropdown.classList.add('hidden');
-    }
 
-    // Toggle current dropdown
-    dropdown.classList.toggle('hidden');
-
-    if (!dropdown.classList.contains('hidden')) {
-        activeTypeDropdown = dropdown;
-    } else {
-        activeTypeDropdown = null;
-    }
+// Add column modal functions
+function showAddColumnModal() {
+    document.getElementById('add-column-modal').classList.remove('hidden');
+    document.getElementById('column-name').focus();
 }
 
-// Close dropdowns when clicking outside
-document.addEventListener('click', function(e) {
-    if (activeColumnDropdown && !e.target.closest('.column-dropdown') && !e.target.closest('.column-header')) {
-        activeColumnDropdown.classList.add('hidden');
-        activeColumnDropdown = null;
-    }
-    if (activeTypeDropdown && !e.target.closest('#type-dropdown-')) {
-        activeTypeDropdown.classList.add('hidden');
-        activeTypeDropdown = null;
-    }
-});
-
-// Column property updates
-function handleNameKeypress(event, columnId) {
-    if (event.key === 'Enter') {
-        updateColumnName(columnId);
-    } else if (event.key === 'Escape') {
-        // Reset to original value
-        const input = event.target;
-        const originalName = input.defaultValue;
-        input.value = originalName;
-        toggleColumnDropdown(columnId);
-    }
+function hideAddColumnModal() {
+    document.getElementById('add-column-modal').classList.add('hidden');
+    document.getElementById('column-name').value = '';
+    document.getElementById('column-type').selectedIndex = 0;
 }
 
-function updateColumnName(columnId) {
-    const input = document.getElementById(`column-name-input-${columnId}`);
-    const newName = input.value.trim();
+function confirmAddColumn() {
+    const name = document.getElementById('column-name').value.trim();
+    const type = document.getElementById('column-type').value;
 
-    if (!newName) {
-        alert('Column name cannot be empty');
-        input.focus();
+    if (!name) {
+        alert('Please enter a column name.');
+        document.getElementById('column-name').focus();
         return;
     }
 
     const listId = {{ list.pk }};
-    fetch(`/lists/${listId}/columns/${columnId}/update/`, {
+    fetch(`/lists/${listId}/columns/create/`, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/x-www-form-urlencoded',
             'X-CSRFToken': csrftoken,
         },
-        body: `name=${encodeURIComponent(newName)}`
+        body: `name=${encodeURIComponent(name)}&column_type=${type}&required=false`
     })
     .then(response => {
         if (response.ok) {
             location.reload();
         } else {
-            alert('Error updating column name');
+            alert('Error adding column');
         }
-    });
-}
-
-function changeColumnType(columnId, newType) {
-    const listId = {{ list.pk }};
-    fetch(`/lists/${listId}/columns/${columnId}/update/`, {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/x-www-form-urlencoded',
-            'X-CSRFToken': csrftoken,
-        },
-        body: `column_type=${encodeURIComponent(newType)}`
     })
-    .then(response => {
-        if (response.ok) {
-            location.reload();
-        } else {
-            alert('Error updating column type');
-        }
+    .catch(error => {
+        alert('Error adding column');
     });
-}
 
-function updateColumnDescription(columnId) {
-    const textarea = document.getElementById(`column-description-${columnId}`);
-    const description = textarea.value.trim();
-
-    const listId = {{ list.pk }};
-    fetch(`/lists/${listId}/columns/${columnId}/update/`, {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/x-www-form-urlencoded',
-            'X-CSRFToken': csrftoken,
-        },
-        body: `description=${encodeURIComponent(description)}`
-    })
-    .then(response => {
-        if (!response.ok) {
-            alert('Error updating column description');
-        }
-    });
-}
-
-function updateColumnRequired(columnId) {
-    const checkbox = document.getElementById(`column-required-${columnId}`);
-    const required = checkbox.checked;
-
-    const listId = {{ list.pk }};
-    fetch(`/lists/${listId}/columns/${columnId}/update/`, {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/x-www-form-urlencoded',
-            'X-CSRFToken': csrftoken,
-        },
-        body: `required=${required}`
-    })
-    .then(response => {
-        if (!response.ok) {
-            alert('Error updating column required status');
-        }
-    });
-}
-
-function deleteColumn(columnId, columnName) {
-    const confirmation = prompt(`Type "${columnName}" to confirm deletion:`);
-    if (confirmation !== columnName) {
-        alert('Column name does not match. Deletion cancelled.');
-        return;
-    }
-
-    const listId = {{ list.pk }};
-    fetch(`/lists/${listId}/columns/${columnId}/delete/`, {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/x-www-form-urlencoded',
-            'X-CSRFToken': csrftoken,
-        },
-        body: ''
-    })
-    .then(response => {
-        if (response.ok) {
-            location.reload();
-        } else {
-            alert('Error deleting column');
-        }
-    });
+    hideAddColumnModal();
 }
 
 // Delete list modal functions
