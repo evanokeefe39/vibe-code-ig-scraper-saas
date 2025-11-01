@@ -541,6 +541,44 @@ def delete_row(request, pk):
             return JsonResponse({'success': False, 'error': 'Row not found'})
     return JsonResponse({'success': False, 'error': 'Invalid request'})
 
+def add_blank_row(request, pk):
+    """Add a blank row to the table via HTMX"""
+    list_obj = get_object_or_404(UserList, pk=pk, user__id=1)
+    columns = list_obj.columns.all().order_by('order')
+
+    if request.method == 'POST':
+        # Create row with empty data for all columns
+        row_data = {}
+        for column in columns:
+            if column.column_type == 'boolean':
+                row_data[column.name] = False
+            elif column.column_type == 'number':
+                row_data[column.name] = None
+            elif column.column_type == 'select':
+                row_data[column.name] = None
+            elif column.column_type == 'multi_select':
+                row_data[column.name] = []
+            else:
+                row_data[column.name] = None
+
+        # Create the new row
+        new_row = ListRow.objects.create(
+            user_list=list_obj,
+            data=row_data
+        )
+
+        # Return HTML snippet for the new row
+        from django.template.loader import render_to_string
+        context = {
+            'list': list_obj,
+            'row': new_row,
+            'columns': columns,
+        }
+        html = render_to_string('snippets/_table_row.html', context, request)
+        return HttpResponse(html)
+
+    return JsonResponse({'success': False, 'error': 'Invalid request'})
+
 @require_http_methods(["POST"])
 def table_save(request, pk):
     """Batch save table data from HTMX/Alpine.js table editor"""

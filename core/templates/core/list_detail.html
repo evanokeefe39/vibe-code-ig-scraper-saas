@@ -147,8 +147,6 @@ function tableEditor() {
         filteredRows: [...window.tableEditorData.rows],
 
         // State
-        unsavedChanges: {},
-        isSaving: false,
         globalSearch: '',
         columnFilters: {},
         selectedRows: new Set(),
@@ -160,15 +158,14 @@ function tableEditor() {
         resizingTh: null,
         startX: 0,
         startWidth: 0,
+        // Auto-save and undo
+        changeHistory: [],
+        currentHistoryIndex: -1,
+        autoSaveTimeout: null,
 
         // Computed
-        hasUnsavedChanges() {
-            return Object.keys(this.unsavedChanges).length > 0;
-        },
 
-        isCellUnsaved(rowId, columnId) {
-            return this.unsavedChanges[rowId] && this.unsavedChanges[rowId][columnId] !== undefined;
-        },
+
 
         // Methods
         renderCellValue(row, column) {
@@ -271,13 +268,12 @@ function tableEditor() {
                 const tempValue = element.closest('td').querySelector('[x-model="tempValue"]')?.value ||
                                   element.closest('td').querySelector('[x-model="tempValue"]')?.checked;
 
-                // Initialize unsaved changes for this row if needed
-                if (!this.unsavedChanges[rowId]) {
-                    this.unsavedChanges[rowId] = {};
-                }
+                // Record the change for undo functionality
+                const oldValue = this.getCellValue({id: rowId}, {id: columnId});
+                this.recordChange(rowId, columnId, oldValue, tempValue);
 
-                // Store the change
-                this.unsavedChanges[rowId][columnId] = tempValue;
+                // Auto-save the change
+                this.debouncedAutoSave(rowId, columnId, tempValue);
 
                 // Exit edit mode
                 element.closest('td')._x_dataStack[0].editing = false;
@@ -299,9 +295,85 @@ function tableEditor() {
             }
         },
 
-        saveChanges() {
-            this.isSaving = true;
-            // HTMX will handle the actual save via the button's hx-post
+        recordChange(rowId, columnId, oldValue, newValue) {
+            // Remove any history after current index (for when user makes new changes after undo)
+            this.changeHistory = this.changeHistory.slice(0, this.currentHistoryIndex + 1);
+
+            // Add new change to history
+            this.changeHistory.push({
+                rowId: rowId,
+                columnId: columnId,
+                oldValue: oldValue,
+                newValue: newValue,
+                timestamp: Date.now()
+            });
+
+            // Update current history index
+            this.currentHistoryIndex = this.changeHistory.length - 1;
+
+            // Limit history to last 50 changes
+            if (this.changeHistory.length > 50) {
+                this.changeHistory.shift();
+                this.currentHistoryIndex--;
+            }
+        },
+
+        undo() {
+            if (this.currentHistoryIndex >= 0) {
+                const change = this.changeHistory[this.currentHistoryIndex];
+
+                // Revert the change
+                this.debouncedAutoSave(change.rowId, change.columnId, change.oldValue);
+
+                // Move back in history
+                this.currentHistoryIndex--;
+            }
+        },
+
+        debouncedAutoSave(rowId, columnId, value) {
+            // Clear existing timeout
+            if (this.autoSaveTimeout) {
+                clearTimeout(this.autoSaveTimeout);
+            }
+
+            // Set new timeout for auto-save (500ms delay)
+            this.autoSaveTimeout = setTimeout(() => {
+                this.performAutoSave(rowId, columnId, value);
+            }, 500);
+        },
+
+        performAutoSave(rowId, columnId, value) {
+            const listId = {{ list.pk }};
+
+            // Find the column name
+            const column = this.columns.find(c => c.id === columnId);
+            if (!column) return;
+
+            // Prepare data for the request
+            const data = {
+                row_id: rowId,
+                column: column.name,
+                value: value,
+                type: column.type
+            };
+
+            // Make the request
+            fetch(`/lists/${listId}/rows/update/`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                    'X-CSRFToken': csrftoken,
+                },
+                body: new URLSearchParams(data)
+            })
+            .then(response => {
+                if (!response.ok) {
+                    console.error('Auto-save failed:', response.status);
+                }
+            })
+            .catch(error => {
+                console.error('Auto-save error:', error);
+            });
         },
 
         // Row Selection Methods
@@ -362,9 +434,8 @@ function tableEditor() {
         },
 
         addRow() {
-            // Redirect to add row page
-            const listId = {{ list.pk }};
-            window.location.href = `/lists/${listId}/rows/create/`;
+            // HTMX handles the row addition now - this function is kept for potential future enhancements
+            console.log('Add row');
         },
 
         insertRowBelow(rowId) {
@@ -374,10 +445,8 @@ function tableEditor() {
         },
 
         deleteRow(rowId) {
-            if (confirm('Are you sure you want to delete this row?')) {
-                // This would typically make an HTMX request to delete the row
-                console.log('Delete row:', rowId);
-            }
+            // HTMX handles the deletion now - this function is kept for potential future enhancements
+            console.log('Delete row:', rowId);
         },
 
         addColumn() {
