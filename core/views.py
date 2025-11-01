@@ -6,6 +6,7 @@ import csv
 from django.shortcuts import render, redirect, get_object_or_404
 from django.http import HttpResponse, JsonResponse
 from django.contrib import messages
+from django.views.decorators.http import require_http_methods
 from django.conf import settings
 from django.db import models
 from .utils import geocode_location
@@ -203,10 +204,30 @@ def list_detail(request, pk):
     list_obj = get_object_or_404(UserList, pk=pk, user__id=1)  # Dummy user
     columns = list_obj.columns.all().order_by('order')
     rows = list_obj.rows.all()
+
+    # Serialize data for Alpine.js table editor
+    columns_data = []
+    for column in columns:
+        columns_data.append({
+            'id': column.pk,
+            'name': column.name,
+            'type': column.column_type,
+            'options': column.options or {}
+        })
+
+    rows_data = []
+    for row in rows:
+        rows_data.append({
+            'id': row.pk,
+            'data': row.data or {}
+        })
+
     return render(request, 'core/list_detail.html', {
         'list': list_obj,
         'columns': columns,
-        'rows': rows
+        'rows': rows,
+        'columns_json': columns_data,
+        'rows_json': rows_data
     })
 
 def list_create(request):
@@ -427,6 +448,55 @@ def delete_row(request, pk):
         except ListRow.DoesNotExist:
             return JsonResponse({'success': False, 'error': 'Row not found'})
     return JsonResponse({'success': False, 'error': 'Invalid request'})
+
+@require_http_methods(["POST"])
+def table_save(request, pk):
+    """Batch save table data from HTMX/Alpine.js table editor"""
+    try:
+        list_obj = get_object_or_404(UserList, pk=pk, user__id=1)
+        data = json.loads(request.POST.get('data', '{}'))
+
+        updated_rows = 0
+
+        # Process each row's changes
+        for row_id, changes in data.items():
+            try:
+                row = ListRow.objects.get(pk=int(row_id), user_list=list_obj)
+                row_data = row.data.copy() if row.data else {}
+
+                # Apply changes to row data
+                for column_id, value in changes.items():
+                    # Find column by ID to get column name
+                    column = list_obj.columns.filter(pk=int(column_id)).first()
+                    if column:
+                        # Convert value based on column type
+                        if column.column_type == 'boolean':
+                            row_data[column.name] = value.lower() == 'true' if isinstance(value, str) else bool(value)
+                        elif column.column_type == 'number' and value:
+                            try:
+                                row_data[column.name] = float(value)
+                            except (ValueError, TypeError):
+                                row_data[column.name] = value
+                        elif column.column_type == 'date' and value:
+                            row_data[column.name] = value
+                        else:
+                            row_data[column.name] = value if value else None
+
+                row.data = row_data
+                row.save()
+                updated_rows += 1
+
+            except ListRow.DoesNotExist:
+                continue  # Skip rows that don't exist
+
+        messages.success(request, f'Successfully saved {updated_rows} row(s)')
+        return JsonResponse({'success': True, 'updated_rows': updated_rows})
+
+    except json.JSONDecodeError:
+        return JsonResponse({'success': False, 'error': 'Invalid data format'})
+    except Exception as e:
+        logger.error(f"Error saving table data: {e}")
+        return JsonResponse({'success': False, 'error': 'Failed to save data'})
 
 def update_column(request, pk, column_id):
     if request.method == 'POST':

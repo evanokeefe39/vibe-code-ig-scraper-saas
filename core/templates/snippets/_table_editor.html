@@ -1,0 +1,541 @@
+{% comment %}
+Table Editor Component - HTMX + Alpine.js
+Built according to table_editor_spec.md
+{% endcomment %}
+
+<div
+    x-data="tableEditor()"
+    class="bg-white rounded-lg shadow-md overflow-hidden"
+    hx-boost="true"
+>
+    <!-- Table Controls -->
+    <div class="px-6 py-4 border-b border-gray-200">
+        <div class="flex justify-between items-center">
+            <div class="flex items-center space-x-4">
+                <h3 class="text-lg font-medium text-gray-900">Table Editor</h3>
+                <span class="text-sm text-gray-500" x-text="`(${rows.length} rows, ${columns.length} columns)`"></span>
+            </div>
+            <div class="flex items-center space-x-3">
+                <!-- Global Search -->
+                <div class="relative">
+                    <input
+                        type="text"
+                        x-model="globalSearch"
+                        placeholder="Search all columns..."
+                        class="pl-9 pr-4 py-2 border border-gray-300 rounded-md text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                        @input.debounce.300ms="applyFilters()"
+                    >
+                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                        <svg class="h-4 w-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+                        </svg>
+                    </div>
+                </div>
+
+                <!-- Save Changes Button -->
+                <button
+                    x-show="hasUnsavedChanges"
+                    @click="saveChanges()"
+                    :disabled="isSaving"
+                    class="inline-flex items-center px-4 py-2 bg-green-600 hover:bg-green-700 disabled:bg-green-400 text-white text-sm font-medium rounded-md transition-colors"
+                    hx-post="{% url 'table_save' list.pk %}"
+                    hx-vals="js:{data: JSON.stringify(unsavedChanges)}"
+                    hx-target="#table-editor"
+                    hx-swap="innerHTML"
+                >
+                    <svg x-show="!isSaving" class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                    </svg>
+                    <svg x-show="isSaving" x-cloak class="animate-spin w-4 h-4 mr-2" fill="none" viewBox="0 0 24 24">
+                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
+                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"/>
+                    </svg>
+                    <span x-text="isSaving ? 'Saving...' : 'Save Changes'"></span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Table Container -->
+    <div class="table-container overflow-x-auto">
+        <table class="min-w-full divide-y divide-gray-200" x-data="{ sortedColumn: null, sortDirection: 'asc' }">
+            <!-- Table Header -->
+            <thead class="bg-gray-50">
+                <tr>
+                    <!-- Data Columns -->
+                    <template x-for="(column, index) in columns" :key="column.id">
+                        <th
+                            class="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border-r border-gray-200 relative group"
+                            :class="{ 'bg-blue-50': sortedColumn === column.id }"
+                        >
+                            <div class="flex items-center justify-between">
+                                <!-- Column Header Content -->
+                                <div class="flex items-center space-x-2 flex-1 min-w-0">
+                                    <!-- Sort Button -->
+                                    <button
+                                        @click="sortByColumn(column.id)"
+                                        class="flex items-center space-x-1 hover:text-gray-700 transition-colors"
+                                    >
+                                        <span class="font-semibold text-gray-900 truncate text-xs" x-text="column.name"></span>
+                                        <svg
+                                            class="w-3 h-3 text-gray-400"
+                                            :class="{ 'text-blue-600': sortedColumn === column.id }"
+                                            fill="none"
+                                            stroke="currentColor"
+                                            viewBox="0 0 24 24"
+                                            x-show="sortedColumn === column.id"
+                                        >
+                                            <path x-show="sortDirection === 'asc'" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7"/>
+                                            <path x-show="sortDirection === 'desc'" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+                                        </svg>
+                                    </button>
+
+                                    <!-- Column Type Badge -->
+                                    <span class="text-xs text-gray-400 flex-shrink-0" x-text="`(${column.type})`"></span>
+                                </div>
+
+                                <!-- Column Actions Dropdown -->
+                                <div class="relative" x-data="{ open: false }">
+                                    <button
+                                        @click="open = !open"
+                                        class="p-1 rounded hover:bg-gray-200 transition-colors opacity-0 group-hover:opacity-100"
+                                    >
+                                        <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 5v.01M12 12v.01M12 19v.01"/>
+                                        </svg>
+                                    </button>
+
+                                    <!-- Dropdown Menu -->
+                                    <div
+                                        x-show="open"
+                                        @click.away="open = false"
+                                        x-transition
+                                        class="absolute right-0 mt-1 w-48 bg-white rounded-md shadow-lg z-10 border border-gray-200"
+                                    >
+                                        <div class="py-1">
+                                            <button
+                                                @click="editColumn(column.id)"
+                                                class="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                                            >
+                                                Edit Column
+                                            </button>
+                                            <button
+                                                @click="insertColumn(column.id, 'left')"
+                                                class="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                                            >
+                                                Insert Left
+                                            </button>
+                                            <button
+                                                @click="insertColumn(column.id, 'right')"
+                                                class="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                                            >
+                                                Insert Right
+                                            </button>
+                                            <div class="border-t border-gray-100"></div>
+                                            <button
+                                                @click="deleteColumn(column.id)"
+                                                class="block w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50"
+                                            >
+                                                Delete Column
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Column Resize Handle -->
+                            <div class="column-resize-handle"></div>
+                        </th>
+                    </template>
+
+                    <!-- Add Column Button -->
+                    <th class="px-3 py-3 text-center border-r border-gray-200 bg-gray-50 hover:bg-blue-50 transition-colors w-20">
+                        <button
+                            @click="addColumn()"
+                            class="flex flex-col items-center justify-center w-full py-2 text-gray-400 hover:text-blue-600 transition-colors"
+                        >
+                            <svg class="w-6 h-6 mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/>
+                            </svg>
+                            <span class="text-xs font-medium">Add</span>
+                        </button>
+                    </th>
+                </tr>
+
+                <!-- Filter Row -->
+                <tr class="bg-gray-25 border-t border-gray-200">
+                    <template x-for="column in columns" :key="`filter-${column.id}`">
+                        <th class="px-3 py-2 border-r border-gray-200">
+                            <input
+                                type="text"
+                                :placeholder="`Filter ${column.name}...`"
+                                x-model="columnFilters[column.id]"
+                                @input.debounce.300ms="applyFilters()"
+                                class="w-full px-2 py-1 text-xs border border-gray-300 rounded focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
+                            >
+                        </th>
+                    </template>
+                    <th class="bg-gray-25"></th>
+                </tr>
+            </thead>
+
+            <!-- Table Body -->
+            <tbody class="bg-white divide-y divide-gray-200">
+                <template x-for="(row, rowIndex) in filteredRows" :key="row.id">
+                    <tr class="hover:bg-gray-50" :class="{ 'bg-yellow-50': hasUnsavedChanges && unsavedChanges[row.id] }">
+                        <!-- Data Cells -->
+                        <template x-for="(column, colIndex) in columns" :key="`cell-${row.id}-${column.id}`">
+                            <td
+                                class="px-3 py-3 text-sm text-gray-900 border-r border-gray-100 cursor-pointer hover:bg-blue-50 transition-colors"
+                                @click="editCell(row.id, column.id)"
+                                :class="{ 'bg-yellow-100': isCellUnsaved(row.id, column.id) }"
+                            >
+                                <!-- Cell Content -->
+                                <div x-html="renderCellValue(row, column)"></div>
+                            </td>
+                        </template>
+
+                        <!-- Row Actions -->
+                        <td class="px-3 py-3 text-center border-r border-gray-100 w-20">
+                            <button
+                                @click="deleteRow(row.id)"
+                                class="text-red-400 hover:text-red-600 transition-colors"
+                            >
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                                </svg>
+                            </button>
+                        </td>
+                    </tr>
+                </template>
+
+                <!-- Empty State -->
+                <tr x-show="filteredRows.length === 0" x-cloak>
+                    <td :colspan="columns.length + 1" class="px-6 py-12 text-center text-gray-500">
+                        <div class="flex flex-col items-center">
+                            <svg class="w-12 h-12 text-gray-300 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17V7m0 10a2 2 0 01-2 2H5a2 2 0 01-2-2V7a2 2 0 012-2h2a2 2 0 012 2m0 10a2 2 0 002 2h2a2 2 0 002-2M9 7a2 2 0 012-2h2a2 2 0 012 2m0 10V7m0 10a2 2 0 002 2h2a2 2 0 002-2V7a2 2 0 00-2-2h-2a2 2 0 00-2 2"/>
+                            </svg>
+                            <h3 class="text-sm font-medium text-gray-900 mb-1">No data found</h3>
+                            <p class="text-sm text-gray-500" x-text="globalSearch || Object.keys(columnFilters).some(k => columnFilters[k]) ? 'Try adjusting your search or filters.' : 'Get started by adding some data.'"></p>
+                        </div>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Table Footer -->
+    <div class="px-6 py-4 border-t border-gray-200 bg-gray-50">
+        <div class="flex justify-between items-center">
+            <button
+                @click="addRow()"
+                class="inline-flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-md transition-colors"
+            >
+                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/>
+                </svg>
+                Add Row
+            </button>
+
+            <div class="text-sm text-gray-500">
+                <span x-text="`Showing ${filteredRows.length} of ${rows.length} rows`"></span>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Inline Cell Editor Modal -->
+<div
+    x-show="editingCell"
+    x-cloak
+    class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"
+    @keydown.escape.window="cancelEdit()"
+    @keydown.enter.window="saveEdit()"
+>
+    <div class="bg-white rounded-lg shadow-xl max-w-md w-full mx-4">
+        <div class="px-6 py-4 border-b border-gray-200">
+            <h3 class="text-lg font-medium text-gray-900">Edit Cell</h3>
+        </div>
+
+        <div class="px-6 py-4">
+            <!-- Dynamic Editor Based on Column Type -->
+            <div x-html="renderCellEditor()"></div>
+        </div>
+
+        <div class="px-6 py-4 border-t border-gray-200 flex justify-end space-x-3">
+            <button
+                @click="cancelEdit()"
+                class="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-md transition-colors"
+            >
+                Cancel
+            </button>
+            <button
+                @click="saveEdit()"
+                class="px-4 py-2 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-md transition-colors"
+            >
+                Save
+            </button>
+        </div>
+    </div>
+</div>
+
+<script>
+function tableEditor() {
+    return {
+        // Data
+        columns: {{ columns_json|safe }},
+        rows: {{ rows_json|safe }},
+        filteredRows: {{ rows_json|safe }},
+
+        // State
+        editingCell: false,
+        currentEdit: { rowId: null, columnId: null, value: null, originalValue: null },
+        unsavedChanges: {},
+        isSaving: false,
+        globalSearch: '',
+        columnFilters: {},
+
+        // Computed
+        hasUnsavedChanges() {
+            return Object.keys(this.unsavedChanges).length > 0;
+        },
+
+        isCellUnsaved(rowId, columnId) {
+            return this.unsavedChanges[rowId] && this.unsavedChanges[rowId][columnId] !== undefined;
+        },
+
+        // Methods
+        renderCellValue(row, column) {
+            const value = this.getCellValue(row, column);
+            return this.formatCellValue(value, column);
+        },
+
+        getCellValue(row, column) {
+            // Check for unsaved changes first
+            if (this.unsavedChanges[row.id] && this.unsavedChanges[row.id][column.id] !== undefined) {
+                return this.unsavedChanges[row.id][column.id];
+            }
+            return row.data[column.name] || '';
+        },
+
+        formatCellValue(value, column) {
+            if (!value) return '<span class="text-gray-400 italic">Empty</span>';
+
+            switch (column.type) {
+                case 'boolean':
+                    return `<input type="checkbox" ${value ? 'checked' : ''} disabled class="rounded border-gray-300 text-blue-600">`;
+                case 'select':
+                    return `<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">${value}</span>`;
+                case 'url':
+                    return `<a href="${value}" target="_blank" class="text-blue-600 hover:text-blue-800 underline">${value.length > 30 ? value.substring(0, 30) + '...' : value}</a>`;
+                default:
+                    return value;
+            }
+        },
+
+        editCell(rowId, columnId) {
+            const column = this.columns.find(c => c.id === columnId);
+            const row = this.rows.find(r => r.id === rowId);
+            const currentValue = this.getCellValue(row, column);
+
+            this.currentEdit = {
+                rowId,
+                columnId,
+                value: currentValue,
+                originalValue: currentValue,
+                column
+            };
+            this.editingCell = true;
+        },
+
+        renderCellEditor() {
+            if (!this.currentEdit.column) return '';
+
+            const { column, value } = this.currentEdit;
+
+            switch (column.type) {
+                case 'text':
+                    return `
+                        <label class="block text-sm font-medium text-gray-700 mb-2">${column.name}</label>
+                        <textarea
+                            x-model="currentEdit.value"
+                            class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                            rows="3"
+                            placeholder="Enter text..."
+                        ></textarea>
+                    `;
+                case 'number':
+                    return `
+                        <label class="block text-sm font-medium text-gray-700 mb-2">${column.name}</label>
+                        <input
+                            type="number"
+                            x-model="currentEdit.value"
+                            class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                            placeholder="Enter number..."
+                        >
+                    `;
+                case 'boolean':
+                    return `
+                        <label class="block text-sm font-medium text-gray-700 mb-2">${column.name}</label>
+                        <div class="flex items-center">
+                            <input
+                                type="checkbox"
+                                x-model="currentEdit.value"
+                                class="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                            >
+                            <span class="ml-2 text-sm text-gray-600">Checked</span>
+                        </div>
+                    `;
+                case 'date':
+                    return `
+                        <label class="block text-sm font-medium text-gray-700 mb-2">${column.name}</label>
+                        <input
+                            type="date"
+                            x-model="currentEdit.value"
+                            class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                        >
+                    `;
+                case 'select':
+                    return `
+                        <label class="block text-sm font-medium text-gray-700 mb-2">${column.name}</label>
+                        <select
+                            x-model="currentEdit.value"
+                            class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                        >
+                            <option value="">Select an option...</option>
+                            <option value="Option 1">Option 1</option>
+                            <option value="Option 2">Option 2</option>
+                            <option value="Option 3">Option 3</option>
+                        </select>
+                    `;
+                default:
+                    return `
+                        <label class="block text-sm font-medium text-gray-700 mb-2">${column.name}</label>
+                        <input
+                            type="text"
+                            x-model="currentEdit.value"
+                            class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                            placeholder="Enter value..."
+                        >
+                    `;
+            }
+        },
+
+        saveEdit() {
+            if (!this.currentEdit.rowId || !this.currentEdit.columnId) return;
+
+            // Initialize unsaved changes for this row if needed
+            if (!this.unsavedChanges[this.currentEdit.rowId]) {
+                this.unsavedChanges[this.currentEdit.rowId] = {};
+            }
+
+            // Store the change
+            this.unsavedChanges[this.currentEdit.rowId][this.currentEdit.columnId] = this.currentEdit.value;
+
+            this.editingCell = false;
+            this.currentEdit = { rowId: null, columnId: null, value: null, originalValue: null };
+        },
+
+        cancelEdit() {
+            this.editingCell = false;
+            this.currentEdit = { rowId: null, columnId: null, value: null, originalValue: null };
+        },
+
+        saveChanges() {
+            this.isSaving = true;
+            // HTMX will handle the actual save via the button's hx-post
+        },
+
+        addRow() {
+            // This would typically make an HTMX request to add a row
+            console.log('Add row clicked');
+        },
+
+        deleteRow(rowId) {
+            if (confirm('Are you sure you want to delete this row?')) {
+                // This would typically make an HTMX request to delete the row
+                console.log('Delete row:', rowId);
+            }
+        },
+
+        addColumn() {
+            // This would typically open a modal or make an HTMX request
+            console.log('Add column clicked');
+        },
+
+        editColumn(columnId) {
+            // This would typically open a modal or make an HTMX request
+            console.log('Edit column:', columnId);
+        },
+
+        deleteColumn(columnId) {
+            if (confirm('Are you sure you want to delete this column? This action cannot be undone.')) {
+                // This would typically make an HTMX request to delete the column
+                console.log('Delete column:', columnId);
+            }
+        },
+
+        insertColumn(columnId, position) {
+            // This would typically make an HTMX request to insert a column
+            console.log('Insert column:', columnId, position);
+        },
+
+        sortByColumn(columnId) {
+            if (this.sortedColumn === columnId) {
+                this.sortDirection = this.sortDirection === 'asc' ? 'desc' : 'asc';
+            } else {
+                this.sortedColumn = columnId;
+                this.sortDirection = 'asc';
+            }
+            this.applySorting();
+        },
+
+        applySorting() {
+            if (!this.sortedColumn) return;
+
+            const column = this.columns.find(c => c.id === this.sortedColumn);
+            if (!column) return;
+
+            this.filteredRows.sort((a, b) => {
+                const aVal = this.getCellValue(a, column);
+                const bVal = this.getCellValue(b, column);
+
+                let result = 0;
+                if (aVal < bVal) result = -1;
+                if (aVal > bVal) result = 1;
+
+                return this.sortDirection === 'asc' ? result : -result;
+            });
+        },
+
+        applyFilters() {
+            this.filteredRows = this.rows.filter(row => {
+                // Global search
+                if (this.globalSearch) {
+                    const searchTerm = this.globalSearch.toLowerCase();
+                    const rowText = Object.values(row.data).join(' ').toLowerCase();
+                    if (!rowText.includes(searchTerm)) return false;
+                }
+
+                // Column filters
+                for (const [columnId, filterValue] of Object.entries(this.columnFilters)) {
+                    if (!filterValue) continue;
+
+                    const column = this.columns.find(c => c.id === columnId);
+                    if (!column) continue;
+
+                    const cellValue = this.getCellValue(row, column);
+                    if (!cellValue || !cellValue.toString().toLowerCase().includes(filterValue.toLowerCase())) {
+                        return false;
+                    }
+                }
+
+                return true;
+            });
+
+            this.applySorting();
+        }
+    }
+}
+</script>

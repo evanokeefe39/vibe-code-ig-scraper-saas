@@ -33,76 +33,7 @@
         </div>
     </div>
 
-    <div class="bg-white rounded-lg shadow-md overflow-hidden">
-        <div class="table-container">
-            <table id="notion-table" class="min-w-full divide-y divide-gray-200">
-                 <thead class="bg-gray-50">
-                     <tr>
-                         {% for column in columns %}
-                          <th class="px-2 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border-r border-gray-200 relative" data-column-id="{{ column.pk }}">
-                             <div class="flex items-center justify-between">
-                                  <span class="font-semibold text-gray-900 truncate text-xs">{{ column.name }}</span>
-                                 <span class="text-xs text-gray-400 flex-shrink-0">({{ column.get_column_type_display }})</span>
-                             </div>
-                             <div class="column-resize-handle" data-resize-index="{{ forloop.counter0 }}"></div>
-                         </th>
-                         {% endfor %}
-                         <!-- Add Column Placeholder -->
-                         <th class="px-2 py-3 text-center border-r border-gray-200 bg-gray-50 hover:bg-blue-50 transition-colors">
-                             <button onclick="showAddColumnModal()" class="flex flex-col items-center justify-center w-full py-2 text-gray-400 hover:text-blue-600 transition-colors">
-                                 <svg class="w-6 h-6 mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/>
-                                 </svg>
-                                 <span class="text-xs font-medium">Add</span>
-                             </button>
-                         </th>
-                     </tr>
-                 </thead>
-                <tbody class="bg-white divide-y divide-gray-200">
-                    {% for row in rows %}
-                    <tr class="hover:bg-gray-50" data-row-id="{{ row.pk }}">
-                        {% for column in columns %}
-                         <td class="px-3 py-3 whitespace-nowrap text-sm text-gray-900 border-r border-gray-100 cursor-pointer hover:bg-blue-50 transition-colors"
-                             onclick="editCell({{ row.pk }}, '{{ column.name }}', '{{ column.column_type }}', this)"
-                             data-column="{{ column.name }}"
-                             data-type="{{ column.column_type }}">
-                            {% load custom_filters %}
-                            {% get_dict_value row.data column.name as value %}
-                            {% if value %}
-                                {% if column.column_type == 'boolean' %}
-                                    <div class="flex items-center">
-                                        <input type="checkbox" {% if value %}checked{% endif %} disabled class="rounded border-gray-300 text-blue-600 focus:ring-blue-500">
-                                    </div>
-                                {% elif column.column_type == 'select' %}
-                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">{{ value }}</span>
-                                {% elif column.column_type == 'multi_select' %}
-                                    <div class="flex flex-wrap gap-1">
-                                        {% for tag in value %}
-                                        <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-800">{{ tag }}</span>
-                                        {% endfor %}
-                                    </div>
-                                {% elif column.column_type == 'url' %}
-                                    <a href="{{ value }}" target="_blank" class="text-blue-600 hover:text-blue-800 underline">{{ value|truncatechars:30 }}</a>
-                                {% elif column.column_type == 'date' %}
-                                    {{ value|date:"M j, Y" }}
-                                {% else %}
-                                    {{ value|truncatechars:50 }}
-                                {% endif %}
-                            {% else %}
-                                <span class="text-gray-400 italic">Empty</span>
-                            {% endif %}
-                        </td>
-                        {% endfor %}
-                         <td class="px-3 py-3 whitespace-nowrap text-sm text-gray-400 border-r border-gray-100">
-                             <!-- Placeholder for add column -->
-                         </td>
-                     </tr>
-                     {% endfor %}
-
-                 </tbody>
-              </table>
-          </div>
-          </div>
+    {% include "snippets/_table_editor.html" %}
       </div>
 
 <!-- Inline Edit Modal -->
