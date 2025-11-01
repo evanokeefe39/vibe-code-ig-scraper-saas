@@ -221,14 +221,30 @@ def list_create(request):
                 defaults={'username': 'dev', 'email': 'dev@example.com'}
             )
 
-            # Create the list (without columns)
+            # Create the list
             user_list = UserList.objects.create(
                 user=user,
                 name=name,
                 description=description
             )
 
-            messages.success(request, f'List "{name}" created successfully! Add columns in the detail view.')
+            # Create default columns
+            ListColumn.objects.create(
+                user_list=user_list,
+                name='Source',
+                column_type='text',
+                description='Where this data came from',
+                order=0
+            )
+            ListColumn.objects.create(
+                user_list=user_list,
+                name='Created At',
+                column_type='date',
+                description='When this entry was created',
+                order=1
+            )
+
+            messages.success(request, f'List "{name}" created successfully!')
             return redirect('list_detail', pk=user_list.pk)
         else:
             messages.error(request, 'Please provide a list name.')

@@ -1,12 +1,12 @@
 services:
-  django:
+   django:
     build: .
     ports:
       - "8000:8000"
     environment:
       - DATABASE_URL=postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}
       - DEBUG=True
-      - ALLOWED_HOSTS=localhost,127.0.0.1
+      - ALLOWED_HOSTS=localhost,127.0.0.1,django
       - N8N_BASE_URL=http://n8n:5678
       - N8N_API_KEY=${N8N_API_KEY}
     depends_on:
@@ -15,33 +15,52 @@ services:
       - .:/app
       - /app/__pycache__
     restart: unless-stopped
+    networks:
+      - testnet
 
-  n8n:
-    image: n8nio/n8n:latest
-    ports:
-      - "5678:5678"
-    environment:
-      - N8N_BASIC_AUTH_ACTIVE=true
-      - N8N_BASIC_AUTH_USER=${N8N_BASIC_AUTH_USER}
-      - N8N_BASIC_AUTH_PASSWORD=${N8N_BASIC_AUTH_PASSWORD}
-      - N8N_REST_API_ENABLED=true
-      - N8N_REST_API_DISABLE_AUTH=false
-    volumes:
-      - n8n_data:/home/node/.n8n
-    restart: unless-stopped
+   n8n:
+      image: n8nio/n8n:latest
+      ports:
+        - "5678:5678"
+      environment:
+        - N8N_BASIC_AUTH_ACTIVE=true
+        - N8N_BASIC_AUTH_USER=${N8N_BASIC_AUTH_USER}
+        - N8N_BASIC_AUTH_PASSWORD=${N8N_BASIC_AUTH_PASSWORD}
+        - N8N_REST_API_ENABLED=true
+        - N8N_REST_API_DISABLE_AUTH=false
+      volumes:
+        - n8n_data:/home/node/.n8n
+      restart: unless-stopped
+      networks:
+        - testnet
 
-  postgres:
-    image: postgres:15
-    environment:
-      POSTGRES_DB: ${POSTGRES_DB}
-      POSTGRES_USER: ${POSTGRES_USER}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
-    ports:
-      - "5432:5432"
-    volumes:
-      - postgres_data:/var/lib/postgresql/data
-    restart: unless-stopped
+   postgres:
+      image: postgres:15
+      environment:
+        POSTGRES_DB: ${POSTGRES_DB}
+        POSTGRES_USER: ${POSTGRES_USER}
+        POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      ports:
+        - "5432:5432"
+      volumes:
+        - postgres_data:/var/lib/postgresql/data
+      restart: unless-stopped
+      networks:
+        - testnet
+
+   playwright:
+      image: mcr.microsoft.com/playwright:v1.56.1-noble
+      command: npx @playwright/mcp --port 3002 --host 0.0.0.0
+      ports:
+        - "3002:3002"
+      restart: unless-stopped
+      networks:
+        - testnet
 
 volumes:
   n8n_data:
   postgres_data:
+
+networks:
+  testnet:
+    driver: bridge
