@@ -62,6 +62,17 @@ Built according to table_editor_spec.md
             <!-- Table Header -->
             <thead class="bg-gray-50">
                 <tr>
+                    <!-- Selection Column -->
+                    <th class="w-12 px-3 py-3 text-center">
+                        <input
+                            type="checkbox"
+                            :checked="selectAll"
+                            :indeterminate="isIndeterminate"
+                            @change="toggleSelectAll()"
+                            class="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                        >
+                    </th>
+
                     <!-- Data Columns -->
                     <template x-for="(column, index) in columns" :key="column.id">
                         <th
@@ -164,6 +175,9 @@ Built according to table_editor_spec.md
 
                 <!-- Filter Row -->
                 <tr class="bg-gray-25 border-t border-gray-200">
+                    <!-- Selection Column Filter (empty) -->
+                    <th class="w-12 bg-gray-25"></th>
+
                     <template x-for="column in columns" :key="`filter-${column.id}`">
                         <th class="px-3 py-2 border-r border-gray-200">
                             <input
@@ -182,7 +196,17 @@ Built according to table_editor_spec.md
             <!-- Table Body -->
             <tbody class="bg-white divide-y divide-gray-200">
                 <template x-for="(row, rowIndex) in filteredRows" :key="row.id">
-                    <tr class="hover:bg-gray-50" :class="{ 'bg-yellow-50': hasUnsavedChanges && unsavedChanges[row.id] }">
+                    <tr class="hover:bg-gray-50" :class="{ 'bg-yellow-50': hasUnsavedChanges && unsavedChanges[row.id], 'bg-blue-50': selectedRows.has(row.id) }">
+                        <!-- Selection Column -->
+                        <td class="w-12 px-3 py-3 text-center">
+                            <input
+                                type="checkbox"
+                                :checked="selectedRows.has(row.id)"
+                                @change="toggleRowSelection(row.id)"
+                                class="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                            >
+                        </td>
+
                         <!-- Data Cells -->
                         <template x-for="(column, colIndex) in columns" :key="`cell-${row.id}-${column.id}`">
                             <td
@@ -217,7 +241,7 @@ Built according to table_editor_spec.md
 
                 <!-- Empty State -->
                 <tr x-show="filteredRows.length === 0" x-cloak>
-                    <td :colspan="columns.length + 1" class="px-6 py-12 text-center text-gray-500">
+                    <td :colspan="columns.length + 2" class="px-6 py-12 text-center text-gray-500">
                         <div class="flex flex-col items-center">
                             <svg class="w-12 h-12 text-gray-300 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17V7m0 10a2 2 0 01-2 2H5a2 2 0 01-2-2V7a2 2 0 012-2h2a2 2 0 012 2m0 10a2 2 0 002 2h2a2 2 0 002-2M9 7a2 2 0 012-2h2a2 2 0 012 2m0 10V7m0 10a2 2 0 002 2h2a2 2 0 002-2V7a2 2 0 00-2-2h-2a2 2 0 00-2 2"/>
@@ -233,9 +257,34 @@ Built according to table_editor_spec.md
 
     <!-- Table Footer -->
     <div class="px-6 py-4 border-t border-gray-200 bg-gray-50">
+        <!-- Bulk Actions Bar (when rows selected) -->
+        <div x-show="selectedRows.size > 0" x-transition class="mb-4 p-3 bg-blue-50 border border-blue-200 rounded-md">
+            <div class="flex justify-between items-center">
+                <div class="text-sm text-blue-800">
+                    <span x-text="`${selectedRows.size} row${selectedRows.size === 1 ? '' : 's'} selected`"></span>
+                </div>
+                <div class="flex space-x-2">
+                    <button
+                        @click="clearSelection()"
+                        class="px-3 py-1 text-xs text-gray-600 hover:text-gray-800 transition-colors"
+                    >
+                        Clear Selection
+                    </button>
+                    <button
+                        @click="deleteSelectedRows()"
+                        class="px-3 py-1 text-xs text-red-600 hover:text-red-800 transition-colors"
+                    >
+                        Delete Selected
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Default Footer -->
         <div class="flex justify-between items-center">
             <button
                 @click="addRow()"
+                x-show="selectedRows.size === 0"
                 class="inline-flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-md transition-colors"
             >
                 <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -266,6 +315,9 @@ function tableEditor() {
         isSaving: false,
         globalSearch: '',
         columnFilters: {},
+        selectedRows: new Set(),
+        selectAll: false,
+        isIndeterminate: false,
 
         // Computed
         hasUnsavedChanges() {
@@ -410,6 +462,63 @@ function tableEditor() {
             // HTMX will handle the actual save via the button's hx-post
         },
 
+        // Row Selection Methods
+        toggleRowSelection(rowId) {
+            if (this.selectedRows.has(rowId)) {
+                this.selectedRows.delete(rowId);
+            } else {
+                this.selectedRows.add(rowId);
+            }
+            this.updateSelectAllState();
+        },
+
+        toggleSelectAll() {
+            if (this.selectAll) {
+                // Deselect all
+                this.selectedRows.clear();
+            } else {
+                // Select all visible rows
+                this.filteredRows.forEach(row => {
+                    this.selectedRows.add(row.id);
+                });
+            }
+            this.updateSelectAllState();
+        },
+
+        updateSelectAllState() {
+            const visibleRowIds = new Set(this.filteredRows.map(row => row.id));
+            const selectedVisibleRows = [...this.selectedRows].filter(id => visibleRowIds.has(id));
+
+            if (selectedVisibleRows.length === 0) {
+                this.selectAll = false;
+                this.isIndeterminate = false;
+            } else if (selectedVisibleRows.length === this.filteredRows.length) {
+                this.selectAll = true;
+                this.isIndeterminate = false;
+            } else {
+                this.selectAll = false;
+                this.isIndeterminate = true;
+            }
+        },
+
+        clearSelection() {
+            this.selectedRows.clear();
+            this.selectAll = false;
+            this.isIndeterminate = false;
+        },
+
+        deleteSelectedRows() {
+            const count = this.selectedRows.size;
+            if (count === 0) return;
+
+            if (confirm(`Are you sure you want to delete ${count} selected row${count === 1 ? '' : 's'}? This action cannot be undone.`)) {
+                // This would typically make an HTMX request to delete multiple rows
+                console.log('Delete selected rows:', [...this.selectedRows]);
+                this.clearSelection();
+                // TODO: Implement actual bulk delete via HTMX
+            }
+        },
+
         addRow() {
             // This would typically make an HTMX request to add a row
             console.log('Add row clicked');
@@ -498,6 +607,7 @@ function tableEditor() {
             });
 
             this.applySorting();
+            this.updateSelectAllState(); // Update selection state when filters change
         }
     }
 }
