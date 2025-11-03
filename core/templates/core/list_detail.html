@@ -33,7 +33,7 @@
         </div>
     </div>
 
-     <div id="table-editor">
+<div id="table-editor" x-data="tableEditor">
          {% include "snippets/_table_editor.html" %}
      </div>
       </div>
@@ -129,6 +129,21 @@ function getCookie(name) {
 
 const csrftoken = getCookie('csrftoken');
 
+// Helper functions for validation
+function isValidDate(dateString) {
+    const date = new Date(dateString);
+    return !isNaN(date.getTime()) && date.toISOString().startsWith(dateString.split('T')[0]);
+}
+
+function isValidUrl(string) {
+    try {
+        new URL(string);
+        return true;
+    } catch (_) {
+        return false;
+    }
+}
+
 // Global data for table editor
 console.log('columns_json raw:', '{{ columns_json|safe }}');
 console.log('rows_json raw:', '{{ rows_json|safe }}');
@@ -152,9 +167,71 @@ function tableEditor() {
         selectedRows: new Set(),
         selectAll: false,
         isIndeterminate: false,
-        // Column editing
+// Column editing
         editingColumnName: null,
         tempColumnName: '',
+        showTypeSelector: null,
+        typeValidation: null,
+        
+        // Column types configuration
+        columnTypes: [
+            { 
+                value: 'text', 
+                name: 'Text', 
+                description: 'Plain text content', 
+                icon: 'T', 
+                iconClass: 'bg-gray-100 text-gray-600' 
+            },
+            { 
+                value: 'number', 
+                name: 'Number', 
+                description: 'Numeric values', 
+                icon: '#', 
+                iconClass: 'bg-blue-100 text-blue-600' 
+            },
+            { 
+                value: 'date', 
+                name: 'Date', 
+                description: 'Date values', 
+                icon: 'D', 
+                iconClass: 'bg-green-100 text-green-600' 
+            },
+            { 
+                value: 'boolean', 
+                name: 'Boolean', 
+                description: 'True/False values', 
+                icon: 'B', 
+                iconClass: 'bg-purple-100 text-purple-600' 
+            },
+            { 
+                value: 'select', 
+                name: 'Select', 
+                description: 'Single choice from options', 
+                icon: 'S', 
+                iconClass: 'bg-yellow-100 text-yellow-600' 
+            },
+            { 
+                value: 'multi_select', 
+                name: 'Multi Select', 
+                description: 'Multiple choices from options', 
+                icon: 'M', 
+                iconClass: 'bg-orange-100 text-orange-600' 
+            },
+            { 
+                value: 'url', 
+                name: 'URL', 
+                description: 'Web links and addresses', 
+                icon: 'U', 
+                iconClass: 'bg-indigo-100 text-indigo-600' 
+            },
+            { 
+                value: 'json', 
+                name: 'JSON', 
+                description: 'Structured JSON data', 
+                icon: 'J', 
+                iconClass: 'bg-red-100 text-red-600' 
+            }
+        ],
         // Column resizing
         isResizing: false,
         resizingColumnId: null,
@@ -669,9 +746,148 @@ fetch(`/lists/${listId}/columns/create/`, {
             });
         },
 
-        editColumn(columnId) {
-            // For now, just focus on the column name for inline editing
-            this.startEditColumnName(columnId);
+editColumn(columnId) {
+            // Open column type selector
+            this.openColumnTypeSelector(columnId);
+        },
+
+        openColumnTypeSelector(columnId) {
+            this.showTypeSelector = columnId;
+            this.validateColumnTypeChange(columnId);
+        },
+
+        closeTypeSelector() {
+            this.showTypeSelector = null;
+            this.typeValidation = null;
+        },
+
+        validateColumnTypeChange(columnId) {
+            const column = this.columns.find(c => c.id === columnId);
+            if (!column) return;
+
+            // Get existing data for this column
+            const columnData = this.rows.map(row => row.data[column.name]).filter(val => val != null && val !== '');
+            
+            // If no data, allow any type
+            if (columnData.length === 0) {
+                this.typeValidation = null;
+                return;
+            }
+
+            // Check compatibility based on current and target type
+            const validation = this.checkTypeCompatibility(columnData, column.type);
+            this.typeValidation = validation;
+        },
+
+        
+
+        // Helper functions for validation
+        isValidDate(dateString) {
+            const date = new Date(dateString);
+            return date instanceof Date && !isNaN(date);
+        },
+
+        isValidUrl(string) {
+            try {
+                new URL(string);
+                return true;
+            } catch (_) {
+                return false;
+            }
+        },
+
+        checkTypeCompatibility(data, currentType) {
+            // Define what types can be converted to what
+            const compatibility = {
+                'text': ['text', 'number', 'date', 'boolean', 'select', 'multi_select', 'url', 'json'],
+                'number': ['number', 'text', 'json'],
+                'date': ['date', 'text', 'json'],
+                'boolean': ['boolean', 'text', 'select', 'multi_select', 'json'],
+                'select': ['select', 'text', 'multi_select', 'json'],
+                'multi_select': ['multi_select', 'text', 'select', 'json'],
+                'url': ['url', 'text', 'json'],
+                'json': ['json', 'text', 'number', 'date', 'boolean', 'select', 'multi_select', 'url']
+            };
+
+            // Check if data has any non-compatible values
+            const sampleConflicts = [];
+            const hasIncompatibleData = data.some(value => {
+                const strValue = String(value).trim();
+                if (!strValue) return false;
+
+                // Simple validation based on content
+                if (currentType === 'number' && isNaN(Number(strValue))) {
+                    sampleConflicts.push(strValue);
+                    return true;
+                }
+                if (currentType === 'date' && !isValidDate(strValue)) {
+                    sampleConflicts.push(strValue);
+                    return true;
+                }
+                if (currentType === 'boolean' && !['true', 'false', '1', '0', 'yes', 'no'].includes(strValue.toLowerCase())) {
+                    sampleConflicts.push(strValue);
+                    return true;
+                }
+                if (currentType === 'url' && !isValidUrl(strValue)) {
+                    sampleConflicts.push(strValue);
+                    return true;
+                }
+                return false;
+            });
+
+            if (hasIncompatibleData) {
+                return {
+                    allowed: false,
+                    message: `Column contains data that may not be compatible with some types. Existing data: ${sampleConflicts.length} values`,
+                    sample_conflicts: sampleConflicts.slice(0, 3)
+                };
+            }
+
+            return { allowed: true, message: 'Type change is safe' };
+        },
+
+        async selectColumnType(columnId, newType) {
+            const column = this.columns.find(c => c.id === columnId);
+            if (!column) return;
+
+            // Validate if changing to different type
+            if (column.type !== newType) {
+                // Check validation
+                this.validateColumnTypeChange(columnId);
+                
+                if (this.typeValidation && !this.typeValidation.allowed) {
+                    // Show confirmation dialog with details
+                    const message = `This column contains data that may not be compatible with the new type.\n\n${this.typeValidation.message}\n\nDo you want to proceed anyway?`;
+                    if (!confirm(message)) {
+                        return;
+                    }
+                }
+            }
+
+            // Proceed with type change
+            try {
+                const listId = {{ list.pk }};
+                const response = await fetch(`/lists/${listId}/columns/${columnId}/update/`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                        'X-CSRFToken': csrftoken,
+                    },
+                    body: `column_type=${encodeURIComponent(newType)}`
+                });
+
+                if (response.ok) {
+                    // Update local data
+                    column.type = newType;
+                    this.closeTypeSelector();
+                    console.log('Column type updated successfully');
+                } else {
+                    alert('Error updating column type');
+                }
+            } catch (error) {
+                console.error('Update column type error:', error);
+                alert('Error updating column type');
+            }
         },
 
         deleteColumn(columnId) {
@@ -959,5 +1175,23 @@ function confirmDeleteList() {
         alert('Error deleting list');
     });
 }
+</script>
+
+<!-- Initialize Alpine.js -->
+<script>
+document.addEventListener('alpine:init', () => {
+    Alpine.data('tableEditor', tableEditor);
+});
+
+// Make tableEditor functions globally accessible for onclick handlers
+document.addEventListener('DOMContentLoaded', () => {
+    // Wait for Alpine to initialize
+    setTimeout(() => {
+        const tableEditorElement = document.querySelector('#table-editor');
+        if (tableEditorElement) {
+            window.tableEditorData = Alpine.$data(tableEditorElement);
+        }
+    }, 100);
+});
 </script>
 {% endblock %}

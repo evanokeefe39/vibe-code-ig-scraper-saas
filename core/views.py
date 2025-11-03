@@ -737,7 +737,7 @@ def update_column(request, pk, column_id):
         if 'description' in request.POST:
             column.description = request.POST.get('description', '').strip()
 
-        # Update required
+# Update required
         if 'required' in request.POST:
             column.required = request.POST.get('required').lower() == 'true'
 
@@ -745,6 +745,113 @@ def update_column(request, pk, column_id):
         return JsonResponse({'success': True})
 
     return JsonResponse({'success': False, 'error': 'Invalid request'})
+
+@require_http_methods(["POST"])
+def validate_column_type_change(request, pk, column_id):
+    """Validate if column type change is safe"""
+    list_obj = get_object_or_404(UserList, pk=pk, user__id=1)
+    column = get_object_or_404(ListColumn, pk=column_id, user_list=list_obj)
+    new_type = request.POST.get('column_type')
+    
+    if not new_type or new_type not in dict(ListColumn.COLUMN_TYPES):
+        return JsonResponse({'success': False, 'error': 'Invalid column type'})
+    
+    # Get existing data
+    rows = list_obj.rows.all()
+    existing_data = [row.data.get(column.name) for row in rows if row.data.get(column.name) is not None]
+    
+    # Remove empty values
+    non_empty_data = [str(val).strip() for val in existing_data if str(val).strip()]
+    
+    if not non_empty_data:
+        return JsonResponse({
+            'success': True, 
+            'allowed': True, 
+            'message': 'Column is empty - any type allowed',
+            'sample_conflicts': []
+        })
+    
+    # Validate compatibility based on current type
+    validation = validate_type_compatibility(non_empty_data, column.column_type, new_type)
+    
+    return JsonResponse({
+        'success': True,
+        'allowed': validation['allowed'],
+        'message': validation['message'],
+        'sample_conflicts': validation.get('sample_conflicts', [])
+    })
+
+def validate_type_compatibility(data, current_type, new_type):
+    """Check if data can be safely converted to new type"""
+    
+    # Define compatibility rules
+    def is_number(value):
+        try:
+            float(value)
+            return True
+        except ValueError:
+            return False
+    
+    def is_date(value):
+        try:
+            from datetime import datetime
+            # Try common date formats
+            for fmt in ['%Y-%m-%d', '%m/%d/%Y', '%d/%m/%Y', '%Y-%m-%d %H:%M:%S']:
+                try:
+                    datetime.strptime(value, fmt)
+                    return True
+                except ValueError:
+                    continue
+            return False
+        except:
+            return False
+    
+    def is_boolean(value):
+        return str(value).lower() in ['true', 'false', '1', '0', 'yes', 'no']
+    
+    def is_url(value):
+        try:
+            from urllib.parse import urlparse
+            result = urlparse(value)
+            return all([result.scheme, result.netloc])
+        except:
+            return False
+    
+    # Check for incompatible data
+    conflicts = []
+    
+    # If current type is number, check for non-numeric values
+    if current_type == 'number':
+        for value in data:
+            if not is_number(value):
+                conflicts.append(value)
+    
+    # If current type is date, check for non-date values
+    elif current_type == 'date':
+        for value in data:
+            if not is_date(value):
+                conflicts.append(value)
+    
+    # If current type is boolean, check for non-boolean values
+    elif current_type == 'boolean':
+        for value in data:
+            if not is_boolean(value):
+                conflicts.append(value)
+    
+    # If current type is url, check for non-url values
+    elif current_type == 'url':
+        for value in data:
+            if not is_url(value) and value.strip():  # Allow empty strings
+                conflicts.append(value)
+    
+    if conflicts:
+        return {
+            'allowed': False,
+            'message': f'Cannot change to {new_type}: {len(conflicts)} values would be incompatible',
+            'sample_conflicts': conflicts[:3]  # Show first 3 conflicts
+        }
+    
+    return {'allowed': True, 'message': 'Type change is safe'}
 
 def delete_column(request, pk, column_id):
     if request.method == 'POST':

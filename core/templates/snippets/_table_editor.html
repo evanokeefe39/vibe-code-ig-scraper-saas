@@ -76,10 +76,10 @@ Built according to table_editor_spec.md
                                     </div>
                                     <div x-show="editingColumnName === column.id" x-data="{ tempName: column.name }"
                                          @click.away="cancelEditColumnName()" class="flex-1">
-                                        <input type="text" x-model="tempName" 
+<input type="text" x-model="tempName" 
                                                @keydown.enter.stop="saveColumnName(column.id, tempName)"
                                                @keydown.escape.stop="cancelEditColumnName()"
-                                               class="w-full px-1 py-0 text-xs font-semibold border border-blue-500 rounded focus:outline-none">
+                                               class="w-full px-1 py-0 text-xs font-semibold bg-transparent border-0 border-b-2 border-blue-500 rounded-none focus:outline-none focus:bg-blue-50">
                                     </div>
                                     
                                     <!-- Column Type Badge -->
@@ -105,11 +105,19 @@ Built according to table_editor_spec.md
                                         class="absolute right-0 mt-1 w-48 bg-white rounded-md shadow-lg z-10 border border-gray-200"
                                     >
                                         <div class="py-1">
-                                            <button
-                                                @click="editColumn(column.id)"
+<button
+                                                @click="openColumnTypeSelector(column.id)"
                                                 class="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
                                             >
-                                                Edit Column
+                                                <div class="flex items-center space-x-2">
+                                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>
+                                                    </svg>
+                                                    <span>Change Type</span>
+                                                    <svg class="w-3 h-3 ml-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+                                                    </svg>
+                                                </div>
                                             </button>
                                             <button
                                                 @click="insertColumn(column.id, 'left')"
@@ -131,8 +139,149 @@ Built according to table_editor_spec.md
                                                 Delete Column
                                             </button>
                                         </div>
-                                    </div>
+</div>
                                 </div>
+                             </div>
+
+<!-- Column Type Selector Dropdown -->
+                             <div x-show="showTypeSelector === column.id" 
+                                  @click.away="closeTypeSelector()"
+                                  class="absolute right-0 mt-1 w-72 bg-white rounded-md shadow-lg z-20 border border-gray-200">
+                                  <div class="py-1">
+                                     <!-- Text -->
+                                     <div @click="selectColumnType(column.id, 'text')" 
+                                          class="px-4 py-3 hover:bg-gray-50 cursor-pointer border-b border-gray-100 last:border-b-0">
+                                         <div class="flex items-center space-x-3">
+                                             <div class="w-8 h-8 rounded flex items-center justify-center bg-gray-100 text-gray-600">
+                                                 <div class="w-4 h-4 font-bold">T</div>
+                                             </div>
+                                             <div class="flex-1">
+                                                 <div class="font-medium text-sm text-gray-900">Text</div>
+                                                 <div class="text-xs text-gray-500">Plain text content</div>
+                                             </div>
+                                         </div>
+                                     </div>
+                                     <!-- Number -->
+                                     <div @click="selectColumnType(column.id, 'number')" 
+                                          class="px-4 py-3 hover:bg-gray-50 cursor-pointer border-b border-gray-100 last:border-b-0">
+                                         <div class="flex items-center space-x-3">
+                                             <div class="w-8 h-8 rounded flex items-center justify-center bg-blue-100 text-blue-600">
+                                                 <div class="w-4 h-4 font-bold">#</div>
+                                             </div>
+                                             <div class="flex-1">
+                                                 <div class="font-medium text-sm text-gray-900">Number</div>
+                                                 <div class="text-xs text-gray-500">Numeric values</div>
+                                             </div>
+                                         </div>
+                                     </div>
+                                     <!-- Date -->
+                                     <div @click="selectColumnType(column.id, 'date')" 
+                                          class="px-4 py-3 hover:bg-gray-50 cursor-pointer border-b border-gray-100 last:border-b-0">
+                                         <div class="flex items-center space-x-3">
+                                             <div class="w-8 h-8 rounded flex items-center justify-center bg-green-100 text-green-600">
+                                                 <div class="w-4 h-4 font-bold">D</div>
+                                             </div>
+                                             <div class="flex-1">
+                                                 <div class="font-medium text-sm text-gray-900">Date</div>
+                                                 <div class="text-xs text-gray-500">Date values</div>
+                                             </div>
+                                         </div>
+                                     </div>
+                                     <!-- Boolean -->
+                                     <div @click="selectColumnType(column.id, 'boolean')" 
+                                          class="px-4 py-3 hover:bg-gray-50 cursor-pointer border-b border-gray-100 last:border-b-0">
+                                         <div class="flex items-center space-x-3">
+                                             <div class="w-8 h-8 rounded flex items-center justify-center bg-purple-100 text-purple-600">
+                                                 <div class="w-4 h-4 font-bold">B</div>
+                                             </div>
+                                             <div class="flex-1">
+                                                 <div class="font-medium text-sm text-gray-900">Boolean</div>
+                                                 <div class="text-xs text-gray-500">True/False values</div>
+                                             </div>
+                                         </div>
+                                     </div>
+                                     <!-- Select -->
+                                     <div @click="selectColumnType(column.id, 'select')" 
+                                          class="px-4 py-3 hover:bg-gray-50 cursor-pointer border-b border-gray-100 last:border-b-0">
+                                         <div class="flex items-center space-x-3">
+                                             <div class="w-8 h-8 rounded flex items-center justify-center bg-yellow-100 text-yellow-600">
+                                                 <div class="w-4 h-4 font-bold">S</div>
+                                             </div>
+                                             <div class="flex-1">
+                                                 <div class="font-medium text-sm text-gray-900">Select</div>
+                                                 <div class="text-xs text-gray-500">Single choice from options</div>
+                                             </div>
+                                         </div>
+                                     </div>
+                                     <!-- Multi Select -->
+                                     <div @click="selectColumnType(column.id, 'multi_select')" 
+                                          class="px-4 py-3 hover:bg-gray-50 cursor-pointer border-b border-gray-100 last:border-b-0">
+                                         <div class="flex items-center space-x-3">
+                                             <div class="w-8 h-8 rounded flex items-center justify-center bg-orange-100 text-orange-600">
+                                                 <div class="w-4 h-4 font-bold">M</div>
+                                             </div>
+                                             <div class="flex-1">
+                                                 <div class="font-medium text-sm text-gray-900">Multi Select</div>
+                                                 <div class="text-xs text-gray-500">Multiple choices from options</div>
+                                             </div>
+                                         </div>
+                                     </div>
+                                     <!-- URL -->
+                                     <div @click="selectColumnType(column.id, 'url')" 
+                                          class="px-4 py-3 hover:bg-gray-50 cursor-pointer border-b border-gray-100 last:border-b-0">
+                                         <div class="flex items-center space-x-3">
+                                             <div class="w-8 h-8 rounded flex items-center justify-center bg-indigo-100 text-indigo-600">
+                                                 <div class="w-4 h-4 font-bold">U</div>
+                                             </div>
+                                             <div class="flex-1">
+                                                 <div class="font-medium text-sm text-gray-900">URL</div>
+                                                 <div class="text-xs text-gray-500">Web links and addresses</div>
+                                             </div>
+                                         </div>
+                                     </div>
+                                     <!-- JSON -->
+                                     <div @click="selectColumnType(column.id, 'json')" 
+                                          class="px-4 py-3 hover:bg-gray-50 cursor-pointer border-b border-gray-100 last:border-b-0">
+                                         <div class="flex items-center space-x-3">
+                                             <div class="w-8 h-8 rounded flex items-center justify-center bg-red-100 text-red-600">
+                                                 <div class="w-4 h-4 font-bold">J</div>
+                                             </div>
+                                             <div class="flex-1">
+                                                 <div class="font-medium text-sm text-gray-900">JSON</div>
+                                                 <div class="text-xs text-gray-500">Structured JSON data</div>
+                                             </div>
+                                         </div>
+                                     </div>
+                                 </div>
+                             </div>
+                                             <div class="flex-1">
+                                                 <div class="font-medium text-sm text-gray-900">Text</div>
+                                                 <div class="text-xs text-gray-500">Plain text content</div>
+                                             </div>
+                                             <div x-show="$root.typeValidation && $root.typeValidation.allowed === false && $root.selectedType === 'text'" class="w-4 h-4 text-blue-600">
+                                                 <svg fill="currentColor" viewBox="0 0 20 20">
+                                                     <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-8-8a1 1 0 011.414-1.414L8 12.586V7a1 1 0 012 0v5.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
+                                                 </svg>
+                                             </div>
+                                         </div>
+                                     </div>
+                                 </template>
+                                 
+<!-- Validation Message -->
+                                  <div x-show="$root.typeValidation && $root.typeValidation.allowed === false" class="px-4 py-3 bg-red-50 border-t border-red-200">
+                                      <div class="text-sm text-red-700">
+                                          <div class="font-medium mb-1">Cannot change column type:</div>
+                                          <div x-text="$root.typeValidation && $root.typeValidation.message ? $root.typeValidation.message : ''"></div>
+                                          <div x-show="$root.typeValidation && $root.typeValidation.sample_conflicts && $root.typeValidation.sample_conflicts.length > 0" class="mt-2">
+                                              <div class="text-xs font-medium mb-1">Example conflicts:</div>
+                                              <ul class="text-xs space-y-1">
+                                                  <template x-for="conflict in ($root.typeValidation && $root.typeValidation.sample_conflicts ? $root.typeValidation.sample_conflicts : [])">
+                                                      <li>• <span x-text="conflict"></span></li>
+                                                  </template>
+                                              </ul>
+                                          </div>
+                                      </div>
+                                  </div>
                              </div>
 
                              <!-- Column Resize Handle -->

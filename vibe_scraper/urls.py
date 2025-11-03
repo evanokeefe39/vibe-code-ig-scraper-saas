@@ -17,7 +17,7 @@ Including another URLconf
 
 from django.contrib import admin
 from django.urls import path
-from core.views import home, test_geocode, run_create, run_list, run_detail, run_by_n8n, run_status_api, list_list, list_detail, list_create, list_column_create, list_row_create, export_list_csv, export_list_json, export_run_csv, export_run_json, update_cell, delete_row, add_blank_row, update_column, delete_column, delete_list, table_save
+from core.views import home, test_geocode, run_create, run_list, run_detail, run_by_n8n, run_status_api, list_list, list_detail, list_create, list_column_create, list_row_create, export_list_csv, export_list_json, export_run_csv, export_run_json, update_cell, delete_row, add_blank_row, update_column, delete_column, delete_list, table_save, validate_column_type_change
 
 urlpatterns = [
     path("admin/", admin.site.urls),
@@ -36,6 +36,7 @@ urlpatterns = [
     path("lists/<int:pk>/", list_detail, name="list_detail"),
     path("lists/<int:pk>/columns/create/", list_column_create, name="list_column_create"),
     path("lists/<int:pk>/columns/<int:column_id>/update/", update_column, name="update_column"),
+    path("lists/<int:pk>/columns/<int:column_id>/validate/", validate_column_type_change, name="validate_column_type_change"),
     path("lists/<int:pk>/columns/<int:column_id>/delete/", delete_column, name="delete_column"),
     path("lists/<int:pk>/delete/", delete_list, name="delete_list"),
     path("lists/<int:pk>/rows/create/", list_row_create, name="list_row_create"),
