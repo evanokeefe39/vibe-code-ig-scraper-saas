@@ -514,8 +514,33 @@ function tableEditor() {
             }
         },
 
-        addRow() {
-            // HTMX handles the request, response is handled by the event listener below
+addRow() {
+            const listId = {{ list.pk }};
+            
+            fetch(`/lists/${listId}/rows/add-blank/`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                    'X-CSRFToken': csrftoken,
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                console.log('Add row response:', data);
+                if (data.success && data.row) {
+                    // Add the new row to the data arrays
+                    this.rows.push(data.row);
+                    this.applyFilters(); // This will update filteredRows properly
+                    this.updateSelectAllState();
+                    console.log('Row added. New rows count:', this.rows.length);
+                } else {
+                    alert('Error adding row');
+                }
+            })
+            .catch(error => {
+                console.error('Error adding row:', error);
+                alert('Error adding row');
+            });
         },
 
         insertRowBelow(rowId) {
@@ -765,26 +790,8 @@ function tableEditor() {
             document.body.style.cursor = '';
         },
 
-        init() {
-            // HTMX event listener for add row response
-            document.addEventListener('htmx:afterRequest', (event) => {
-                if (event.detail.xhr && event.detail.xhr.responseURL &&
-                    event.detail.xhr.responseURL.includes('add-blank')) {
-                    try {
-                        const response = JSON.parse(event.detail.xhr.response);
-                        console.log('Add row response:', response);
-                        if (response.success && response.row) {
-                            // Add the new row to the data arrays
-                            this.rows.push(response.row);
-                            this.filteredRows.push(response.row);
-                            this.updateSelectAllState();
-                            console.log('Row added. New rows count:', this.rows.length);
-                        }
-                    } catch (e) {
-                        console.error('Error parsing add row response:', e);
-                    }
-                }
-            });
+init() {
+            // HTMX event listener for delete row response (keeping for delete functionality)
 
             // HTMX event listener for delete row response
             document.addEventListener('htmx:afterRequest', (event) => {
