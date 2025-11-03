@@ -559,6 +559,9 @@ def add_blank_row(request, pk):
     columns = list_obj.columns.all().order_by('order')
 
     if request.method == 'POST':
+        # Get insert_after parameter if provided
+        insert_after_id = request.POST.get('insert_after')
+        
         # Create row with empty data for all columns
         row_data = {}
         for column in columns:
@@ -579,11 +582,33 @@ def add_blank_row(request, pk):
             data=row_data
         )
 
-        # Return JSON data for the new row
-        row_json = {
-            'id': new_row.pk,
-            'data': row_data
-        }
+        # If insert_after is specified, handle positioning
+        if insert_after_id:
+            try:
+                insert_after_row = ListRow.objects.get(pk=insert_after_id, user_list=list_obj)
+                # Get all rows and find the position
+                all_rows = list_obj.rows.all().order_by('created_at')
+                insert_after_index = list(all_rows).index(insert_after_row)
+                
+                # Return position info for frontend
+                row_json = {
+                    'id': new_row.pk,
+                    'data': row_data,
+                    'insert_after_index': insert_after_index
+                }
+            except ListRow.DoesNotExist:
+                # Fallback if insert_after row not found
+                row_json = {
+                    'id': new_row.pk,
+                    'data': row_data
+                }
+        else:
+            # Regular add at end
+            row_json = {
+                'id': new_row.pk,
+                'data': row_data
+            }
+            
         return JsonResponse({'success': True, 'row': row_json})
 
     return JsonResponse({'success': False, 'error': 'Invalid request'})

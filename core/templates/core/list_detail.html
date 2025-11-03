@@ -543,10 +543,49 @@ addRow() {
             });
         },
 
-        insertRowBelow(rowId) {
+insertRowBelow(rowId) {
             // Redirect to add row page with insert_after parameter
             const listId = {{ list.pk }};
             window.location.href = `/lists/${listId}/rows/create/?insert_after=${rowId}`;
+        },
+
+        insertRowBelowImmediate(rowId) {
+            const listId = {{ list.pk }};
+            
+            fetch(`/lists/${listId}/rows/add-blank/`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                    'X-CSRFToken': csrftoken,
+                },
+                body: `insert_after=${rowId}`
+            })
+            .then(response => response.json())
+            .then(data => {
+                console.log('Insert row below response:', data);
+                if (data.success && data.row) {
+                    // Find the index of the row to insert after
+                    const insertAfterIndex = this.rows.findIndex(r => r.id === rowId);
+                    
+                    if (insertAfterIndex !== -1) {
+                        // Insert the new row at the correct position
+                        this.rows.splice(insertAfterIndex + 1, 0, data.row);
+                    } else {
+                        // Fallback: add to end if row not found
+                        this.rows.push(data.row);
+                    }
+                    
+                    this.applyFilters(); // Update filteredRows
+                    this.updateSelectAllState();
+                    console.log('Row inserted below. New rows count:', this.rows.length);
+                } else {
+                    alert('Error inserting row');
+                }
+            })
+            .catch(error => {
+                console.error('Error inserting row:', error);
+                alert('Error inserting row');
+            });
         },
 
 
