@@ -761,7 +761,7 @@ editColumn(columnId) {
             this.typeValidation = null;
         },
 
-        validateColumnTypeChange(columnId) {
+        validateColumnTypeChange(columnId, targetType = null) {
             const column = this.columns.find(c => c.id === columnId);
             if (!column) return;
 
@@ -774,8 +774,16 @@ editColumn(columnId) {
                 return;
             }
 
+            // If no target type specified, just check current data validity
+            if (!targetType) {
+                // Check if current data is valid for current type
+                const validation = this.checkTypeCompatibility(columnData, column.type, column.type);
+                this.typeValidation = validation;
+                return;
+            }
+
             // Check compatibility based on current and target type
-            const validation = this.checkTypeCompatibility(columnData, column.type);
+            const validation = this.checkTypeCompatibility(columnData, column.type, targetType);
             this.typeValidation = validation;
         },
 
@@ -796,7 +804,7 @@ editColumn(columnId) {
             }
         },
 
-        checkTypeCompatibility(data, currentType) {
+        checkTypeCompatibility(data, currentType, targetType) {
             // Define what types can be converted to what
             const compatibility = {
                 'text': ['text', 'number', 'date', 'boolean', 'select', 'multi_select', 'url', 'json'],
@@ -809,26 +817,35 @@ editColumn(columnId) {
                 'json': ['json', 'text', 'number', 'date', 'boolean', 'select', 'multi_select', 'url']
             };
 
-            // Check if data has any non-compatible values
+            // Check if target type is compatible with current type
+            if (!compatibility[currentType] || !compatibility[currentType].includes(targetType)) {
+                return {
+                    allowed: false,
+                    message: `Cannot convert from ${currentType} to ${targetType}`,
+                    sample_conflicts: []
+                };
+            }
+
+            // Check if data has any values incompatible with target type
             const sampleConflicts = [];
             const hasIncompatibleData = data.some(value => {
                 const strValue = String(value).trim();
                 if (!strValue) return false;
 
-                // Simple validation based on content
-                if (currentType === 'number' && isNaN(Number(strValue))) {
+                // Check if data is compatible with target type
+                if (targetType === 'number' && isNaN(Number(strValue))) {
                     sampleConflicts.push(strValue);
                     return true;
                 }
-                if (currentType === 'date' && !isValidDate(strValue)) {
+                if (targetType === 'date' && !isValidDate(strValue)) {
                     sampleConflicts.push(strValue);
                     return true;
                 }
-                if (currentType === 'boolean' && !['true', 'false', '1', '0', 'yes', 'no'].includes(strValue.toLowerCase())) {
+                if (targetType === 'boolean' && !['true', 'false', '1', '0', 'yes', 'no'].includes(strValue.toLowerCase())) {
                     sampleConflicts.push(strValue);
                     return true;
                 }
-                if (currentType === 'url' && !isValidUrl(strValue)) {
+                if (targetType === 'url' && !isValidUrl(strValue)) {
                     sampleConflicts.push(strValue);
                     return true;
                 }
@@ -838,12 +855,12 @@ editColumn(columnId) {
             if (hasIncompatibleData) {
                 return {
                     allowed: false,
-                    message: `Column contains data that may not be compatible with some types. Existing data: ${sampleConflicts.length} values`,
+                    message: `Column contains ${sampleConflicts.length} value(s) that cannot be converted to ${targetType}`,
                     sample_conflicts: sampleConflicts.slice(0, 3)
                 };
             }
 
-            return { allowed: true, message: 'Type change is safe' };
+            return { allowed: true, message: `Type change from ${currentType} to ${targetType} is safe` };
         },
 
         async selectColumnType(columnId, newType) {
@@ -852,12 +869,15 @@ editColumn(columnId) {
 
             // Validate if changing to different type
             if (column.type !== newType) {
-                // Check validation
-                this.validateColumnTypeChange(columnId);
+                // Check validation for target type
+                this.validateColumnTypeChange(columnId, newType);
                 
                 if (this.typeValidation && !this.typeValidation.allowed) {
                     // Show confirmation dialog with details
-                    const message = `This column contains data that may not be compatible with the new type.\n\n${this.typeValidation.message}\n\nDo you want to proceed anyway?`;
+                    const conflicts = this.typeValidation.sample_conflicts.length > 0 
+                        ? `\n\nConflicting values: ${this.typeValidation.sample_conflicts.join(', ')}`
+                        : '';
+                    const message = `This column contains data that cannot be converted to ${newType} type.\n\n${this.typeValidation.message}${conflicts}\n\nDo you want to proceed anyway?`;
                     if (!confirm(message)) {
                         return;
                     }
