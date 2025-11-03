@@ -279,7 +279,7 @@ def list_column_create(request, pk):
         required = request.POST.get('required') == 'on'
         order = list_obj.columns.count()
 
-        # Handle options for select/multi_select
+# Handle options for select/multi_select
         options = None
         if column_type in ['select', 'multi_select']:
             if column_type == 'select':
@@ -288,7 +288,7 @@ def list_column_create(request, pk):
                 options = []
 
         if name and column_type:
-            ListColumn.objects.create(
+            new_column = ListColumn.objects.create(
                 user_list=list_obj,
                 name=name,
                 column_type=column_type,
@@ -332,9 +332,18 @@ def list_column_create(request, pk):
                 html = render_to_string('snippets/_table_editor.html', context, request)
                 return HttpResponse(html)
 
+# For non-HTMX requests, return the new column data
+            column_data = {
+                'id': new_column.pk,
+                'name': new_column.name,
+                'type': new_column.column_type,
+                'options': new_column.options or {}
+            }
+            
             messages.success(request, 'Column added successfully!')
-            return JsonResponse({'success': True})
-    return JsonResponse({'success': False})
+            return JsonResponse({'success': True, 'column': column_data})
+        
+        return JsonResponse({'success': False})
 
 def list_row_create(request, pk):
     list_obj = get_object_or_404(UserList, pk=pk, user__id=1)

@@ -551,12 +551,22 @@ addRow() {
 
 
 
-        addNewColumn() {
+addNewColumn() {
             const listId = {{ list.pk }};
-            const defaultName = `Column ${this.columns.length + 1}`;
+            
+            // Generate a unique column name
+            let columnNumber = this.columns.length + 1;
+            let defaultName = `Column ${columnNumber}`;
+            
+            // Check if name already exists and find next available number
+            while (this.columns.some(col => col.name === defaultName)) {
+                columnNumber++;
+                defaultName = `Column ${columnNumber}`;
+            }
+            
             const defaultType = 'text';
 
-            fetch(`/lists/${listId}/columns/create/`, {
+fetch(`/lists/${listId}/columns/create/`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/x-www-form-urlencoded',
@@ -564,10 +574,14 @@ addRow() {
                 },
                 body: `name=${encodeURIComponent(defaultName)}&column_type=${defaultType}&required=false`
             })
-            .then(response => {
-                if (response.ok) {
-                    // Reload page to show new column
-                    location.reload();
+            .then(response => response.json())
+            .then(data => {
+                console.log('Add column response:', data);
+                if (data.success && data.column) {
+                    // Add new column to data arrays
+                    this.columns.push(data.column);
+                    this.applyFilters(); // This will update filteredRows properly
+                    console.log('Column added. New columns count:', this.columns.length);
                 } else {
                     alert('Error adding column');
                 }
