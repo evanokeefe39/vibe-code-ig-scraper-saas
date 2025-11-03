@@ -17,7 +17,7 @@ require(['vs/editor/editor.main'], function () {
     const container = document.getElementById('json-editor-container');
     if (!container) return;
     
-    console.log('editorJsonData:', window.editorJsonData);
+    
     if (!window.editorJsonData || window.editorJsonData === 'null') {
         container.innerHTML = '<p class="text-gray-500">No scraped data available yet.</p>';
         return;
@@ -56,7 +56,7 @@ require(['vs/editor/editor.main'], function () {
             lineNumbers: 'on'
         });
     } catch (e) {
-        console.error('Failed to load JSON editor:', e);
+        
         container.innerHTML = '<p class="text-red-600">Error loading JSON editor: ' + e.message + '</p><pre class="text-sm text-gray-800 whitespace-pre-wrap">' + JSON.stringify(window.editorJsonData) + '</pre>';
     }
 });

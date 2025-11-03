@@ -47,21 +47,7 @@
                             <label for="column_{{ column.pk }}" class="ml-2 text-sm text-gray-700">Checked</label>
                         </div>
 
-                    {% elif column.column_type == 'select' %}
-                        <select id="column_{{ column.pk }}" name="column_{{ column.pk }}"
-                                {% if column.required %}required{% endif %}
-                                class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500">
-                            <option value="">Select...</option>
-                            {% for option in column.options %}
-                            <option value="{{ option }}">{{ option }}</option>
-                            {% endfor %}
-                        </select>
-
-                    {% elif column.column_type == 'multi_select' %}
-                        <input type="text" id="column_{{ column.pk }}" name="column_{{ column.pk }}"
-                               class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500"
-                               placeholder="tag1, tag2, tag3">
-                        <p class="mt-1 text-sm text-gray-500">Enter tags separated by commas</p>
+                    
 
                     {% elif column.column_type == 'url' %}
                         <input type="url" id="column_{{ column.pk }}" name="column_{{ column.pk }}"

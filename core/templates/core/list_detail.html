@@ -91,8 +91,7 @@
                     <option value="boolean">Checkbox</option>
                     <option value="date">Date</option>
                     <option value="url">URL</option>
-                    <option value="select">Select</option>
-                    <option value="multi_select">Multi-Select</option>
+
                 </select>
             </div>
             <div class="flex justify-end space-x-3">
@@ -145,13 +144,10 @@ function isValidUrl(string) {
 }
 
 // Global data for table editor
-console.log('columns_json raw:', '{{ columns_json|safe }}');
-console.log('rows_json raw:', '{{ rows_json|safe }}');
 window.tableEditorData = {
     columns: {{ columns_json|safe }},
     rows: {{ rows_json|safe }}
 };
-console.log('tableEditorData:', window.tableEditorData);
 
 // Table Editor Alpine.js component
 function tableEditor() {
@@ -277,7 +273,7 @@ function tableEditor() {
 
         renderInlineEditor(row, column) {
             // Debug logging
-            console.log('renderInlineEditor:', { row, column });
+            
             const currentValue = this.getCellValue(row, column) || '';
 
             switch (column.type) {
@@ -353,8 +349,7 @@ function tableEditor() {
                 const row = this.rows.find(r => r.id === rowId);
                 const column = this.columns.find(c => c.id === columnId);
                 
-                // Debug logging
-                console.log('saveInlineEdit:', { rowId, columnId, row, column, tempValue });
+
                 
                 const oldValue = row && column ? this.getCellValue(row, column) : '';
                 this.recordChange(rowId, columnId, oldValue, tempValue);
@@ -371,7 +366,7 @@ function tableEditor() {
                 // Exit edit mode
                 element.closest('td')._x_dataStack[0].editing = false;
             } catch (error) {
-                console.error('Error saving inline edit:', error);
+                
                 // Force exit edit mode
                 element.closest('td')._x_dataStack[0].editing = false;
             }
@@ -382,7 +377,7 @@ function tableEditor() {
                 // Just exit edit mode without saving
                 element.closest('td')._x_dataStack[0].editing = false;
             } catch (error) {
-                console.error('Error canceling inline edit:', error);
+                
                 // Force exit edit mode
                 element.closest('td')._x_dataStack[0].editing = false;
             }
@@ -469,13 +464,13 @@ function tableEditor() {
             })
             .then(response => {
                 if (!response.ok) {
-                    console.error('Auto-save failed:', response.status);
+                    
                     // Revert local change on failure
                     this.revertLocalChange(rowId, columnId, value);
                 }
             })
             .catch(error => {
-                console.error('Auto-save error:', error);
+                
                 // Revert local change on error
                 this.revertLocalChange(rowId, columnId, value);
             });
@@ -568,7 +563,7 @@ function tableEditor() {
                             // Remove from local data
                             this.rows = this.rows.filter(row => row.id !== rowId);
                         } else {
-                            console.error(`Failed to delete row ${rowId}`);
+                            
                         }
 
                         // Update UI when all requests complete
@@ -579,7 +574,7 @@ function tableEditor() {
                     })
                     .catch(error => {
                         completed++;
-                        console.error(`Error deleting row ${rowId}:`, error);
+                        
 
                         // Update UI when all requests complete
                         if (completed === total) {
@@ -603,19 +598,19 @@ addRow() {
             })
             .then(response => response.json())
             .then(data => {
-                console.log('Add row response:', data);
+                
                 if (data.success && data.row) {
                     // Add the new row to the data arrays
                     this.rows.push(data.row);
                     this.applyFilters(); // This will update filteredRows properly
                     this.updateSelectAllState();
-                    console.log('Row added. New rows count:', this.rows.length);
+                    
                 } else {
                     alert('Error adding row');
                 }
             })
             .catch(error => {
-                console.error('Error adding row:', error);
+                
                 alert('Error adding row');
             });
         },
@@ -639,7 +634,7 @@ insertRowBelow(rowId) {
             })
             .then(response => response.json())
             .then(data => {
-                console.log('Insert row below response:', data);
+                
                 if (data.success && data.row) {
                     // Find the index of the row to insert after
                     const insertAfterIndex = this.rows.findIndex(r => r.id === rowId);
@@ -654,13 +649,13 @@ insertRowBelow(rowId) {
                     
                     this.applyFilters(); // Update filteredRows
                     this.updateSelectAllState();
-                    console.log('Row inserted below. New rows count:', this.rows.length);
+                    
                 } else {
                     alert('Error inserting row');
                 }
             })
             .catch(error => {
-                console.error('Error inserting row:', error);
+                
                 alert('Error inserting row');
             });
         },
@@ -692,18 +687,18 @@ fetch(`/lists/${listId}/columns/create/`, {
             })
             .then(response => response.json())
             .then(data => {
-                console.log('Add column response:', data);
+                
                 if (data.success && data.column) {
                     // Add new column to data arrays
                     this.columns.push(data.column);
                     this.applyFilters(); // This will update filteredRows properly
-                    console.log('Column added. New columns count:', this.columns.length);
+                    
                 } else {
                     alert('Error adding column');
                 }
             })
             .catch(error => {
-                console.error('Add column error:', error);
+                
                 alert('Error adding column');
             });
         },
@@ -741,7 +736,7 @@ fetch(`/lists/${listId}/columns/create/`, {
                 }
             })
             .catch(error => {
-                console.error('Update column error:', error);
+                
                 alert('Error updating column name');
             });
         },
@@ -900,12 +895,12 @@ editColumn(columnId) {
                     // Update local data
                     column.type = newType;
                     this.closeTypeSelector();
-                    console.log('Column type updated successfully');
+                    
                 } else {
                     alert('Error updating column type');
                 }
             } catch (error) {
-                console.error('Update column type error:', error);
+                
                 alert('Error updating column type');
             }
         },
@@ -930,7 +925,7 @@ editColumn(columnId) {
                     }
                 })
                 .catch(error => {
-                    console.error('Delete column error:', error);
+                    
                     alert('Error deleting column');
                 });
             }
@@ -968,7 +963,7 @@ editColumn(columnId) {
                 }
             })
             .catch(error => {
-                console.error('Insert column error:', error);
+                
                 alert('Error inserting column');
             });
         },
