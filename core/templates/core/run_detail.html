@@ -322,7 +322,7 @@ function rerunWithModifiedPrompt() {
 }
 
 function renderExtractedTable(extractedData) {
-    console.log('Extracted data:', extractedData);
+    
 
     let entities = [];
 
@@ -338,10 +338,10 @@ function renderExtractedTable(extractedData) {
     } else if (extractedData.output && extractedData.output.result && Array.isArray(extractedData.output.result)) {
         entities = extractedData.output.result;
     } else {
-        console.warn('Unknown extracted data structure:', extractedData);
+        
     }
 
-    console.log('Found entities:', entities);
+    
 
     const tableHeaders = document.getElementById('table-headers');
     const tableBody = document.getElementById('table-body');
@@ -436,7 +436,9 @@ function pollStatus() {
                 }
             }
         })
-        .catch(error => console.error('Polling error:', error));
+        .catch(error => {
+            // Handle polling error silently
+        });
 }
 
 // Initial update
@@ -493,7 +495,7 @@ try {
     const extractedData = {{ run.extracted|safe }};
     renderExtractedTable(extractedData);
 } catch (e) {
-    console.error('Failed to format extracted data:', e);
+    
     document.getElementById('extracted-table-container').innerHTML = '<p class="text-red-600">Error loading data</p>';
 }
 {% endif %}

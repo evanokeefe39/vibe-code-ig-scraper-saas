@@ -48,14 +48,6 @@ services:
       networks:
         - testnet
 
-   playwright:
-      image: mcr.microsoft.com/playwright:v1.56.1-noble
-      command: npx @playwright/mcp --port 3002 --host 0.0.0.0
-      ports:
-        - "3002:3002"
-      restart: unless-stopped
-      networks:
-        - testnet
 
 volumes:
   n8n_data:
