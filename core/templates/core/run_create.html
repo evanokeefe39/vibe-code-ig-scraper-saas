@@ -8,100 +8,75 @@
 <div class="max-w-6xl mx-auto px-4 py-8">
     <div class="mb-8">
         <h1 class="text-3xl font-bold text-gray-900 mb-2">Create New Scraping Run</h1>
-        <p class="text-gray-600">Configure your social media data extraction parameters</p>
+        <p class="text-gray-600">Configure multi-platform social media data extraction</p>
     </div>
 
     <form method="post" class="bg-white rounded-lg shadow-md p-6" id="run-form">
         {% csrf_token %}
+        {{ form.sources }} {{ form.custom_columns }}
 
-        <div class="grid md:grid-cols-2 gap-8">
-             <!-- Left Column: Parameters -->
-             <div class="space-y-6">
-                 <h2 class="text-xl font-semibold text-gray-900 mb-4">Extraction Parameters</h2>
+        <!-- Step 1: Sources Configuration -->
+        <div class="mb-8">
+            <h2 class="text-xl font-semibold text-gray-900 mb-4">Step 1: Configure Sources</h2>
+            
+            <div id="sources-container" class="space-y-4 mb-4">
+                <!-- Sources will be added here dynamically -->
+            </div>
+            
+            <button type="button" id="add-source-btn" class="inline-flex items-center px-4 py-2 bg-green-600 hover:bg-green-700 text-white font-medium rounded-lg transition-colors duration-200">
+                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/>
+                </svg>
+                Add Source
+            </button>
+        </div>
 
-                 <div>
-                     <label for="{{ form.platform.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-2">
-                         Platform
-                     </label>
-                     {{ form.platform }}
-                     {% if form.platform.help_text %}
-                         <p class="mt-1 text-sm text-gray-500">{{ form.platform.help_text }}</p>
-                     {% endif %}
-                     {% if form.platform.errors %}
-                         <p class="mt-1 text-sm text-red-600">{{ form.platform.errors.0 }}</p>
-                     {% endif %}
-                 </div>
+        <!-- Step 2: Global Settings -->
+        <div class="mb-8">
+            <h2 class="text-xl font-semibold text-gray-900 mb-4">Step 2: Global Settings</h2>
+            
+            <div class="mt-6">
+                <label class="flex items-center">
+                    {{ form.auto_infer_columns }}
+                    <span class="ml-2 text-sm font-medium text-gray-700">{{ form.auto_infer_columns.label }}</span>
+                </label>
+                {% if form.auto_infer_columns.help_text %}
+                    <p class="mt-1 text-sm text-gray-500">{{ form.auto_infer_columns.help_text }}</p>
+                {% endif %}
+                {% if form.auto_infer_columns.errors %}
+                    <p class="mt-1 text-sm text-red-600">{{ form.auto_infer_columns.errors.0 }}</p>
+                {% endif %}
+            </div>
+        </div>
 
-                <div>
-                    <label for="{{ form.days_since.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-2">
-                        Days Since
-                    </label>
-                    {{ form.days_since }}
-                    {% if form.days_since.help_text %}
-                        <p class="mt-1 text-sm text-gray-500">{{ form.days_since.help_text }}</p>
+        <!-- Step 3: Extraction Configuration -->
+        <div class="mb-8">
+            <h2 class="text-xl font-semibold text-gray-900 mb-4">Step 3: Extraction Configuration</h2>
+            
+            <div class="mb-6">
+                <label class="flex items-center">
+                    {{ form.enable_extraction }}
+                    <span class="ml-2 text-sm font-medium text-gray-700">{{ form.enable_extraction.label }}</span>
+                </label>
+                {% if form.enable_extraction.help_text %}
+                    <p class="mt-1 text-sm text-gray-500">{{ form.enable_extraction.help_text }}</p>
+                {% endif %}
+                {% if form.enable_extraction.errors %}
+                    <p class="mt-1 text-sm text-red-600">{{ form.enable_extraction.errors.0 }}</p>
                     {% endif %}
-                    {% if form.days_since.errors %}
-                        <p class="mt-1 text-sm text-red-600">{{ form.days_since.errors.0 }}</p>
-                    {% endif %}
-                </div>
-
-                 <div>
-                     <label for="{{ form.max_results.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-2">
-                         Max Results per Profile
-                     </label>
-                     {{ form.max_results }}
-                     {% if form.max_results.help_text %}
-                         <p class="mt-1 text-sm text-gray-500">{{ form.max_results.help_text }}</p>
-                     {% endif %}
-                     {% if form.max_results.errors %}
-                         <p class="mt-1 text-sm text-red-600">{{ form.max_results.errors.0 }}</p>
-                     {% endif %}
-                 </div>
-
-                 <div>
-                     <label class="flex items-center">
-                         {{ form.enable_extraction }}
-                         <span class="ml-2 text-sm font-medium text-gray-700">{{ form.enable_extraction.label }}</span>
-                     </label>
-                     {% if form.enable_extraction.help_text %}
-                         <p class="mt-1 text-sm text-gray-500">{{ form.enable_extraction.help_text }}</p>
-                     {% endif %}
-                     {% if form.enable_extraction.errors %}
-                         <p class="mt-1 text-sm text-red-600">{{ form.enable_extraction.errors.0 }}</p>
-                     {% endif %}
-                 </div>
-
-                 <!-- Hidden for now: Include Comments and Stories options -->
             </div>
 
-             <!-- Right Column: Profiles and Prompt -->
-             <div class="space-y-6">
-                 <div>
-                     <label for="{{ form.profiles.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-2" id="profiles-label">
-                         Instagram Profiles
-                     </label>
-                    {{ form.profiles }}
-                    {% if form.profiles.help_text %}
-                        <p class="mt-1 text-sm text-gray-500">{{ form.profiles.help_text }}</p>
-                    {% endif %}
-                    {% if form.profiles.errors %}
-                        <p class="mt-1 text-sm text-red-600">{{ form.profiles.errors.0 }}</p>
-                    {% endif %}
-                    <div id="profile-tags" class="mt-2 flex flex-wrap gap-2 max-h-20 overflow-y-auto"></div>
-                </div>
-
-                <div>
-                    <label for="{{ form.extraction_prompt.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-2">
-                        Extraction Prompt
-                    </label>
-                    {{ form.extraction_prompt }}
-                    {% if form.extraction_prompt.help_text %}
-                        <p class="mt-1 text-sm text-gray-500">{{ form.extraction_prompt.help_text }}</p>
-                    {% endif %}
-                    {% if form.extraction_prompt.errors %}
-                        <p class="mt-1 text-sm text-red-600">{{ form.extraction_prompt.errors.0 }}</p>
-                    {% endif %}
-                </div>
+            <div id="extraction-prompt-container">
+                <label for="{{ form.extraction_prompt.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-2">
+                    Extraction Prompt
+                </label>
+                {{ form.extraction_prompt }}
+                {% if form.extraction_prompt.help_text %}
+                    <p class="mt-1 text-sm text-gray-500">{{ form.extraction_prompt.help_text }}</p>
+                {% endif %}
+                {% if form.extraction_prompt.errors %}
+                    <p class="mt-1 text-sm text-red-600">{{ form.extraction_prompt.errors.0 }}</p>
+                {% endif %}
             </div>
         </div>
 
@@ -120,97 +95,1404 @@
     </form>
 </div>
 
+<!-- Source Template -->
+<template id="source-template">
+    <div class="source-card border border-gray-200 rounded-lg p-4 bg-gray-50">
+        <div class="flex justify-between items-start mb-4">
+            <div class="flex items-center space-x-3">
+                <div class="platform-icon">
+                    <span class="platform-badge"></span>
+                </div>
+                <div>
+                    <select class="source-type-select w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500">
+                        <option value="">Select Source Type</option>
+                        <optgroup label="YouTube">
+                            <option value="youtube-search">YouTube Search</option>
+                            <option value="youtube-channel">YouTube Channel</option>
+                            <option value="youtube-playlist">YouTube Playlist</option>
+                            <option value="youtube-hashtag">YouTube Hashtag</option>
+                            <option value="youtube-video">YouTube Video</option>
+                        </optgroup>
+                        <optgroup label="Instagram">
+                            <option value="instagram-profile">Instagram Profile</option>
+                            <option value="instagram-post">Instagram Post</option>
+                            <option value="instagram-hashtag">Instagram Hashtag</option>
+                            <option value="instagram-search">Instagram Search</option>
+                        </optgroup>
+                        <optgroup label="TikTok">
+                            <option value="tiktok-profile">TikTok Profile</option>
+                            <option value="tiktok-hashtag">TikTok Hashtag</option>
+                            <option value="tiktok-search">TikTok Search</option>
+                            <option value="tiktok-video">TikTok Video</option>
+                        </optgroup>
+                    </select>
+                </div>
+            </div>
+            <button type="button" class="remove-source text-red-600 hover:text-red-800">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                </svg>
+            </button>
+        </div>
+        
+        <div class="platform-config space-y-4">
+            <!-- Platform-specific configuration will be added here -->
+        </div>
+    </div>
+</template>
+
+ <!-- Universal Options Template -->
+<template id="universal-options-template">
+    <div class="space-y-4 border-t border-gray-200 pt-4">
+        <h5 class="text-sm font-medium text-gray-900 mb-3">⚙️ Universal Options</h5>
+        
+        <!-- Max Results -->
+        <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">Max Results</label>
+            <input type="number" class="max-results-input w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500" placeholder="100" min="1" max="999999" value="50">
+            <p class="mt-1 text-xs text-gray-500">Maximum number of items to scrape</p>
+        </div>
+        
+        <!-- Time Range Filters -->
+        <div class="grid grid-cols-2 gap-4">
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Oldest Post Date (Optional)</label>
+                <input type="text" class="oldest-post-date-input w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500" placeholder="e.g., 7 days, 1 month, 2025-01-01">
+                <p class="mt-1 text-xs text-gray-500">Filter items newer than this date</p>
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Newest Post Date (Optional)</label>
+                <input type="text" class="newest-post-date-input w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500" placeholder="2025-11-04">
+                <p class="mt-1 text-xs text-gray-500">Filter items older than this date</p>
+            </div>
+        </div>
+        
+        <!-- Subtitle Download Options -->
+        <div class="border border-gray-200 rounded-lg p-4 bg-white">
+            <h5 class="text-sm font-medium text-gray-900 mb-3">💬 Subtitle Options</h5>
+            
+            <div class="grid grid-cols-2 gap-4 mb-4">
+                <label class="flex items-center">
+                    <input type="checkbox" class="download-subtitles-checkbox mr-2">
+                    <span class="text-sm">Download Subtitles</span>
+                </label>
+                <label class="flex items-center">
+                    <input type="checkbox" class="save-subs-to-kvs-checkbox mr-2">
+                    <span class="text-sm">Save to Key-Value Store</span>
+                </label>
+            </div>
+            
+            <div class="grid grid-cols-2 gap-4 mb-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Subtitle Language</label>
+                    <select class="subtitles-language-select w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500">
+                        <option value="any">Any</option>
+                        <option value="en" selected>English</option>
+                        <option value="de">German</option>
+                        <option value="es">Spanish</option>
+                        <option value="fr">French</option>
+                        <option value="it">Italian</option>
+                        <option value="ja">Japanese</option>
+                        <option value="ko">Korean</option>
+                        <option value="nl">Dutch</option>
+                        <option value="pt">Portuguese</option>
+                        <option value="ru">Russian</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Subtitle Format</label>
+                    <select class="subtitles-format-select w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500">
+                        <option value="srt" selected>SRT</option>
+                        <option value="vtt">VTT</option>
+                        <option value="xml">XML</option>
+                        <option value="plaintext">Plain Text</option>
+                    </select>
+                </div>
+            </div>
+            
+            <label class="flex items-center">
+                <input type="checkbox" class="prefer-auto-generated-subtitles-checkbox mr-2">
+                <span class="text-sm">Prefer Auto-Generated Subtitles</span>
+            </label>
+        </div>
+    </div>
+</template>
+
+ <!-- Instagram Config Template -->
+<template id="instagram-config-template">
+    <div class="space-y-4">
+        <div class="bg-blue-50 border border-blue-200 rounded-lg p-3">
+            <div class="flex justify-between items-center">
+                <span class="text-sm font-medium text-blue-800">💰 Cost: $2.70 per 1000 results</span>
+                <span class="text-xs text-blue-600">Apify Instagram Scraper</span>
+            </div>
+        </div>
+        
+        <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">Direct URLs (Profiles, Posts, Hashtags)</label>
+            <textarea class="direct-urls-textarea w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500" rows="3" placeholder="Enter Instagram URLs, one per line:&#10;https://www.instagram.com/username/&#10;https://www.instagram.com/p/Cx5abc123/&#10;https://www.instagram.com/explore/tags/ai/"></textarea>
+        </div>
+        
+        <div>
+            <h5 class="text-sm font-medium text-gray-900 mb-3">📋 Feed Options</h5>
+            <div class="grid grid-cols-2 gap-4">
+                <div>
+                    <label class="flex items-center">
+                        <input type="checkbox" class="tagged-feed-checkbox mr-2" title="Scrapes posts where the user is tagged by others (user-generated content, mentions, collaborations)">
+                        <span class="text-sm">Tagged Feed</span>
+                    </label>
+                </div>
+                <div>
+                    <label class="flex items-center">
+                        <input type="checkbox" class="reel-feed-checkbox mr-2" title="Scrapes only Reels from user profiles (short-form video content only)">
+                        <span class="text-sm">Reel Feed</span>
+                    </label>
+                </div>
+            </div>
+        </div>
+        
+        <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">Results Type</label>
+            <select class="results-type-select w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500">
+                <option value="posts">Posts</option>
+                <option value="comments">Comments</option>
+                <option value="details">Details</option>
+                <option value="mentions">Mentions</option>
+                <option value="stories">Reels</option>
+            </select>
+        </div>
+        
+        <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">Results Limit</label>
+            <input type="number" class="results-limit-input w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500" placeholder="200" min="1" value="200">
+            <p class="mt-1 text-xs text-gray-500">Maximum number of items to scrape per URL</p>
+        </div>
+        
+        <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">Oldest Post Date (Optional)</label>
+            <input type="text" class="only-posts-newer-than-input w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500" placeholder="e.g., 7 days, 2 weeks, 1 month">
+            <p class="mt-1 text-xs text-gray-500">Filter posts newer than this date (accepts relative or absolute dates)</p>
+        </div>
+        
+        <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">Search Query (Optional)</label>
+            <input type="text" class="search-input w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500" placeholder="Enter search query (e.g., 'ai startup marketing')">
+        </div>
+        
+        <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">Search Type</label>
+            <select class="search-type-select w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500">
+                <option value="hashtag">Hashtag</option>
+                <option value="user">User</option>
+                <option value="place">Place</option>
+            </select>
+        </div>
+        
+        <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">Search Limit</label>
+            <input type="number" class="search-limit-input w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500" placeholder="10" min="1" max="250" value="10">
+            <p class="mt-1 text-xs text-gray-500">Maximum number of search results (max 250)</p>
+        </div>
+        
+
+    </div>
+</template>
+
+ <!-- TikTok Config Template -->
+<template id="tiktok-config-template">
+    <div class="space-y-4">
+        <div class="bg-black text-white rounded-lg p-3">
+            <div class="flex justify-between items-center">
+                <span class="text-sm font-medium">💰 Cost: $5.00 per 1000 results</span>
+                <span class="text-xs">Apify TikTok Scraper</span>
+            </div>
+        </div>
+        
+        <!-- Explanation -->
+        <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-3">
+            <p class="text-sm text-yellow-800">
+                <strong>📊 TikTok Data Sources:</strong> Choose one or more sources within TikTok. 
+                Each source (profiles, hashtags, search queries) provides different types of TikTok content. 
+                Max Results below is a hard limit across all sources to control total cost.
+            </p>
+        </div>
+
+        <!-- Max Results (Cost Control) -->
+        <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">Max Results</label>
+            <input type="number" class="max-results-input w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500" placeholder="50" min="1" max="1000" value="50">
+            <p class="mt-1 text-xs text-gray-500">Hard limit across all TikTok sources to control cost</p>
+        </div>
+
+        <!-- Profile Sources Section -->
+        <div class="border border-gray-200 rounded-lg p-3 bg-white">
+            <h5 class="text-sm font-medium text-gray-900 mb-3">👤 Profile Sources</h5>
+            
+            <!-- Profiles -->
+            <div class="mb-3">
+                <label class="block text-sm font-medium text-gray-700 mb-2">Profiles (usernames without @)</label>
+                <textarea class="profiles-textarea w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500" rows="2" placeholder="Enter TikTok usernames, one per line:&#10;sabrina_ramonov&#10;angus.sewell"></textarea>
+            </div>
+
+            <!-- Profile Sections -->
+            <div class="mb-3">
+                <label class="block text-sm font-medium text-gray-700 mb-2">Profile Sections</label>
+                <div class="space-x-4">
+                    <label class="inline-flex items-center">
+                        <input type="checkbox" class="profile-section-videos mr-2" checked>
+                        <span class="text-sm">Videos</span>
+                    </label>
+                    <label class="inline-flex items-center">
+                        <input type="checkbox" class="profile-section-reposts mr-2">
+                        <span class="text-sm">Reposts</span>
+                    </label>
+                </div>
+            </div>
+
+            <!-- Exclude Pinned Posts -->
+            <div class="mb-3">
+                <label class="flex items-center">
+                    <input type="checkbox" class="exclude-pinned-checkbox mr-2" checked>
+                    <span class="text-sm">Exclude Pinned Posts</span>
+                </label>
+            </div>
+
+            <!-- Profile Sorting -->
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Profile Sorting</label>
+                <select class="profile-sorting-select w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500">
+                    <option value="latest">Latest</option>
+                    <option value="popular">Popular</option>
+                    <option value="oldest">Oldest</option>
+                </select>
+            </div>
+        </div>
+
+        <!-- Search Sources Section -->
+        <div class="border border-gray-200 rounded-lg p-3 bg-white">
+            <h5 class="text-sm font-medium text-gray-900 mb-3">🔍 Search Sources</h5>
+            
+            <!-- Hashtags -->
+            <div class="mb-3">
+                <label class="block text-sm font-medium text-gray-700 mb-2">Hashtags (without #)</label>
+                <input type="text" class="hashtags-input w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500" placeholder="Enter hashtags, comma-separated: ai, fyp, tech">
+            </div>
+
+            <!-- Search Queries -->
+            <div class="mb-3">
+                <label class="block text-sm font-medium text-gray-700 mb-2">Search Queries</label>
+                <input type="text" class="search-queries-input w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500" placeholder="Enter search queries, comma-separated: agentic rag, n8n workflows">
+            </div>
+
+            <!-- Search Section -->
+            <div class="mb-3">
+                <label class="block text-sm font-medium text-gray-700 mb-2">Search Section</label>
+                <select class="search-section-select w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500">
+                    <option value="">Top Results (Mixed)</option>
+                    <option value="/video">Videos Only</option>
+                    <option value="/user">Profiles Only</option>
+                </select>
+            </div>
+
+            <!-- Max Profiles Per Query -->
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Max Profiles Per Query</label>
+                <input type="number" class="max-profiles-per-query-input w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500" placeholder="10" min="1" value="10">
+                <p class="mt-1 text-xs text-gray-500">Used when searching for profiles</p>
+            </div>
+        </div>
+
+        <!-- Direct URLs Section -->
+        <div class="border border-gray-200 rounded-lg p-3 bg-white">
+            <h5 class="text-sm font-medium text-gray-900 mb-3">🔗 Direct URLs</h5>
+            
+            <!-- Post URLs -->
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Post URLs</label>
+                <textarea class="post-urls-textarea w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500" rows="2" placeholder="Enter direct TikTok video URLs, one per line:&#10;https://www.tiktok.com/@sabrina_ramonov/video/7332475328413855745"></textarea>
+            </div>
+        </div>
+
+        <!-- Date Filters -->
+        <div class="grid grid-cols-2 gap-4">
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Oldest Post Date</label>
+                <input type="text" class="oldest-post-date-input w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500" placeholder="e.g., 2 days, 2025-01-01">
+                <p class="mt-1 text-xs text-gray-500">Filter videos after this date</p>
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Newest Post Date</label>
+                <input type="text" class="newest-post-date-input w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500" placeholder="2025-11-04">
+                <p class="mt-1 text-xs text-gray-500">Filter videos before this date</p>
+            </div>
+        </div>
+
+        <!-- Download Media Section -->
+        <div class="border border-gray-200 rounded-lg p-3 bg-white">
+            <h5 class="text-sm font-medium text-gray-900 mb-3">💾 Download Media</h5>
+            
+            <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-3 mb-3">
+                <p class="text-sm text-yellow-800">
+                    <strong>⚠️ Processing Time Notice:</strong> Downloading media files significantly extends processing time. 
+                    Download options are only available temporarily for data extraction processes and may be disabled in future updates.
+                </p>
+            </div>
+            
+            <div class="grid grid-cols-2 gap-4">
+                <div>
+                    <label class="flex items-center">
+                        <input type="checkbox" class="download-videos-checkbox mr-2">
+                        <span class="text-sm">Download Videos</span>
+                    </label>
+                </div>
+                <div>
+                    <label class="flex items-center">
+                        <input type="checkbox" class="download-covers-checkbox mr-2">
+                        <span class="text-sm">Download Covers</span>
+                    </label>
+                </div>
+            </div>
+            
+            <div class="grid grid-cols-2 gap-4">
+                <div>
+                    <label class="flex items-center">
+                        <input type="checkbox" class="download-subtitles-checkbox mr-2">
+                        <span class="text-sm">Download Subtitles</span>
+                    </label>
+                </div>
+                <div>
+                    <label class="flex items-center">
+                        <input type="checkbox" class="download-slideshow-images-checkbox mr-2">
+                        <span class="text-sm">Download Slideshow Images</span>
+                    </label>
+                </div>
+            </div>
+        </div>
+    </div>
+</template>
+
+ <!-- YouTube Search Config Template -->
+<template id="youtube-search-config-template">
+    <div class="space-y-4">
+        <div class="bg-red-50 border border-red-200 rounded-lg p-3">
+            <div class="flex justify-between items-center">
+                <span class="text-sm font-medium text-red-800">💰 Cost: $1.50 per 1000 results</span>
+                <span class="text-xs text-red-600">YouTube Search</span>
+            </div>
+        </div>
+        
+        <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">Search Queries *</label>
+            <textarea class="search-queries-textarea w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500" rows="3" placeholder="Enter search terms, one per line:&#10;ai podcast&#10;agentic rag&#10;n8n automation"></textarea>
+            <p class="mt-1 text-xs text-gray-500">Search terms like typing in YouTube's search bar</p>
+        </div>
+        
+        <!-- Search Filters -->
+        <div class="border border-gray-200 rounded-lg p-4 bg-white">
+            <h5 class="text-sm font-medium text-gray-900 mb-3">🔍 Search Filters</h5>
+            
+            <div class="grid grid-cols-2 gap-4 mb-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Sorting Order</label>
+                    <select class="sorting-order-select w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500">
+                        <option value="relevance">Relevance</option>
+                        <option value="rating">Rating</option>
+                        <option value="date">Date</option>
+                        <option value="views">Views</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Date Filter</label>
+                    <select class="date-filter-select w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500">
+                        <option value="">Any time</option>
+                        <option value="hour">Last hour</option>
+                        <option value="today">Today</option>
+                        <option value="week">This week</option>
+                        <option value="month">This month</option>
+                        <option value="year">This year</option>
+                    </select>
+                </div>
+            </div>
+            
+            <div class="grid grid-cols-2 gap-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Video Type</label>
+                    <select class="video-type-select w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500">
+                        <option value="video">Video</option>
+                        <option value="movie">Movie</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Length Filter</label>
+                    <select class="length-filter-select w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500">
+                        <option value="">Any length</option>
+                        <option value="under4">Under 4 minutes</option>
+                        <option value="between420">4-20 minutes</option>
+                        <option value="plus20">Over 20 minutes</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Quality Filters -->
+        <div class="border border-gray-200 rounded-lg p-4 bg-white">
+            <h5 class="text-sm font-medium text-gray-900 mb-3">⭐ Quality Filters</h5>
+            <div class="grid grid-cols-3 gap-3">
+                <label class="flex items-center">
+                    <input type="checkbox" class="is-hd-checkbox mr-2">
+                    <span class="text-sm">HD</span>
+                </label>
+                <label class="flex items-center">
+                    <input type="checkbox" class="has-subtitles-checkbox mr-2">
+                    <span class="text-sm">Has Subtitles</span>
+                </label>
+                <label class="flex items-center">
+                    <input type="checkbox" class="has-cc-checkbox mr-2">
+                    <span class="text-sm">Creative Commons</span>
+                </label>
+                <label class="flex items-center">
+                    <input type="checkbox" class="is-3d-checkbox mr-2">
+                    <span class="text-sm">3D</span>
+                </label>
+                <label class="flex items-center">
+                    <input type="checkbox" class="is-live-checkbox mr-2">
+                    <span class="text-sm">Live</span>
+                </label>
+                <label class="flex items-center">
+                    <input type="checkbox" class="is-4k-checkbox mr-2">
+                    <span class="text-sm">4K</span>
+                </label>
+            </div>
+        </div>
+    </div>
+</template>
+
+<!-- YouTube Channel Config Template -->
+<template id="youtube-channel-config-template">
+    <div class="space-y-4">
+        <div class="bg-red-50 border border-red-200 rounded-lg p-3">
+            <div class="flex justify-between items-center">
+                <span class="text-sm font-medium text-red-800">💰 Cost: $1.50 per 1000 results</span>
+                <span class="text-xs text-red-600">YouTube Channel</span>
+            </div>
+        </div>
+        
+        <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">Channel URLs *</label>
+            <textarea class="start-urls-textarea w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500" rows="3" placeholder="Enter YouTube channel URLs, one per line:&#10;https://www.youtube.com/c/Apify&#10;https://www.youtube.com/@MKBHD&#10;https://www.youtube.com/channel/UCBJycsmduvYEL83R_U4JriQ"></textarea>
+            <p class="mt-1 text-xs text-gray-500">Channel URLs to scrape videos from</p>
+        </div>
+        
+        <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">Video Sorting</label>
+            <select class="sort-videos-by-select w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500">
+                <option value="NEWEST">Newest First</option>
+                <option value="POPULAR">Most Popular</option>
+                <option value="OLDEST">Oldest First</option>
+            </select>
+            <p class="mt-1 text-xs text-gray-500">Order in which to retrieve videos from each channel</p>
+        </div>
+    </div>
+</template>
+
+<!-- YouTube Playlist Config Template -->
+<template id="youtube-playlist-config-template">
+    <div class="space-y-4">
+        <div class="bg-red-50 border border-red-200 rounded-lg p-3">
+            <div class="flex justify-between items-center">
+                <span class="text-sm font-medium text-red-800">💰 Cost: $1.50 per 1000 results</span>
+                <span class="text-xs text-red-600">YouTube Playlist</span>
+            </div>
+        </div>
+        
+        <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">Playlist URLs *</label>
+            <textarea class="start-urls-textarea w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500" rows="3" placeholder="Enter YouTube playlist URLs, one per line:&#10;https://www.youtube.com/playlist?list=PL4o29bINVT4EG_y-k5jGoOu3-Am8Nvi10&#10;https://www.youtube.com/playlist?list=PLrAXtmRdnEQy4QG60OLJv_6hT1gJZs-ia"></textarea>
+            <p class="mt-1 text-xs text-gray-500">Playlist URLs to scrape all videos from</p>
+        </div>
+    </div>
+</template>
+
+<!-- YouTube Hashtag Config Template -->
+<template id="youtube-hashtag-config-template">
+    <div class="space-y-4">
+        <div class="bg-red-50 border border-red-200 rounded-lg p-3">
+            <div class="flex justify-between items-center">
+                <span class="text-sm font-medium text-red-800">💰 Cost: $1.50 per 1000 results</span>
+                <span class="text-xs text-red-600">YouTube Hashtag</span>
+            </div>
+        </div>
+        
+        <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">Hashtag URLs *</label>
+            <textarea class="start-urls-textarea w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500" rows="3" placeholder="Enter YouTube hashtag URLs, one per line:&#10;https://www.youtube.com/hashtag/ai&#10;https://www.youtube.com/hashtag/machinelearning&#10;https://www.youtube.com/hashtag/programming"></textarea>
+            <p class="mt-1 text-xs text-gray-500">Hashtag URLs to scrape videos from</p>
+        </div>
+    </div>
+</template>
+
+<!-- YouTube Video Config Template -->
+<template id="youtube-video-config-template">
+    <div class="space-y-4">
+        <div class="bg-red-50 border border-red-200 rounded-lg p-3">
+            <div class="flex justify-between items-center">
+                <span class="text-sm font-medium text-red-800">💰 Cost: $1.50 per 1000 results</span>
+                <span class="text-xs text-red-600">YouTube Video</span>
+            </div>
+        </div>
+        
+        <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">Video URLs *</label>
+            <textarea class="start-urls-textarea w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500" rows="3" placeholder="Enter YouTube video URLs, one per line:&#10;https://www.youtube.com/watch?v=dQw4w9WgXcQ&#10;https://youtu.be/dQw4w9WgXcQ&#10;https://www.youtube.com/watch?v=another_video_id"></textarea>
+            <p class="mt-1 text-xs text-gray-500">Individual video URLs to scrape detailed information from</p>
+        </div>
+        
+        <!-- Subtitle Options -->
+        <div class="border border-gray-200 rounded-lg p-4 bg-white">
+            <h5 class="text-sm font-medium text-gray-900 mb-3">💬 Subtitle Options</h5>
+            
+            <div class="grid grid-cols-2 gap-4 mb-4">
+                <label class="flex items-center">
+                    <input type="checkbox" class="download-subtitles-checkbox mr-2">
+                    <span class="text-sm">Download Subtitles</span>
+                </label>
+                <label class="flex items-center">
+                    <input type="checkbox" class="save-subs-to-kvs-checkbox mr-2">
+                    <span class="text-sm">Save to Key-Value Store</span>
+                </label>
+            </div>
+            
+            <div class="grid grid-cols-2 gap-4 mb-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Subtitle Language</label>
+                    <select class="subtitles-language-select w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500">
+                        <option value="any">Any</option>
+                        <option value="en" selected>English</option>
+                        <option value="de">German</option>
+                        <option value="es">Spanish</option>
+                        <option value="fr">French</option>
+                        <option value="it">Italian</option>
+                        <option value="ja">Japanese</option>
+                        <option value="ko">Korean</option>
+                        <option value="nl">Dutch</option>
+                        <option value="pt">Portuguese</option>
+                        <option value="ru">Russian</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Subtitle Format</label>
+                    <select class="subtitles-format-select w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500">
+                        <option value="srt" selected>SRT</option>
+                        <option value="vtt">VTT</option>
+                        <option value="xml">XML</option>
+                        <option value="plaintext">Plain Text</option>
+                    </select>
+                </div>
+            </div>
+            
+            <label class="flex items-center">
+                <input type="checkbox" class="prefer-auto-generated-subtitles-checkbox mr-2">
+                <span class="text-sm">Prefer Auto-Generated Subtitles</span>
+            </label>
+        </div>
+    </div>
+</template>
+
+<!-- Instagram Profile Config Template -->
+<template id="instagram-profile-config-template">
+    <div class="space-y-4">
+        <div class="bg-pink-50 border border-pink-200 rounded-lg p-3">
+            <div class="flex justify-between items-center">
+                <span class="text-sm font-medium text-pink-800">💰 Cost: $1.50 per 1000 results</span>
+                <span class="text-xs text-pink-600">Instagram Profile</span>
+            </div>
+        </div>
+        
+        <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">Profile URLs *</label>
+            <textarea class="direct-urls-textarea w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500" rows="3" placeholder="Enter Instagram profile URLs, one per line:&#10;https://www.instagram.com/natgeo&#10;https://www.instagram.com/lelepons&#10;https://www.instagram.com/chrisburkard"></textarea>
+            <p class="mt-1 text-xs text-gray-500">Profile URLs to scrape posts from</p>
+        </div>
+        
+        <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">Feed Options</label>
+            <select class="feed-type-select w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500">
+                <option value="posts">Posts only</option>
+                <option value="tagged">Tagged posts</option>
+                <option value="reels">Reels only</option>
+            </select>
+            <p class="mt-1 text-xs text-gray-500">What type of content to scrape from profiles</p>
+        </div>
+    </div>
+</template>
+
+<!-- Instagram Post Config Template -->
+<template id="instagram-post-config-template">
+    <div class="space-y-4">
+        <div class="bg-pink-50 border border-pink-200 rounded-lg p-3">
+            <div class="flex justify-between items-center">
+                <span class="text-sm font-medium text-pink-800">💰 Cost: $1.50 per 1000 results</span>
+                <span class="text-xs text-pink-600">Instagram Post</span>
+            </div>
+        </div>
+        
+        <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">Post URLs *</label>
+            <textarea class="direct-urls-textarea w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500" rows="3" placeholder="Enter Instagram post URLs, one per line:&#10;https://www.instagram.com/p/CX4bYJhJ4XQ&#10;https://www.instagram.com/p/CY8mNkLp9rT&#10;https://www.instagram.com/reel/CZ2kQoMq7sW"></textarea>
+            <p class="mt-1 text-xs text-gray-500">Individual post or reel URLs to scrape detailed information from</p>
+        </div>
+    </div>
+</template>
+
+<!-- Instagram Hashtag Config Template -->
+<template id="instagram-hashtag-config-template">
+    <div class="space-y-4">
+        <div class="bg-pink-50 border border-pink-200 rounded-lg p-3">
+            <div class="flex justify-between items-center">
+                <span class="text-sm font-medium text-pink-800">💰 Cost: $1.50 per 1000 results</span>
+                <span class="text-xs text-pink-600">Instagram Hashtag</span>
+            </div>
+        </div>
+        
+        <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">Hashtag URLs *</label>
+            <textarea class="direct-urls-textarea w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500" rows="3" placeholder="Enter Instagram hashtag URLs, one per line:&#10;https://www.instagram.com/explore/tags/nature&#10;https://www.instagram.com/explore/tags/travel&#10;https://www.instagram.com/explore/tags/photography"></textarea>
+            <p class="mt-1 text-xs text-gray-500">Hashtag URLs to scrape posts from</p>
+        </div>
+    </div>
+</template>
+
+<!-- Instagram Search Config Template -->
+<template id="instagram-search-config-template">
+    <div class="space-y-4">
+        <div class="bg-pink-50 border border-pink-200 rounded-lg p-3">
+            <div class="flex justify-between items-center">
+                <span class="text-sm font-medium text-pink-800">💰 Cost: $1.50 per 1000 results</span>
+                <span class="text-xs text-pink-600">Instagram Search</span>
+            </div>
+        </div>
+        
+        <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">Search Queries *</label>
+            <textarea class="search-queries-textarea w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500" rows="3" placeholder="Enter search terms, one per line:&#10;landscape photography&#10;street art&#10;food blogging"></textarea>
+            <p class="mt-1 text-xs text-gray-500">Search terms to find relevant posts</p>
+        </div>
+        
+        <div class="grid grid-cols-2 gap-4">
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Search Type</label>
+                <select class="search-type-select w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500">
+                    <option value="top">Top Results</option>
+                    <option value="recent">Recent</option>
+                    <option value="places">Places</option>
+                    <option value="people">People</option>
+                </select>
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Search Limit</label>
+                <input type="number" class="search-limit-input w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500" placeholder="50" min="1" max="1000" value="50">
+                <p class="mt-1 text-xs text-gray-500">Maximum results per search query</p>
+            </div>
+        </div>
+    </div>
+</template>
+
+<!-- TikTok Profile Config Template -->
+<template id="tiktok-profile-config-template">
+    <div class="space-y-4">
+        <div class="bg-black text-white rounded-lg p-3">
+            <div class="flex justify-between items-center">
+                <span class="text-sm font-medium">💰 Cost: $1.50 per 1000 results</span>
+                <span class="text-xs">TikTok Profile</span>
+            </div>
+        </div>
+        
+        <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">Profile URLs *</label>
+            <textarea class="profiles-textarea w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500" rows="3" placeholder="Enter TikTok profile URLs, one per line:&#10;https://www.tiktok.com/@charlidamelio&#10;https://www.tiktok.com/@khaby.lame&#10;https://www.tiktok.com/@addisonre"></textarea>
+            <p class="mt-1 text-xs text-gray-500">Profile URLs to scrape videos from</p>
+        </div>
+        
+        <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">Profile Sections</label>
+            <select class="profile-scrape-sections-select w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500">
+                <option value="all">All Videos</option>
+                <option value="videos">Videos only</option>
+                <option value="pinned">Pinned Videos</option>
+            </select>
+            <p class="mt-1 text-xs text-gray-500">Which sections of the profile to scrape</p>
+        </div>
+        
+        <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">Profile Sorting</label>
+            <select class="profile-sorting-select w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500">
+                <option value="latest">Latest First</option>
+                <option value="popular">Most Popular</option>
+            </select>
+            <p class="mt-1 text-xs text-gray-500">Order in which to retrieve videos from profiles</p>
+        </div>
+    </div>
+</template>
+
+<!-- TikTok Hashtag Config Template -->
+<template id="tiktok-hashtag-config-template">
+    <div class="space-y-4">
+        <div class="bg-black text-white rounded-lg p-3">
+            <div class="flex justify-between items-center">
+                <span class="text-sm font-medium">💰 Cost: $1.50 per 1000 results</span>
+                <span class="text-xs">TikTok Hashtag</span>
+            </div>
+        </div>
+        
+        <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">Hashtags *</label>
+            <textarea class="hashtags-textarea w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500" rows="3" placeholder="Enter TikTok hashtags, one per line:&#10;#fyp&#10;#dance&#10;#comedy&#10;#tech"></textarea>
+            <p class="mt-1 text-xs text-gray-500">Hashtags to scrape videos from (with or without #)</p>
+        </div>
+        
+        <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">Results Per Hashtag</label>
+            <input type="number" class="results-per-page-input w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500" placeholder="50" min="1" max="1000" value="50">
+            <p class="mt-1 text-xs text-gray-500">Maximum videos to retrieve per hashtag</p>
+        </div>
+    </div>
+</template>
+
+<!-- TikTok Search Config Template -->
+<template id="tiktok-search-config-template">
+    <div class="space-y-4">
+        <div class="bg-black text-white rounded-lg p-3">
+            <div class="flex justify-between items-center">
+                <span class="text-sm font-medium">💰 Cost: $1.50 per 1000 results</span>
+                <span class="text-xs">TikTok Search</span>
+            </div>
+        </div>
+        
+        <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">Search Queries *</label>
+            <textarea class="search-queries-textarea w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500" rows="3" placeholder="Enter search terms, one per line:&#10;funny cats&#10;cooking recipes&#10;fitness motivation"></textarea>
+            <p class="mt-1 text-xs text-gray-500">Search terms to find relevant videos</p>
+        </div>
+        
+        <div class="grid grid-cols-2 gap-4">
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Search Section</label>
+                <select class="search-section-select w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500">
+                    <option value="top">Top Results</option>
+                    <option value="user">User Results</option>
+                    <option value="video">Video Results</option>
+                    <option value="live">Live Results</option>
+                </select>
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Max Profiles Per Query</label>
+                <input type="number" class="max-profiles-per-query-input w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500" placeholder="10" min="1" max="100" value="10">
+                <p class="mt-1 text-xs text-gray-500">Maximum profiles to include per search</p>
+            </div>
+        </div>
+    </div>
+</template>
+
+<!-- TikTok Video Config Template -->
+<template id="tiktok-video-config-template">
+    <div class="space-y-4">
+        <div class="bg-black text-white rounded-lg p-3">
+            <div class="flex justify-between items-center">
+                <span class="text-sm font-medium">💰 Cost: $1.50 per 1000 results</span>
+                <span class="text-xs">TikTok Video</span>
+            </div>
+        </div>
+        
+        <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">Video URLs *</label>
+            <textarea class="post-urls-textarea w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500" rows="3" placeholder="Enter TikTok video URLs, one per line:&#10;https://www.tiktok.com/@user/video/1234567890123456789&#10;https://vm.tiktok.com/shortcode/&#10;https://tiktok.com/@user/video/another_id"></textarea>
+            <p class="mt-1 text-xs text-gray-500">Individual video URLs to scrape detailed information from</p>
+        </div>
+        
+        <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">Download Options</label>
+            <div class="space-y-2">
+                <label class="flex items-center">
+                    <input type="checkbox" class="download-video-checkbox mr-2">
+                    <span class="text-sm">Download Video Files</span>
+                </label>
+                <label class="flex items-center">
+                    <input type="checkbox" class="download-subtitles-checkbox mr-2">
+                    <span class="text-sm">Download Subtitles/Captions</span>
+                </label>
+            </div>
+        </div>
+    </div>
+</template>
+
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    const profilesTextarea = document.getElementById('{{ form.profiles.id_for_label|lower }}');
-    const profileTags = document.getElementById('profile-tags');
-    const form = document.getElementById('run-form');
-    const enableExtractionCheckbox = document.getElementById('{{ form.enable_extraction.id_for_label|lower }}');
-    const extractionPromptDiv = document.querySelector('label[for="{{ form.extraction_prompt.id_for_label }}"]').closest('div');
-    const platformSelect = document.getElementById('{{ form.platform.id_for_label|lower }}');
-    const profilesLabel = document.getElementById('profiles-label');
-
-    // Function to parse profiles
-    function parseProfiles(text) {
-        if (text.includes('\n')) {
-            return text.split('\n').map(p => p.trim()).filter(p => p);
-        } else {
-            return text.split(',').map(p => p.trim()).filter(p => p);
+    (function() {
+        console.log('Script started');
+        window.scriptTest = 'test';
+        
+        // Define variables in outer scope
+        let form, sourcesContainer, addSourceBtn, sourcesField, enableExtractionCheckbox, extractionPromptContainer;
+        
+        try {
+            form = document.getElementById('run-form');
+            sourcesContainer = document.getElementById('sources-container');
+            addSourceBtn = document.getElementById('add-source-btn');
+            sourcesField = document.querySelector('input[name="sources"]');
+            enableExtractionCheckbox = document.getElementById('{{ form.enable_extraction.id_for_label|lower }}');
+            extractionPromptContainer = document.getElementById('extraction-prompt-container');
+            
+            console.log('Variables defined successfully');
+        } catch (error) {
+            console.error('Error defining variables:', error);
         }
-    }
+    
+        let sourceCount = 0;
+        let sources = [];
+        
+        // Expose to global scope for form validation
+        window.sources = sources;
+        window.sourceCount = sourceCount;
 
-    // Function to render profile tags
-    function renderProfileTags(profiles) {
-        profileTags.innerHTML = '';
-        profiles.forEach((profile, index) => {
-            const tag = document.createElement('span');
-            tag.className = 'inline-flex items-center px-3 py-1 rounded-full text-sm bg-primary-100 text-primary-800';
-            tag.innerHTML = `
-                ${profile}
-                <button type="button" class="ml-2 text-primary-600 hover:text-primary-800" data-index="${index}">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
-                    </svg>
-                </button>
-            `;
-            profileTags.appendChild(tag);
+    // Granular source type configurations
+    const sourceTypeConfigs = {
+        // YouTube source types
+        'youtube-search': {
+            name: 'YouTube Search',
+            icon: '🔍',
+            color: 'bg-red-100 text-red-800',
+            template: 'youtube-search-config-template'
+        },
+        'youtube-channel': {
+            name: 'YouTube Channel',
+            icon: '📺',
+            color: 'bg-red-100 text-red-800',
+            template: 'youtube-channel-config-template'
+        },
+        'youtube-playlist': {
+            name: 'YouTube Playlist',
+            icon: '📋',
+            color: 'bg-red-100 text-red-800',
+            template: 'youtube-playlist-config-template'
+        },
+        'youtube-hashtag': {
+            name: 'YouTube Hashtag',
+            icon: '#️⃣',
+            color: 'bg-red-100 text-red-800',
+            template: 'youtube-hashtag-config-template'
+        },
+        'youtube-video': {
+            name: 'YouTube Video',
+            icon: '🎥',
+            color: 'bg-red-100 text-red-800',
+            template: 'youtube-video-config-template'
+        },
+        
+        // Instagram source types
+        'instagram-profile': {
+            name: 'Instagram Profile',
+            icon: '👤',
+            color: 'bg-pink-100 text-pink-800',
+            template: 'instagram-profile-config-template'
+        },
+        'instagram-post': {
+            name: 'Instagram Post',
+            icon: '📸',
+            color: 'bg-pink-100 text-pink-800',
+            template: 'instagram-post-config-template'
+        },
+        'instagram-hashtag': {
+            name: 'Instagram Hashtag',
+            icon: '#️⃣',
+            color: 'bg-pink-100 text-pink-800',
+            template: 'instagram-hashtag-config-template'
+        },
+        'instagram-search': {
+            name: 'Instagram Search',
+            icon: '🔍',
+            color: 'bg-pink-100 text-pink-800',
+            template: 'instagram-search-config-template'
+        },
+        
+        // TikTok source types
+        'tiktok-profile': {
+            name: 'TikTok Profile',
+            icon: '👤',
+            color: 'bg-black text-white',
+            template: 'tiktok-profile-config-template'
+        },
+        'tiktok-hashtag': {
+            name: 'TikTok Hashtag',
+            icon: '#️⃣',
+            color: 'bg-black text-white',
+            template: 'tiktok-hashtag-config-template'
+        },
+        'tiktok-search': {
+            name: 'TikTok Search',
+            icon: '🔍',
+            color: 'bg-black text-white',
+            template: 'tiktok-search-config-template'
+        },
+        'tiktok-video': {
+            name: 'TikTok Video',
+            icon: '🎥',
+            color: 'bg-black text-white',
+            template: 'tiktok-video-config-template'
+        }
+    };
+
+    // Add new source
+    function addSource() {
+        const template = document.getElementById('source-template');
+        const sourceCard = template.content.cloneNode(true);
+        
+        const sourceId = `source-${sourceCount++}`;
+        sourceCard.querySelector('.source-card').id = sourceId;
+        
+        sourcesContainer.appendChild(sourceCard);
+        
+        const sourceCardElement = document.getElementById(sourceId);
+        const sourceTypeSelect = sourceCardElement.querySelector('.source-type-select');
+        const platformConfig = sourceCardElement.querySelector('.platform-config');
+        const removeBtn = sourceCardElement.querySelector('.remove-source');
+        
+        // Handle source type selection
+        sourceTypeSelect.addEventListener('change', function() {
+            updateSourceConfig(sourceId, this.value);
         });
+        
+        // Handle source removal
+        removeBtn.addEventListener('click', function() {
+            removeSource(sourceId);
+        });
+        
+        // Add to sources array
+        sources.push({
+            id: sourceId,
+            sourceType: '',
+            config: {}
+        });
+        
+        updateSourcesField();
     }
 
-    // Function to toggle extraction prompt visibility
+    // Update source configuration based on platform
+    function updateSourceConfig(sourceId, sourceType) {
+        const sourceCard = document.getElementById(sourceId);
+        const platformConfig = sourceCard.querySelector('.platform-config');
+        const platformBadge = sourceCard.querySelector('.platform-badge');
+        
+        // Clear existing config
+        platformConfig.innerHTML = '';
+        
+        if (!sourceType) {
+            platformBadge.textContent = '';
+            platformBadge.className = 'platform-badge';
+            return;
+        }
+        
+        const config = sourceTypeConfigs[sourceType];
+        platformBadge.textContent = `${config.icon} ${config.name}`;
+        platformBadge.className = `platform-badge inline-flex items-center px-3 py-1 rounded-full text-sm ${config.color}`;
+        
+        // Add source type-specific configuration
+        const configTemplate = document.getElementById(config.template);
+        const configContent = configTemplate.content.cloneNode(true);
+        platformConfig.appendChild(configContent);
+        
+        // Add event listeners for dynamic updates
+        platformConfig.addEventListener('input', function(e) {
+            updateSourcesField();
+        });
+        platformConfig.addEventListener('change', function(e) {
+            updateSourcesField();
+        });
+        
+        // Update source in array
+        const sourceIndex = sources.findIndex(s => s.id === sourceId);
+        if (sourceIndex !== -1) {
+            sources[sourceIndex].sourceType = sourceType;
+            sources[sourceIndex].config = {};
+        }
+        
+        updateSourcesField();
+    }
+
+    // Remove source
+    function removeSource(sourceId) {
+        const sourceCard = document.getElementById(sourceId);
+        sourceCard.remove();
+        
+        sources = sources.filter(s => s.id !== sourceId);
+        updateSourcesField();
+    }
+
+    // Update sources field
+    function updateSourcesField() {
+        const validSources = sources.map(source => {
+            const sourceCard = document.getElementById(source.id);
+            if (!sourceCard) return null;
+            
+            const sourceTypeSelect = sourceCard.querySelector('.source-type-select');
+            const sourceType = sourceTypeSelect ? sourceTypeSelect.value : '';
+            
+            if (!sourceType) return null;
+            
+            const config = {};
+            
+            // Extract universal options first
+            const maxResultsInput = sourceCard.querySelector('.max-results-input');
+            const oldestPostDateInput = sourceCard.querySelector('.oldest-post-date-input');
+            const newestPostDateInput = sourceCard.querySelector('.newest-post-date-input');
+            const downloadSubtitlesCheckbox = sourceCard.querySelector('.download-subtitles-checkbox');
+            const subtitlesLanguageSelect = sourceCard.querySelector('.subtitles-language-select');
+            const subtitlesFormatSelect = sourceCard.querySelector('.subtitles-format-select');
+            const preferAutoGeneratedSubtitlesCheckbox = sourceCard.querySelector('.prefer-auto-generated-subtitles-checkbox');
+            
+            if (maxResultsInput && maxResultsInput.value) {
+                config.maxResults = parseInt(maxResultsInput.value);
+            }
+            
+            if (oldestPostDateInput && oldestPostDateInput.value.trim()) {
+                config.oldestPostDate = oldestPostDateInput.value.trim();
+            }
+            
+            if (newestPostDateInput && newestPostDateInput.value.trim()) {
+                config.newestPostDate = newestPostDateInput.value.trim();
+            }
+            
+            if (downloadSubtitlesCheckbox) {
+                config.downloadSubtitles = downloadSubtitlesCheckbox.checked;
+            }
+            
+            if (subtitlesLanguageSelect && subtitlesLanguageSelect.value) {
+                config.subtitlesLanguage = subtitlesLanguageSelect.value;
+            }
+            
+            if (subtitlesFormatSelect && subtitlesFormatSelect.value) {
+                config.subtitlesFormat = subtitlesFormatSelect.value;
+            }
+            
+            if (preferAutoGeneratedSubtitlesCheckbox) {
+                config.preferAutoGeneratedSubtitles = preferAutoGeneratedSubtitlesCheckbox.checked;
+            }
+            
+            // Extract source type-specific data
+            if (sourceType.startsWith('youtube-')) {
+                // YouTube source types
+                if (sourceType === 'youtube-search') {
+                    const searchQueriesTextarea = sourceCard.querySelector('.search-queries-textarea');
+                    const sortingOrderSelect = sourceCard.querySelector('.sorting-order-select');
+                    const dateFilterSelect = sourceCard.querySelector('.date-filter-select');
+                    const videoTypeSelect = sourceCard.querySelector('.video-type-select');
+                    const lengthFilterSelect = sourceCard.querySelector('.length-filter-select');
+                    
+                    // Quality filters
+                    const isHdCheckbox = sourceCard.querySelector('.is-hd-checkbox');
+                    const hasSubtitlesCheckbox = sourceCard.querySelector('.has-subtitles-checkbox');
+                    const hasCcCheckbox = sourceCard.querySelector('.has-cc-checkbox');
+                    const is3dCheckbox = sourceCard.querySelector('.is-3d-checkbox');
+                    const isLiveCheckbox = sourceCard.querySelector('.is-live-checkbox');
+                    const is4kCheckbox = sourceCard.querySelector('.is-4k-checkbox');
+                    
+                    if (searchQueriesTextarea) {
+                        const queries = searchQueriesTextarea.value.split('\n')
+                            .map(q => q.trim())
+                            .filter(q => q);
+                        if (queries.length > 0) {
+                            config.searchQueries = queries;
+                        }
+                    }
+                    
+                    if (sortingOrderSelect && sortingOrderSelect.value) {
+                        config.sortingOrder = sortingOrderSelect.value;
+                    }
+                    
+                    if (dateFilterSelect && dateFilterSelect.value) {
+                        config.dateFilter = dateFilterSelect.value;
+                    }
+                    
+                    if (videoTypeSelect && videoTypeSelect.value) {
+                        config.videoType = videoTypeSelect.value;
+                    }
+                    
+                    if (lengthFilterSelect && lengthFilterSelect.value) {
+                        config.lengthFilter = lengthFilterSelect.value;
+                    }
+                    
+                    // Quality filters
+                    if (isHdCheckbox) config.isHD = isHdCheckbox.checked;
+                    if (hasSubtitlesCheckbox) config.hasSubtitles = hasSubtitlesCheckbox.checked;
+                    if (hasCcCheckbox) config.hasCC = hasCcCheckbox.checked;
+                    if (is3dCheckbox) config.is3D = is3dCheckbox.checked;
+                    if (isLiveCheckbox) config.isLive = isLiveCheckbox.checked;
+                    if (is4kCheckbox) config.is4K = is4kCheckbox.checked;
+                    
+                } else if (sourceType === 'youtube-channel') {
+                    const startUrlsTextarea = sourceCard.querySelector('.start-urls-textarea');
+                    const sortVideosBySelect = sourceCard.querySelector('.sort-videos-by-select');
+                    
+                    if (startUrlsTextarea) {
+                        const urls = startUrlsTextarea.value.split('\n')
+                            .map(u => u.trim())
+                            .filter(u => u);
+                        if (urls.length > 0) {
+                            config.startUrls = urls.map(url => ({ url }));
+                        }
+                    }
+                    
+                    if (sortVideosBySelect && sortVideosBySelect.value) {
+                        config.sortVideosBy = sortVideosBySelect.value;
+                    }
+                    
+                } else if (sourceType === 'youtube-playlist' || sourceType === 'youtube-hashtag') {
+                    const startUrlsTextarea = sourceCard.querySelector('.start-urls-textarea');
+                    
+                    if (startUrlsTextarea) {
+                        const urls = startUrlsTextarea.value.split('\n')
+                            .map(u => u.trim())
+                            .filter(u => u);
+                        if (urls.length > 0) {
+                            config.startUrls = urls.map(url => ({ url }));
+                        }
+                    }
+                    
+                } else if (sourceType === 'youtube-video') {
+                    const startUrlsTextarea = sourceCard.querySelector('.start-urls-textarea');
+                    const saveSubsToKvsCheckbox = sourceCard.querySelector('.save-subs-to-kvs-checkbox');
+                    
+                    if (startUrlsTextarea) {
+                        const urls = startUrlsTextarea.value.split('\n')
+                            .map(u => u.trim())
+                            .filter(u => u);
+                        if (urls.length > 0) {
+                            config.startUrls = urls.map(url => ({ url }));
+                        }
+                    }
+                    
+                    if (saveSubsToKvsCheckbox) {
+                        config.saveSubsToKVS = saveSubsToKvsCheckbox.checked;
+                    }
+                }
+                
+            } else if (sourceType.startsWith('instagram-')) {
+                // Instagram source types
+                if (sourceType === 'instagram-profile') {
+                    const directUrlsTextarea = sourceCard.querySelector('.direct-urls-textarea');
+                    const feedTypeSelect = sourceCard.querySelector('.feed-type-select');
+                    
+                    if (directUrlsTextarea) {
+                        const urls = directUrlsTextarea.value.split('\n')
+                            .map(u => u.trim())
+                            .filter(u => u);
+                        if (urls.length > 0) {
+                            config.directUrls = urls;
+                        }
+                    }
+                    
+                    if (feedTypeSelect && feedTypeSelect.value) {
+                        config.resultsType = feedTypeSelect.value;
+                    }
+                    
+                    // Always enable parent data for better data provenance
+                    config.addParentData = true;
+                    
+                } else if (sourceType === 'instagram-post' || sourceType === 'instagram-hashtag') {
+                    const directUrlsTextarea = sourceCard.querySelector('.direct-urls-textarea');
+                    
+                    if (directUrlsTextarea) {
+                        const urls = directUrlsTextarea.value.split('\n')
+                            .map(u => u.trim())
+                            .filter(u => u);
+                        if (urls.length > 0) {
+                            config.directUrls = urls;
+                        }
+                    }
+                    
+                    config.addParentData = true;
+                    
+                } else if (sourceType === 'instagram-search') {
+                    const searchQueriesTextarea = sourceCard.querySelector('.search-queries-textarea');
+                    const searchTypeSelect = sourceCard.querySelector('.search-type-select');
+                    const searchLimitInput = sourceCard.querySelector('.search-limit-input');
+                    
+                    if (searchQueriesTextarea) {
+                        const queries = searchQueriesTextarea.value.split('\n')
+                            .map(q => q.trim())
+                            .filter(q => q);
+                        if (queries.length > 0) {
+                            config.search = queries.join(', ');
+                        }
+                    }
+                    
+                    if (searchTypeSelect && searchTypeSelect.value) {
+                        config.searchType = searchTypeSelect.value;
+                    }
+                    
+                    if (searchLimitInput && searchLimitInput.value) {
+                        config.searchLimit = parseInt(searchLimitInput.value);
+                    }
+                    
+                    config.addParentData = true;
+                }
+                
+            } else if (sourceType.startsWith('tiktok-')) {
+                // TikTok source types
+                if (sourceType === 'tiktok-profile') {
+                    const profilesTextarea = sourceCard.querySelector('.profiles-textarea');
+                    const profileScrapeSectionsSelect = sourceCard.querySelector('.profile-scrape-sections-select');
+                    const profileSortingSelect = sourceCard.querySelector('.profile-sorting-select');
+                    
+                    if (profilesTextarea) {
+                        const profiles = profilesTextarea.value.split('\n')
+                            .map(p => p.trim())
+                            .filter(p => p);
+                        if (profiles.length > 0) {
+                            config.profiles = profiles;
+                        }
+                    }
+                    
+                    if (profileScrapeSectionsSelect && profileScrapeSectionsSelect.value) {
+                        config.profileScrapeSections = [profileScrapeSectionsSelect.value];
+                    }
+                    
+                    if (profileSortingSelect && profileSortingSelect.value) {
+                        config.profileSorting = profileSortingSelect.value;
+                    }
+                    
+                } else if (sourceType === 'tiktok-hashtag') {
+                    const hashtagsTextarea = sourceCard.querySelector('.hashtags-textarea');
+                    const resultsPerPageInput = sourceCard.querySelector('.results-per-page-input');
+                    
+                    if (hashtagsTextarea) {
+                        const hashtags = hashtagsTextarea.value.split('\n')
+                            .map(h => h.trim().replace('#', ''))
+                            .filter(h => h);
+                        if (hashtags.length > 0) {
+                            config.hashtags = hashtags;
+                        }
+                    }
+                    
+                    if (resultsPerPageInput && resultsPerPageInput.value) {
+                        config.resultsPerPage = parseInt(resultsPerPageInput.value);
+                    }
+                    
+                } else if (sourceType === 'tiktok-search') {
+                    const searchQueriesTextarea = sourceCard.querySelector('.search-queries-textarea');
+                    const searchSectionSelect = sourceCard.querySelector('.search-section-select');
+                    const maxProfilesPerQueryInput = sourceCard.querySelector('.max-profiles-per-query-input');
+                    
+                    if (searchQueriesTextarea) {
+                        const queries = searchQueriesTextarea.value.split('\n')
+                            .map(q => q.trim())
+                            .filter(q => q);
+                        if (queries.length > 0) {
+                            config.searchQueries = queries;
+                        }
+                    }
+                    
+                    if (searchSectionSelect && searchSectionSelect.value) {
+                        config.searchSection = searchSectionSelect.value;
+                    }
+                    
+                    if (maxProfilesPerQueryInput && maxProfilesPerQueryInput.value) {
+                        config.maxProfilesPerQuery = parseInt(maxProfilesPerQueryInput.value);
+                    }
+                    
+                } else if (sourceType === 'tiktok-video') {
+                    const postUrlsTextarea = sourceCard.querySelector('.post-urls-textarea');
+                    const downloadVideoCheckbox = sourceCard.querySelector('.download-video-checkbox');
+                    
+                    if (postUrlsTextarea) {
+                        const postUrls = postUrlsTextarea.value.split('\n')
+                            .map(u => u.trim())
+                            .filter(u => u);
+                        if (postUrls.length > 0) {
+                            config.postURLs = postUrls;
+                        }
+                    }
+                    
+                    if (downloadVideoCheckbox) {
+                        config.shouldDownloadVideos = downloadVideoCheckbox.checked;
+                    }
+                }
+            }
+            
+            return {
+                id: source.id,
+                sourceType: sourceType,
+                config: config
+            };
+        }).filter(s => s !== null);
+        
+        sourcesField.value = JSON.stringify(validSources);
+    }
+
+    // Toggle extraction prompt visibility
     function toggleExtractionPrompt() {
         if (enableExtractionCheckbox.checked) {
-            extractionPromptDiv.style.display = 'block';
+            extractionPromptContainer.style.display = 'block';
         } else {
-            extractionPromptDiv.style.display = 'none';
+            extractionPromptContainer.style.display = 'none';
         }
     }
 
-    // Function to update labels based on platform
-    function updatePlatformLabels() {
-        const platform = platformSelect.value;
-        const platformNames = {
-            'instagram': 'Instagram',
-            'tiktok': 'TikTok'
-        };
-        profilesLabel.textContent = platformNames[platform] + ' Profiles';
+    // Event listeners
+    if (addSourceBtn) {
+        addSourceBtn.addEventListener('click', addSource);
     }
-
-    // Update tags on input
-    profilesTextarea.addEventListener('input', function() {
-        const profiles = parseProfiles(this.value);
-        renderProfileTags(profiles);
-    });
-
-    // Toggle extraction prompt on checkbox change
-    enableExtractionCheckbox.addEventListener('change', toggleExtractionPrompt);
-
-    // Update labels on platform change
-    platformSelect.addEventListener('change', updatePlatformLabels);
-
-    // Handle tag deletion
-    profileTags.addEventListener('click', function(e) {
-        if (e.target.closest('button')) {
-            const index = parseInt(e.target.closest('button').dataset.index);
-            const profiles = parseProfiles(profilesTextarea.value);
-            profiles.splice(index, 1);
-            profilesTextarea.value = profiles.join('\n');
-            renderProfileTags(profiles);
-        }
-    });
+    if (enableExtractionCheckbox) {
+        enableExtractionCheckbox.addEventListener('change', toggleExtractionPrompt);
+    }
 
     // Form validation
     form.addEventListener('submit', function(e) {
-        const profiles = parseProfiles(profilesTextarea.value);
-        const platform = platformSelect.value;
-        const platformNames = {
-            'instagram': 'Instagram',
-            'tiktok': 'TikTok'
-        };
-        if (profiles.length === 0) {
+        const validSources = JSON.parse(sourcesField.value || '[]');
+        
+        if (validSources.length === 0) {
             e.preventDefault();
-            alert(`Please enter at least one ${platformNames[platform]} profile URL.`);
+            alert('Please add at least one source.');
             return;
+        }
+        
+        // Validate each source has required data
+        for (const source of validSources) {
+            let hasData = false;
+            
+            const config = source.configuration || {};
+            const sourceType = source.sourceType;
+            
+            if (sourceType.startsWith('youtube-')) {
+                if (sourceType === 'youtube-search') {
+                    hasData = config.searchQueries && config.searchQueries.length > 0;
+                } else {
+                    hasData = config.startUrls && config.startUrls.length > 0;
+                }
+            } else if (sourceType.startsWith('instagram-')) {
+                if (sourceType === 'instagram-search') {
+                    hasData = config.search && config.search.trim().length > 0;
+                } else {
+                    hasData = config.directUrls && config.directUrls.length > 0;
+                }
+            } else if (sourceType.startsWith('tiktok-')) {
+                if (sourceType === 'tiktok-profile') {
+                    hasData = config.profiles && config.profiles.length > 0;
+                } else if (sourceType === 'tiktok-hashtag') {
+                    hasData = config.hashtags && config.hashtags.length > 0;
+                } else if (sourceType === 'tiktok-search') {
+                    hasData = config.searchQueries && config.searchQueries.length > 0;
+                } else if (sourceType === 'tiktok-video') {
+                    hasData = config.postURLs && config.postURLs.length > 0;
+                }
+            }
+            
+            if (!hasData) {
+                e.preventDefault();
+                const sourceTypeConfig = sourceTypeConfigs[sourceType];
+                const sourceName = sourceTypeConfig ? sourceTypeConfig.name : sourceType;
+                alert(`Please add URLs, search terms, or other required data for the ${sourceName} source.`);
+                return;
+            }
         }
 
         // Show loading state
@@ -231,16 +1513,31 @@ document.addEventListener('DOMContentLoaded', function() {
         }, 10000);
     });
 
-    // Initial render if there's existing value
-    if (profilesTextarea.value) {
-        renderProfileTags(parseProfiles(profilesTextarea.value));
+    // Add event listeners for dynamic content updates
+    if (sourcesContainer) {
+        sourcesContainer.addEventListener('input', function(e) {
+            if (e.target.matches('.profiles-textarea, .search-input, .channels-textarea, .search-queries-textarea, .post-urls-textarea, .hashtags-textarea')) {
+                updateSourcesField();
+            }
+        });
     }
 
-    // Initial toggle for extraction prompt
-    toggleExtractionPrompt();
-
-    // Initial platform labels
-    updatePlatformLabels();
+    // Initialize
+    if (typeof toggleExtractionPrompt === 'function') {
+        toggleExtractionPrompt();
+    }
+    
+    // Expose functions to global scope
+    window.addSource = addSource;
+    window.removeSource = removeSource;
+    window.updateSourcesField = updateSourcesField;
+    window.toggleExtractionPrompt = toggleExtractionPrompt;
+    
+    // Add one source by default
+    if (typeof addSource === 'function') {
+        addSource();
+    }
+    })();
 });
 </script>
 {% endblock %}
