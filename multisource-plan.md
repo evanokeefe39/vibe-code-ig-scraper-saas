@@ -1,258 +1,567 @@
-# Multi-Source Scraper Implementation Plan
+# Multi-Source Scraper Implementation Plan (Revised)
 
 ## Overview
-This document outlines the plan to extend the current Instagram-only scraper SaaS to support multiple social media platforms (TikTok, YouTube) using Apify actors while maintaining the existing MVP functionality.
-
-## Current State
-- **Base**: MVP branch with Instagram scraper fully functional
-- **Infrastructure**: Django backend with n8n workflow orchestration
-- **Database**: PostgreSQL with existing Run model (scraped/extracted JSON fields)
-- **V2 Interfaces**: Already defined OpenAPI specs for Instagram, TikTok, and YouTube Apify actors
-- **Data Flow**: `scraped` (raw JSON array) → `extracted` (structured data) → UserList export
+This document outlines the plan to extend the current Instagram-only scraper SaaS to support multiple social media platforms (TikTok, YouTube) using Apify actors and unified post-centric data processing.
 
 ## Architecture Understanding
 
-### Apify Actor Integration
-- **Instagram Actor**: `apify/instagram-scraper` - profiles, posts, reels
-- **TikTok Actor**: `apify/tiktok-scraper` - profiles, videos, search
-- **YouTube Actor**: `apify/youtube-scraper` - channel videos, search results
-- **Unified Data Model**: All platforms produce "post" data (videos, images, text)
+### Current State
+- **Base**: MVP branch with Instagram scraper fully functional
+- **Infrastructure**: Django backend with n8n workflow orchestration
+- **Data Flow**: `scraped` (raw JSON array) → `extracted` (structured data) → UserList export
+- **Apify Integration**: 3 actors available (Instagram, TikTok, YouTube) with defined interfaces
 
-### Key Insight
-Instagram posts/reels ≈ TikTok videos ≈ YouTube videos/shorts
-All can be treated as unified "posts" with platform-specific metadata.
+### Key Architectural Insight
+- **Apify Actors**: Each platform has dedicated actor with specific parameters
+- **Unified Data Model**: All platforms produce posts (videos, images, text) with similar attributes
+- **n8n Orchestration**: Single workflow can invoke multiple actors via Apify nodes
+- **Post-Centric**: Instagram posts/reels ≈ TikTok videos ≈ YouTube videos/shorts
 
-## Implementation Phases
+## Phase 1: Enhanced Run Creation Interface (Week 1-2)
 
-## Phase 1: Enhanced Run Creation Interface
+### 1.1 Multi-Source Run Form
+**Files to modify**: `core/forms.py`, `core/views.py`, `templates/core/run_create.html`
 
-### 1.1 Multi-Source Form Enhancement
-**Files to modify**: `core/forms.py`
-
-#### Enhanced RunForm:
+#### New Data Structure:
 ```python
-class RunForm(forms.ModelForm):
-    # Dynamic source management
-    sources = forms.JSONField(initial=[])
-    
-    # Platform-specific configurations
-    instagram_profiles = forms.CharField(required=False)
-    instagram_search = forms.CharField(required=False)
-    tiktok_profiles = forms.CharField(required=False)
-    tiktok_search = forms.CharField(required=False)
-    youtube_search = forms.CharField(required=False)
-    
-    # Column inference
-    auto_infer_columns = forms.BooleanField(initial=True)
-    custom_columns = forms.JSONField(required=False)
+# Enhanced Run.input structure
+{
+    "sources": [
+        {
+            "platform": "instagram",
+            "type": "profile_scrape", 
+            "config": {
+                "directUrls": ["https://instagram.com/username1", "https://instagram.com/username2"],
+                "resultsType": "posts",
+                "resultsLimit": 50,
+                "onlyPostsNewerThan": "7 days"
+            }
+        },
+        {
+            "platform": "instagram", 
+            "type": "search",
+            "config": {
+                "search": "ai",
+                "searchType": "hashtag",
+                "searchLimit": 25
+            }
+        },
+        {
+            "platform": "tiktok",
+            "type": "profile_scrape",
+            "config": {
+                "profiles": ["username1", "username2"],
+                "profileScrapeSections": ["videos"],
+                "resultsPerPage": 50
+            }
+        },
+        {
+            "platform": "youtube",
+            "type": "search",
+            "config": {
+                "searchQueries": ["ai tutorials"],
+                "maxResults": 25,
+                "dateFilter": "month"
+            }
+        }
+    ],
+    "extraction_prompt": "Extract business information, contact details, and location data from posts",
+    "enable_extraction": true
+}
 ```
 
-### 1.2 Dynamic Column Creation
-**Files to modify**: `core/views.py`
+#### Form Enhancement:
+- **Dynamic Source Management**: Add/remove sources dynamically
+- **Platform-Specific Configs**: Show relevant fields per platform/type combination
+- **Real-time Validation**: Validate URLs and parameters per platform
+- **Source Preview**: Show what data will be scraped from each source
 
-#### Key Features:
-- Analyze scraped data structure to infer columns
-- Allow users to customize inferred columns
-- Support platform-specific field mapping
-- Handle schema drift gracefully
+### 1.2 Enhanced n8n Workflow
+**Files to create**: `n8n/v2/multi_source_workflow.json`
 
-### 1.3 Multi-Step UI
-**Files to modify**: `templates/core/run_create.html`
+#### Workflow Architecture:
+```
+1. Receive Run Input (sources array)
+2. For each source:
+   - Route to appropriate Apify actor node
+   - Pass platform-specific config
+   - Collect results in unified format
+3. Merge all results into single scraped array
+4. Run LLM extraction on merged data (if enabled)
+5. Store results in Run.scraped and Run.extracted
+6. Return execution completion
+```
 
-#### UI Flow:
-1. **Source Selection**: Add multiple sources with platform-specific inputs
-2. **Column Preview**: Show inferred columns from sample data
-3. **Customization**: Allow column editing and type selection
-4. **Execution**: Run multi-source scraping
+#### Apify Node Configuration:
+```json
+{
+    "nodeType": "apify_call",
+    "dynamic": true,
+    "actorMapping": {
+        "instagram": "clockwork/instagram-scraper",
+        "tiktok": "clockwork/tiktok-scraper", 
+        "youtube": "streamers/youtube-scraper"
+    },
+    "parameterMapping": {
+        "instagram": {
+            "profile_scrape": ["directUrls", "resultsType", "resultsLimit"],
+            "search": ["search", "searchType", "searchLimit"]
+        },
+        "tiktok": {
+            "profile_scrape": ["profiles", "profileScrapeSections", "resultsPerPage"],
+            "search": ["searchQueries", "resultsPerPage"]
+        },
+        "youtube": {
+            "search": ["searchQueries", "maxResults", "dateFilter"]
+        }
+    }
+}
+```
 
-### 1.4 Enhanced n8n Workflow
-**Files to modify**: `n8n/v2/`
+## Phase 2: Data Structure & Extraction Enhancement (Week 2-3)
 
-#### Workflow Features:
-- Multiple Apify actor nodes (one per platform)
-- Dynamic source routing
-- Unified data aggregation
-- Enhanced LLM extraction with platform awareness
+### 2.1 Unified Post Schema
+**Files to modify**: `core/models.py` (no schema changes, just documentation)
 
-## Phase 2: Data Structure & Extraction Enhancement
+#### Current Model Works:
+- `Run.scraped`: Array of JSON objects (varying shapes)
+- `Run.extracted`: Structured data from LLM extraction
+- `UserList/ListColumn/ListRow`: Target structured data
 
-### 2.1 Extraction Service
+#### Post Structure Understanding:
+```python
+# All platforms produce posts with these common elements:
+COMMON_POST_FIELDS = {
+    "content": "caption/text/description",
+    "author": "username/channel/profile", 
+    "engagement": "likes/comments/shares/views",
+    "media": "images/videos/thumbnails",
+    "metadata": "timestamps/duration/links",
+    "platform": "instagram/tiktok/youtube"
+}
+
+# Platform-specific variations:
+INSTAGRAM_POST = {
+    "caption": str,
+    "like_count": int,
+    "comment_count": int, 
+    "media_url": str,
+    "timestamp": str,
+    "is_video": bool,
+    "location": dict
+}
+
+TIKTOK_POST = {
+    "text": str,
+    "diggCount": int,
+    "commentCount": int,
+    "videoURL": str, 
+    "createTime": str,
+    "author": dict
+}
+
+YOUTUBE_POST = {
+    "description": str,
+    "likeCount": int,
+    "commentCount": int,
+    "video_url": str,
+    "publishedAt": str,
+    "channelTitle": str
+}
+```
+
+### 2.2 Enhanced Extraction System
 **Files to create**: `core/services/extraction_service.py`
 
-#### Service Features:
-- Platform-aware extraction prompts
-- Field coercion and type conversion
-- Re-runnable extraction with different prompts
-- Quality scoring and validation
+#### Extraction Prompt Engineering:
+```python
+class ExtractionService:
+    def analyze_scraped_structure(self, scraped_data: list) -> dict:
+        """Analyze scraped data to understand available fields"""
+        
+    def generate_extraction_prompt(self, base_prompt: str, scraped_sample: dict) -> str:
+        """Enhance user prompt with field mapping hints"""
+        
+    def extract_structured_data(self, scraped_data: list, prompt: str) -> dict:
+        """Run LLM extraction with field coercion"""
+        
+    def coerce_to_table_schema(self, extracted_data: list, target_columns: list) -> list:
+        """Map extracted data to target table structure"""
+```
 
-### 2.2 Column Inference Logic
-**Files to create**: `core/services/data_population.py`
+#### Enhanced Prompt Strategy:
+```python
+# Base prompt enhancement
+ENHANCED_PROMPT_TEMPLATE = """
+Extract the following information from social media posts:
 
-#### Inference Strategy:
-- Analyze first 10 items from each platform
-- Identify common patterns (caption, likes, comments, etc.)
-- Map platform-specific fields to unified columns
-- Handle missing data gracefully
+User Request: {user_prompt}
 
-### 2.3 Enhanced Extraction Prompts
-**Files to modify**: `n8n/v2/prompts/`
+Available Data Fields: {available_fields}
+Platform Types: {platforms}
 
-#### Prompt Strategy:
-- Platform-specific field mapping
-- Unified output schema
-- Error handling for missing data
-- Type conversion instructions
+Please extract and structure the data into a table format with these columns:
+{target_columns}
 
-## Phase 3: Multi-Source UI Development
+For each post, provide:
+- Content (caption, text, description)
+- Author information 
+- Engagement metrics (likes, comments, shares, views)
+- Media information
+- Timestamps
+- Platform-specific metadata
 
-### 3.1 Dynamic Source Management
+Focus on: {extraction_focus}
+Output format: JSON array of objects with consistent keys.
+"""
+```
+
+### 2.3 Dynamic Column Creation
+**Files to modify**: `core/views.py` (run_create view)
+
+#### Column Inference Logic:
+```python
+def infer_columns_from_scraped(scraped_data: list, extraction_prompt: str) -> List[ColumnSuggestion]:
+    """Analyze scraped data + prompt to suggest table columns"""
+    
+    # Sample first few posts to understand structure
+    sample_posts = scraped_data[:5]
+    
+    # Extract all unique field paths
+    available_fields = set()
+    for post in sample_posts:
+        available_fields.update(extract_json_paths(post))
+    
+    # Map to common column types
+    column_suggestions = []
+    for field in available_fields:
+        column_type = infer_column_type(field, sample_posts)
+        column_suggestions.append({
+            'name': normalize_column_name(field),
+            'type': column_type,
+            'source_field': field,
+            'platforms': get_platforms_for_field(field, sample_posts)
+        })
+    
+    return column_suggestions
+```
+
+## Phase 3: Multi-Source Run Creation UI (Week 3)
+
+### 3.1 Enhanced Run Creation Interface
 **Files to modify**: `templates/core/run_create.html`
 
+#### Multi-Step Interface:
+1. **Source Configuration**: Add multiple sources with platform-specific forms
+2. **Data Preview**: Show sample scraped data structure
+3. **Column Planning**: Suggest columns based on data + extraction prompt
+4. **Target Selection**: Choose existing list or create new one
+5. **Confirmation**: Review complete configuration before execution
+
 #### UI Components:
-- Add/remove source buttons
-- Platform-specific input forms
-- Real-time validation
-- Source preview cards
+```html
+<!-- Source Management -->
+<div id="sources-container">
+    <div class="source-item" data-platform="instagram" data-type="profile_scrape">
+        <!-- Instagram profile scrape form -->
+    </div>
+    <div class="source-item" data-platform="tiktok" data-type="search">
+        <!-- TikTok search form -->  
+    </div>
+</div>
 
-### 3.2 Column Preview Interface
-**Files to create**: `templates/core/column_preview.html`
+<button type="button" id="add-source">+ Add Source</button>
 
-#### Features:
-- Live column inference from sample data
-- Column type selection (text, number, date, etc.)
-- Field mapping preview
-- Validation feedback
+<!-- Dynamic Source Selection Modal -->
+<div id="source-modal">
+    <h3>Add Data Source</h3>
+    <div class="platform-options">
+        <button data-platform="instagram">Instagram</button>
+        <button data-platform="tiktok">TikTok</button>
+        <button data-platform="youtube">YouTube</button>
+    </div>
+    <div class="type-options">
+        <!-- Dynamic based on platform selection -->
+    </div>
+</div>
+```
 
-### 3.3 Enhanced Run Detail View
-**Files to modify**: `templates/core/run_detail.html`
+### 3.2 Real-time Column Preview
+**Files to create**: `templates/core/_column_preview.html`
 
-#### Features:
-- Multi-source execution status
-- Platform-specific error reporting
-- Extraction re-run functionality
-- Data quality metrics
+#### Column Suggestion Interface:
+```html
+<div id="column-preview">
+    <h3>Suggested Table Columns</h3>
+    <div class="column-suggestions">
+        <div class="column-item">
+            <input type="checkbox" name="selected_columns" value="content" checked>
+            <label>Content (text)</label>
+            <span class="type-badge">text</span>
+            <span class="platform-badge">All platforms</span>
+        </div>
+        <div class="column-item">
+            <input type="checkbox" name="selected_columns" value="author_username">
+            <label>Author Username</label>
+            <span class="type-badge">text</span>
+            <span class="platform-badge">All platforms</span>
+        </div>
+    </div>
+    
+    <div class="custom-columns">
+        <h4>Add Custom Columns</h4>
+        <input type="text" placeholder="Column name">
+        <select class="column-type">
+            <option value="text">Text</option>
+            <option value="number">Number</option>
+            <option value="date">Date</option>
+            <option value="url">URL</option>
+        </select>
+    </div>
+</div>
+```
 
-## Phase 4: Re-runnable Extraction
+## Phase 4: Extraction & Data Processing (Week 3-4)
 
-### 4.1 Extraction Re-run Interface
-**Files to modify**: `core/views.py`, `templates/core/run_detail.html`
+### 4.1 Enhanced Extraction Prompts
+**Files to create**: `core/prompts/`
 
-#### Features:
-- Edit extraction prompt
-- Preview extraction results
-- Apply to existing scraped data
-- Compare extraction versions
+#### Platform-Aware Extraction:
+```markdown
+# Multi-Platform Social Media Extraction
 
-### 4.2 Enhanced Prompt Templates
-**Files to create**: `n8n/v2/prompts/multi_platform_extraction.md`
+## Task
+Extract structured information from mixed-platform social media data.
 
-#### Template Features:
-- Platform-specific field handling
-- Unified output schema
-- Error recovery instructions
-- Quality validation rules
+## Input Data
+The data contains posts from multiple platforms:
+- Instagram: Posts with captions, images, engagement metrics
+- TikTok: Videos with text, author info, engagement data  
+- YouTube: Videos with descriptions, channel info, statistics
 
-### 4.3 Seamless List Population
-**Files to modify**: `core/views.py`
+## Required Fields
+Based on the user's request: "{user_request}"
 
-#### Flow:
-- scraped → extracted → UserList (direct)
-- No manual column setup required
-- Automatic type conversion
-- Validation and error handling
+Focus on extracting:
+1. **Content**: Main text/caption/description
+2. **Author**: Creator information (username, display name)
+3. **Engagement**: Likes, comments, shares, views
+4. **Media**: URLs to images/videos/thumbnails
+5. **Timing**: Publication dates/timestamps
+6. **Metadata**: Platform-specific relevant information
 
-## Phase 5: Testing & Deployment
+## Output Format
+Return JSON array with consistent field names across platforms:
+```json
+[
+  {
+    "content": "Post caption or text",
+    "author_username": "creator username", 
+    "author_display_name": "creator display name",
+    "likes": 123,
+    "comments": 45,
+    "shares": 12,
+    "views": 1500,
+    "media_url": "https://...",
+    "media_type": "image/video",
+    "published_at": "2025-01-15T10:30:00Z",
+    "platform": "instagram",
+    "post_url": "https://...",
+    "extracted_business_info": "...",
+    "extracted_location": "...",
+    "extracted_contact": "..."
+  }
+]
+```
 
-### 5.1 Multi-Source Testing
+## Special Instructions
+- Normalize field names across platforms (e.g., caption, text, description → content)
+- Handle missing gracefully (not all platforms have all fields)
+- Focus on business/contact/location extraction as requested
+- Preserve platform-specific metadata in separate fields
+```
+
+### 4.2 Re-runnable Extraction
+**Files to modify**: `core/views.py` (run_detail view)
+
+#### Extraction Re-run Feature:
+```python
+def rerun_extraction(request, pk):
+    run = get_object_or_404(Run, pk=pk)
+    
+    if request.method == 'POST':
+        new_prompt = request.POST.get('extraction_prompt')
+        target_columns = request.POST.getlist('target_columns')
+        
+        # Run extraction with new parameters
+        extracted_data = extract_from_scraped(
+            run.scraped, 
+            new_prompt, 
+            target_columns
+        )
+        
+        # Update run with new extraction
+        run.extracted = extracted_data
+        run.save()
+        
+        # If target list specified, update it too
+        if request.POST.get('update_target_list'):
+            update_list_with_extracted_data(run, extracted_data)
+        
+        return JsonResponse({'success': True, 'extracted': extracted_data})
+```
+
+## Phase 5: List Integration & Export (Week 4)
+
+### 5.1 Seamless List Population
+**Files to modify**: `core/views.py` (run_create and related)
+
+#### Auto-List Creation:
+```python
+def create_or_update_list_from_run(run, column_suggestions):
+    """Create/update target list based on run configuration"""
+    
+    # Get or create target list
+    if run.input.get('target_list_id'):
+        user_list = UserList.objects.get(pk=run.input['target_list_id'])
+    else:
+        user_list = UserList.objects.create(
+            user=run.user,
+            name=f"Run {run.pk} - {datetime.now().strftime('%Y-%m-%d')}",
+            description=f"Data from multi-source run on {run.created_at}"
+        )
+    
+    # Create columns from suggestions
+    for suggestion in column_suggestions:
+        if suggestion.get('selected', False):
+            ListColumn.objects.get_or_create(
+                user_list=user_list,
+                name=suggestion['name'],
+                defaults={
+                    'column_type': suggestion['type'],
+                    'description': f"Extracted from {suggestion['source_field']}",
+                    'order': ListColumn.objects.filter(user_list=user_list).count()
+                }
+            )
+    
+    return user_list
+```
+
+### 5.2 Data Population Service
+**Files to create**: `core/services/data_population.py`
+
+#### Extracted → List Mapping:
+```python
+def populate_list_from_extracted(user_list, extracted_data):
+    """Populate list rows with structured extracted data"""
+    
+    columns = {col.name: col for col in user_list.columns.all()}
+    
+    for item in extracted_data:
+        row_data = {}
+        
+        # Map extracted fields to table columns
+        for column_name, column in columns.items():
+            if column_name in item:
+                row_data[column_name] = item[column_name]
+            else:
+                # Try to find nested data
+                row_data[column_name] = extract_nested_value(item, column_name)
+        
+        # Create row
+        ListRow.objects.create(
+            user_list=user_list,
+            data=row_data
+        )
+```
+
+## Phase 6: Testing & Validation (Week 4-5)
+
+### 6.1 Multi-Source Testing
 **Files to create**: `core/tests/test_multi_source.py`
 
 #### Test Scenarios:
-- Multi-source run creation
-- Column inference accuracy
-- Cross-platform data extraction
-- Error handling and recovery
+```python
+class MultiSourceTestCase(TestCase):
+    def test_mixed_platform_run(self):
+        """Test Instagram + TikTok + YouTube in single run"""
+        
+    def test_platform_specific_configs(self):
+        """Test each platform's configuration options"""
+        
+    def test_extraction_prompt_enhancement(self):
+        """Test prompt enhancement with field mapping"""
+        
+    def test_column_inference_accuracy(self):
+        """Test automatic column type inference"""
+        
+    def test_rerun_extraction(self):
+        """Test extraction re-run functionality"""
+```
 
-### 5.2 Data Validation
-**Files to create**: `core/services/validation_service.py`
+### 6.2 Data Quality Validation
+**Files to create**: `core/services/data_validation.py`
 
-#### Validation Features:
-- Data type checking
-- Quality scoring
-- Anomaly detection
-- Platform-specific validation
+#### Validation Rules:
+```python
+def validate_extracted_data(extracted_data, expected_columns):
+    """Validate extracted data quality"""
+    
+    issues = []
+    
+    # Check for required columns
+    for col in expected_columns:
+        if not all(col.get(item) for item in extracted_data):
+            issues.append(f"Missing column: {col}")
+    
+    # Check data type consistency
+    for item in extracted_data:
+        for field, value in item.items():
+            if not validate_field_type(field, value):
+                issues.append(f"Type mismatch in {field}: {value}")
+    
+    return issues
+```
 
-### 5.3 Production Deployment
-**Files to modify**: `docker-compose.yml`, environment configs
+## Implementation Benefits
 
-#### Requirements:
-- Apify actor credentials
-- Enhanced error monitoring
-- Performance optimization
-- User feedback collection
+### User Experience Improvements
+1. **Unified Interface**: Single form for all platforms and configurations
+2. **Intelligent Suggestions**: Automatic column detection from data structure
+3. **Flexible Extraction**: Re-runnable extraction with different prompts
+4. **Seamless Export**: Direct scraped → extracted → list flow
+5. **No Schema Drift**: Dynamic column creation handles any data structure
 
-## Key Implementation Files
+### Technical Advantages
+1. **Apify Integration**: Leverages existing robust actors
+2. **Unified Data Model**: Post-centric approach works across platforms
+3. **Flexible Extraction**: LLM-based extraction handles varying schemas
+4. **Scalable Architecture**: Easy to add new platforms
+5. **Backward Compatible**: Doesn't break existing Instagram functionality
 
-### Core Files to Modify:
-- `core/forms.py` - Enhanced multi-source form
-- `core/views.py` - Dynamic column creation and extraction logic
-- `templates/core/run_create.html` - Multi-step interface
-- `templates/core/run_detail.html` - Enhanced run management
+## Timeline Summary
 
-### New Files to Create:
-- `core/services/extraction_service.py` - Enhanced LLM extraction
-- `core/services/data_population.py` - Column inference and data population
-- `core/services/validation_service.py` - Data validation and quality
-- `templates/core/column_preview.html` - Column preview interface
+| Phase | Duration | Key Deliverables |
+|-------|----------|------------------|
+| Phase 1 | Week 1-2 | Multi-source run form, n8n workflow |
+| Phase 2 | Week 2-3 | Enhanced extraction, column inference |
+| Phase 3 | Week 3 | Multi-step UI, column preview |
+| Phase 4 | Week 3-4 | Re-runnable extraction, prompts |
+| Phase 5 | Week 4 | List integration, data population |
+| Phase 6 | Week 4-5 | Testing, validation, deployment |
 
-### n8n Workflow Updates:
-- Multi-actor workflow with dynamic routing
-- Enhanced extraction prompts
-- Platform-specific error handling
-- Unified data aggregation
+**Total Estimated Timeline**: 5 weeks
+**Go-Live Target**: [Date based on project start]
 
-## Success Criteria
+## Next Steps
 
-### Functional Requirements:
-- ✅ Users can add multiple sources in single run
-- ✅ System automatically infers columns from scraped data
-- ✅ Users can customize inferred columns before extraction
-- ✅ Extraction can be re-run with different prompts
-- ✅ Seamless flow from scraped → extracted → UserList
-
-### Technical Requirements:
-- ✅ Maintains existing scraped/extracted data flow
-- ✅ Handles schema drift through dynamic column creation
-- ✅ Supports platform-specific field mapping
-- ✅ Provides re-runnable extraction with quality feedback
-- ✅ Eliminates manual column setup requirement
-
-## Implementation Dependencies
-
-### Critical Path Items:
-1. ✅ V2 Interface Specifications (already complete)
-2. 🔄 Multi-source form enhancement
-3. 🔄 Dynamic column inference logic
-4. 🔄 Enhanced extraction service
-5. 🔄 Multi-step UI development
-6. 🔄 Re-runnable extraction interface
-
-### External Dependencies:
-- Apify actor credentials and rate limits
-- LLM API for enhanced extraction
-- Platform-specific data format monitoring
-
-## Risk Mitigation
-
-### Technical Risks:
-- **Schema Drift**: Dynamic column creation handles this automatically
-- **Platform Data Changes**: Flexible inference logic adapts to new fields
-- **Extraction Quality**: Re-runnable extraction allows prompt optimization
-
-### Business Risks:
-- **User Experience**: Multi-step UI guides users through complex process
-- **Data Quality**: Validation service ensures high-quality extracted data
-- **Performance**: Efficient column inference minimizes processing time
+1. **Immediate**: Start with enhanced Run form for multi-source input
+2. **Week 1**: Implement n8n workflow with multiple Apify actors
+3. **Week 2**: Build column inference and extraction enhancement
+4. **Week 3**: Create multi-step UI with real-time preview
+5. **Week 4**: Add re-runnable extraction and list integration
+6. **Week 5**: Comprehensive testing and production deployment
 
 ---
 
-*This plan reflects the Apify-based architecture and focuses on immediate implementation.*
+*This revised plan focuses on the Apify actor architecture and unified post-centric data model, eliminating schema drift through dynamic column creation and enhanced extraction.*
