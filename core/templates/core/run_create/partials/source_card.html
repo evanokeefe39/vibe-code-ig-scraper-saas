@@ -1,0 +1,45 @@
+<!-- Source Card Template -->
+<template id="source-template">
+    <div class="source-card border border-gray-200 rounded-lg p-4 bg-gray-50">
+        <div class="flex justify-between items-start mb-4">
+            <div class="flex items-center space-x-3">
+                <div class="platform-icon">
+                    <span class="platform-badge"></span>
+                </div>
+                <div>
+                    <select class="source-type-select w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+                        <option value="">Select Source Type</option>
+                        <optgroup label="YouTube">
+                            <option value="youtube-search">YouTube Search</option>
+                            <option value="youtube-channel">YouTube Channel</option>
+                            <option value="youtube-playlist">YouTube Playlist</option>
+                            <option value="youtube-hashtag">YouTube Hashtag</option>
+                            <option value="youtube-video">YouTube Video</option>
+                        </optgroup>
+                        <optgroup label="Instagram">
+                            <option value="instagram-profile">Instagram Profile</option>
+                            <option value="instagram-post">Instagram Post</option>
+                            <option value="instagram-hashtag">Instagram Hashtag</option>
+                            <!-- Instagram Search hidden due to complexity - will be addressed later -->
+                        </optgroup>
+                        <optgroup label="TikTok">
+                            <option value="tiktok-profile">TikTok Profile</option>
+                            <option value="tiktok-hashtag">TikTok Hashtag</option>
+                            <option value="tiktok-search">TikTok Search</option>
+                            <option value="tiktok-video">TikTok Video</option>
+                        </optgroup>
+                    </select>
+                </div>
+            </div>
+            <button type="button" class="remove-source text-red-600 hover:text-red-800">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                </svg>
+            </button>
+        </div>
+        
+        <div class="platform-config space-y-4">
+            <!-- Platform-specific configuration will be added here -->
+        </div>
+    </div>
+</template>

@@ -1,0 +1,83 @@
+<!-- Instagram Profile Config Template -->
+<template id="instagram-profile-template">
+    <div class="space-y-4">
+        <div class="bg-pink-50 border border-pink-200 rounded-lg p-3">
+            <div class="flex justify-between items-center">
+                <span class="text-sm font-medium text-pink-800">💰 Cost: $2.70 per 1000 results</span>
+                <span class="text-xs text-pink-600">Instagram Profile</span>
+            </div>
+        </div>
+        
+        <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">Profile URLs *</label>
+            <textarea class="direct-urls-textarea w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500" rows="3" placeholder="Enter Instagram profile URLs, one per line:&#10;https://www.instagram.com/natgeo&#10;https://www.instagram.com/lelepons&#10;https://www.instagram.com/chrisburkard"></textarea>
+            <p class="mt-1 text-xs text-gray-500">Profile URLs to scrape posts from</p>
+        </div>
+        
+        <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">Feed Options</label>
+            <select class="feed-type-select w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+                <option value="posts">Posts only</option>
+                <option value="tagged">Tagged posts</option>
+                <option value="reels">Reels only</option>
+            </select>
+            <p class="mt-1 text-xs text-gray-500">What type of content to scrape from profiles</p>
+        </div>
+        
+        <!-- Date Range Filter -->
+        <div class="border border-gray-200 rounded-lg p-4 bg-white">
+            <h5 class="text-sm font-medium text-gray-900 mb-3">📅 Date Range Filter</h5>
+            <div class="grid grid-cols-2 gap-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Oldest Post Date</label>
+                    <input type="date" class="oldest-post-date-input w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+                    <p class="mt-1 text-xs text-gray-500">Only scrape posts posted after this date</p>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Relative Date Filter</label>
+                    <select class="relative-date-filter-select w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+                        <option value="">No filter</option>
+                        <option value="1 minute">Last minute</option>
+                        <option value="5 minutes">Last 5 minutes</option>
+                        <option value="30 minutes">Last 30 minutes</option>
+                        <option value="1 hour">Last hour</option>
+                        <option value="3 hours">Last 3 hours</option>
+                        <option value="12 hours">Last 12 hours</option>
+                        <option value="1 day">Last 24 hours</option>
+                        <option value="3 days">Last 3 days</option>
+                        <option value="7 days">Last 7 days</option>
+                        <option value="30 days">Last 30 days</option>
+                        <option value="90 days">Last 90 days</option>
+                        <option value="6 months">Last 6 months</option>
+                        <option value="1 year">Last year</option>
+                    </select>
+                    <p class="mt-1 text-xs text-gray-500">Alternative to absolute date</p>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Max Results -->
+        <div class="border border-gray-200 rounded-lg p-4 bg-white">
+            <h5 class="text-sm font-medium text-gray-900 mb-3">📊 Results Limit</h5>
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Maximum Results</label>
+                <input type="number" class="results-limit-input w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500" placeholder="100" min="1" max="999999" value="100">
+                <p class="mt-1 text-xs text-gray-500">Maximum number of items to scrape per profile</p>
+            </div>
+        </div>
+        
+        <!-- Results Type -->
+        <div class="border border-gray-200 rounded-lg p-4 bg-white">
+            <h5 class="text-sm font-medium text-gray-900 mb-3">🎯 Results Type</h5>
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Data Type to Extract</label>
+                <select class="results-type-select w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+                    <option value="posts" selected>Posts</option>
+                    <option value="comments">Comments</option>
+                    <option value="mentions">Mentions</option>
+                </select>
+                <p class="mt-1 text-xs text-gray-500">What type of data to extract from profile</p>
+            </div>
+        </div>
+    </div>
+</template>
