@@ -91,34 +91,51 @@ class RunForm(forms.ModelForm):
             if not isinstance(source, dict):
                 raise forms.ValidationError("Each source must be a valid configuration.")
             
-            platform = source.get('platform')
-            if platform not in ['instagram', 'tiktok', 'youtube']:
-                raise forms.ValidationError(f"Invalid platform: {platform}")
+            source_type = source.get('sourceType')
+            config = source.get('config', {})
             
-            # Get platform-specific configuration
-            config = source.get('configuration', {})
+            # Validate source type
+            valid_source_types = [
+                'youtube-search', 'youtube-channel', 'youtube-playlist', 'youtube-hashtag', 'youtube-video',
+                'instagram-profile', 'instagram-post', 'instagram-hashtag', 'instagram-search',
+                'tiktok-profile', 'tiktok-hashtag', 'tiktok-search', 'tiktok-video'
+            ]
             
-            # Validate platform-specific configuration
-            if platform == 'instagram':
-                # Instagram needs either directUrls or search
-                if not any([
-                    config.get('directUrls'),
-                    config.get('search')
-                ]):
-                    raise forms.ValidationError("Instagram source must have either direct URLs or search terms.")
-            elif platform == 'tiktok':
-                # TikTok needs at least one of: profiles, hashtags, searchQueries, or postURLs
-                if not any([
-                    config.get('profiles'),
-                    config.get('hashtags'),
-                    config.get('searchQueries'),
-                    config.get('postURLs')
-                ]):
-                    raise forms.ValidationError("TikTok source must have at least one of: profiles, hashtags, search queries, or post URLs.")
-            elif platform == 'youtube':
-                # YouTube needs startUrls (channel URLs)
-                if not config.get('startUrls'):
-                    raise forms.ValidationError("YouTube source must have at least one channel URL.")
+            if source_type not in valid_source_types:
+                raise forms.ValidationError(f"Invalid source type: {source_type}")
+            
+            # Validate source type-specific configuration
+            if source_type.startswith('youtube-'):
+                if source_type == 'youtube-search':
+                    if not config.get('searchQueries'):
+                        raise forms.ValidationError("YouTube Search source must have search queries.")
+                else:
+                    # YouTube channel, playlist, hashtag, video need startUrls
+                    if not config.get('startUrls'):
+                        raise forms.ValidationError(f"{source_type} source must have URLs.")
+                        
+            elif source_type.startswith('instagram-'):
+                if source_type == 'instagram-search':
+                    if not config.get('searchQueries'):
+                        raise forms.ValidationError("Instagram Search source must have search queries.")
+                else:
+                    # Instagram profile, post, hashtag need directUrls
+                    if not config.get('directUrls'):
+                        raise forms.ValidationError(f"{source_type} source must have URLs.")
+                        
+            elif source_type.startswith('tiktok-'):
+                if source_type == 'tiktok-profile':
+                    if not config.get('profiles'):
+                        raise forms.ValidationError("TikTok Profile source must have profile usernames.")
+                elif source_type == 'tiktok-hashtag':
+                    if not config.get('hashtags'):
+                        raise forms.ValidationError("TikTok Hashtag source must have hashtags.")
+                elif source_type == 'tiktok-search':
+                    if not config.get('searchQueries'):
+                        raise forms.ValidationError("TikTok Search source must have search queries.")
+                elif source_type == 'tiktok-video':
+                    if not config.get('postURLs'):
+                        raise forms.ValidationError("TikTok Video source must have post URLs.")
         
         return sources
 

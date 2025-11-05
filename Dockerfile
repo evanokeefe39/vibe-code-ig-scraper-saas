@@ -1,24 +1,29 @@
+# syntax=docker/dockerfile:1
 FROM python:3.10-slim
-
-WORKDIR /app
 
 # Install system dependencies if needed (e.g., for psycopg)
 RUN apt-get update && apt-get install -y \
     gcc \
     libpq-dev \
-    && rm -rf /var/lib/apt/lists/*
+    && rm -rf /var/lib/apt/lists/* \
+    && pip install --no-cache-dir poetry
 
-# Install Poetry
-RUN pip install poetry
+WORKDIR /app
 
-# Copy dependency files
+# Copy dependency files FIRST for better caching
 COPY pyproject.toml poetry.lock ./
 
-# Install dependencies
-RUN poetry config virtualenvs.create false && poetry install --only main --no-root --no-interaction --no-ansi
+# Install dependencies with cache optimization
+RUN poetry config virtualenvs.create false \
+    && poetry install --only main --no-root --no-interaction --no-ansi \
+    && rm -rf /root/.cache/pypoetry
 
-# Copy source code
+# Copy source code LAST so it doesn't invalidate dependency layer
 COPY . .
+
+# Create non-root user for security
+RUN useradd -m -u 1000 appuser && chown -R appuser:appuser /app
+USER appuser
 
 # Expose port
 EXPOSE 8000

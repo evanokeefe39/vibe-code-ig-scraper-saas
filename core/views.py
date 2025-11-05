@@ -61,9 +61,55 @@ def trigger_run(run):
     extraction_prompt = input_data.get('extraction_prompt', "Extract location information, business mentions, contact details, and other relevant data from social media posts. Adapt to the specific platform and content type.")
     enable_extraction = input_data.get('enable_extraction', True)
 
+    # Convert new sourceType format to platform format for n8n compatibility
+    converted_sources = []
+    for source in sources:
+        source_type = source.get('sourceType', '')
+        config = source.get('config', {})
+        
+        # Map sourceType to platform
+        if source_type.startswith('youtube-'):
+            platform = 'youtube'
+        elif source_type.startswith('instagram-'):
+            platform = 'instagram'
+        elif source_type.startswith('tiktok-'):
+            platform = 'tiktok'
+        else:
+            platform = 'instagram'  # Default fallback
+        
+        # Create platform-specific source object
+        platform_source = {
+            'platform': platform,
+            'sourceType': source_type,
+            'configuration': config
+        }
+        
+        # Add legacy fields for backward compatibility
+        if platform == 'instagram':
+            if 'directUrls' in config:
+                platform_source['directUrls'] = config['directUrls']
+            elif 'search' in config:
+                platform_source['search'] = config['search']
+        elif platform == 'tiktok':
+            if 'profiles' in config:
+                platform_source['profiles'] = config['profiles']
+            if 'hashtags' in config:
+                platform_source['hashtags'] = config['hashtags']
+            if 'searchQueries' in config:
+                platform_source['searchQueries'] = config['searchQueries']
+            if 'postURLs' in config:
+                platform_source['postURLs'] = config['postURLs']
+        elif platform == 'youtube':
+            if 'startUrls' in config:
+                platform_source['startUrls'] = config['startUrls']
+            if 'searchQueries' in config:
+                platform_source['searchQueries'] = config['searchQueries']
+        
+        converted_sources.append(platform_source)
+
     # Format payload for multi-source n8n workflow
     payload = {
-        "sources": sources,
+        "sources": converted_sources,
         "daysSince": days_since,
         "maxResults": max_results,
         "auto_infer_columns": auto_infer_columns,
@@ -108,15 +154,37 @@ def try_legacy_fallback(run, input_data):
             return
             
         first_source = sources[0]
-        platform = first_source.get('platform', 'instagram')
+        source_type = first_source.get('sourceType', '')
+        config = first_source.get('config', {})
         
-        # Convert to legacy format
-        if platform == 'instagram':
-            profiles = first_source.get('directUrls', [])
-        elif platform == 'tiktok':
-            profiles = first_source.get('profiles', [])
+        # Map sourceType to platform
+        if source_type.startswith('youtube-'):
+            platform = 'youtube'
+        elif source_type.startswith('instagram-'):
+            platform = 'instagram'
+        elif source_type.startswith('tiktok-'):
+            platform = 'tiktok'
         else:
-            profiles = []
+            platform = 'instagram'  # Default fallback
+        
+        # Extract URLs based on source type and config
+        profiles = []
+        if platform == 'instagram':
+            profiles = config.get('directUrls', [])
+        elif platform == 'tiktok':
+            profiles = config.get('profiles', [])
+        elif platform == 'youtube':
+            # For YouTube, try different URL types
+            if 'startUrls' in config:
+                profiles = [url.get('url', '') if isinstance(url, dict) else url for url in config['startUrls']]
+            elif 'searchQueries' in config:
+                # For search, we'll need to handle differently - for now, skip
+                logger.warning("YouTube search not supported in legacy fallback")
+                return
+        
+        if not profiles:
+            logger.error(f"No profiles/URLs found for {platform} source in legacy fallback")
+            return
         
         days_since = input_data.get('days_since', 14)
         max_results = input_data.get('max_results', 50)
@@ -125,10 +193,15 @@ def try_legacy_fallback(run, input_data):
         # Format legacy payload
         n8n_profiles = []
         for url in profiles:
-            n8n_profiles.append({
-                "url": url,
-                "type": platform
-            })
+            if url and url.strip():
+                n8n_profiles.append({
+                    "url": url.strip(),
+                    "type": platform
+                })
+        
+        if not n8n_profiles:
+            logger.error("No valid profiles to process in legacy fallback")
+            return
         
         legacy_payload = {
             "user_id": run.user_id,

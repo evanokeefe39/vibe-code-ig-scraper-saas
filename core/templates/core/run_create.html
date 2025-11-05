@@ -1455,11 +1455,11 @@ document.addEventListener('DOMContentLoaded', function() {
             return;
         }
         
-        // Validate each source has required data
+// Validate each source has required data
         for (const source of validSources) {
             let hasData = false;
             
-            const config = source.configuration || {};
+            const config = source.config || {};
             const sourceType = source.sourceType;
             
             if (sourceType.startsWith('youtube-')) {
@@ -1468,6 +1468,32 @@ document.addEventListener('DOMContentLoaded', function() {
                 } else {
                     hasData = config.startUrls && config.startUrls.length > 0;
                 }
+            } else if (sourceType.startsWith('instagram-')) {
+                if (sourceType === 'instagram-search') {
+                    hasData = config.searchQueries && config.searchQueries.length > 0;
+                } else {
+                    hasData = config.directUrls && config.directUrls.length > 0;
+                }
+            } else if (sourceType.startsWith('tiktok-')) {
+                if (sourceType === 'tiktok-profile') {
+                    hasData = config.profiles && config.profiles.length > 0;
+                } else if (sourceType === 'tiktok-hashtag') {
+                    hasData = config.hashtags && config.hashtags.length > 0;
+                } else if (sourceType === 'tiktok-search') {
+                    hasData = config.searchQueries && config.searchQueries.length > 0;
+                } else if (sourceType === 'tiktok-video') {
+                    hasData = config.postURLs && config.postURLs.length > 0;
+                }
+            }
+            
+            if (!hasData) {
+                e.preventDefault();
+                const sourceTypeConfig = sourceTypeConfigs[sourceType];
+                const sourceName = sourceTypeConfig ? sourceTypeConfig.name : sourceType;
+                alert(`Please add URLs, search terms, or other required data for ${sourceName} source.`);
+                return;
+            }
+        }
             } else if (sourceType.startsWith('instagram-')) {
                 if (sourceType === 'instagram-search') {
                     hasData = config.search && config.search.trim().length > 0;
