@@ -2,6 +2,7 @@
 - Don't make any changes to @n8n/workflows/*
 - Refer to below locaitons for important documents about the project
 - When making Django code changes, restart the Docker container in detached mode (-d) (volumes are mounted for live updates)
+- **Container Management**: Always rebuild and restart the Docker container after making changes to Django code, templates, or static files to ensure updates are properly applied. Use `docker-compose down && docker-compose up --build -d` for full rebuilds.
 
 # Solution Requirements
 - Function requirements are documented in @functional-requirements.md

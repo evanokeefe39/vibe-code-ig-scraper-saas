@@ -50,35 +50,37 @@ def test_geocode(request):
     return HttpResponse(f"Address: {address}<br>Lat: {lat}<br>Lng: {lng}")
 
 def trigger_run(run):
+    """Trigger multi-source n8n workflow"""
     # Parse input
     input_data = json.loads(run.input)
-    profiles = input_data.get('profiles', [])
+    sources = input_data.get('sources', [])
     days_since = input_data.get('days_since', 14)
     max_results = input_data.get('max_results', 50)
-    # include_comments = input_data.get('include_comments', True)  # Hidden for now
-    # include_stories = input_data.get('include_stories', False)   # Hidden for now
-    extraction_prompt = input_data.get('extraction_prompt', "Extract location information, business mentions, and contact details from social media posts.")
+    auto_infer_columns = input_data.get('auto_infer_columns', True)
+    custom_columns = input_data.get('custom_columns', [])
+    extraction_prompt = input_data.get('extraction_prompt', "Extract location information, business mentions, contact details, and other relevant data from social media posts. Adapt to the specific platform and content type.")
+    enable_extraction = input_data.get('enable_extraction', True)
 
-    # Format payload for n8n
-    n8n_profiles = []
-    for url in profiles:
-        n8n_profiles.append({
-            "url": url,
-            "type": "instagram"
-        })
+    # Format payload for multi-source n8n workflow
     payload = {
-        "user_id": run.user_id,
-        "tier": "premium",  # stub
-        "days_since": days_since,
-        "max_results": max_results,
-        "extraction_prompt": extraction_prompt,
-        "profiles": n8n_profiles
+        "sources": sources,
+        "daysSince": days_since,
+        "maxResults": max_results,
+        "auto_infer_columns": auto_infer_columns,
+        "custom_columns": custom_columns,
+        "enable_extraction": enable_extraction,
+        "extraction_prompt": extraction_prompt
     }
-    # Post to n8n webhook
-    webscrape_url = settings.N8N_WEBSCRAPE_URL
+    
+    # Post to multi-source n8n webhook
+    multi_source_url = settings.N8N_BASE_URL + '/webhook/multi-source-scrape'
+    
     try:
-        logger.info(f"Triggering n8n workflow for run {run.pk} at {webscrape_url}")
-        response = requests.post(webscrape_url, json=payload, timeout=10)
+        logger.info(f"Triggering multi-source n8n workflow for run {run.pk} at {multi_source_url}")
+        logger.info(f"Payload: {json.dumps(payload, indent=2)}")
+        
+        response = requests.post(multi_source_url, json=payload, timeout=30)
+        
         if response.status_code == 200:
             # Parse execution_id from response
             response_data = response.json()
@@ -87,8 +89,70 @@ def trigger_run(run):
             logger.info(f"Run {run.pk} started with execution {run.n8n_execution_id}")
         else:
             logger.error(f"Failed to start run {run.pk}: HTTP {response.status_code} - {response.text}")
+            # Try fallback to legacy webhook if multi-source fails
+            try_legacy_fallback(run, input_data)
     except Exception as e:
         logger.error(f"Exception while triggering run {run.pk}: {str(e)}")
+        # Try fallback to legacy webhook
+        try_legacy_fallback(run, input_data)
+
+def try_legacy_fallback(run, input_data):
+    """Fallback to legacy single-source workflow if multi-source fails"""
+    try:
+        logger.info(f"Attempting fallback to legacy workflow for run {run.pk}")
+        
+        # Extract first source for fallback
+        sources = input_data.get('sources', [])
+        if not sources:
+            logger.error("No sources available for fallback")
+            return
+            
+        first_source = sources[0]
+        platform = first_source.get('platform', 'instagram')
+        
+        # Convert to legacy format
+        if platform == 'instagram':
+            profiles = first_source.get('directUrls', [])
+        elif platform == 'tiktok':
+            profiles = first_source.get('profiles', [])
+        else:
+            profiles = []
+        
+        days_since = input_data.get('days_since', 14)
+        max_results = input_data.get('max_results', 50)
+        extraction_prompt = input_data.get('extraction_prompt', "Extract location information, business mentions, and contact details from social media posts.")
+        
+        # Format legacy payload
+        n8n_profiles = []
+        for url in profiles:
+            n8n_profiles.append({
+                "url": url,
+                "type": platform
+            })
+        
+        legacy_payload = {
+            "user_id": run.user_id,
+            "tier": "premium",
+            "days_since": days_since,
+            "max_results": max_results,
+            "extraction_prompt": extraction_prompt,
+            "profiles": n8n_profiles
+        }
+        
+        # Post to legacy n8n webhook
+        webscrape_url = settings.N8N_WEBSCRAPE_URL
+        response = requests.post(webscrape_url, json=legacy_payload, timeout=10)
+        
+        if response.status_code == 200:
+            response_data = response.json()
+            run.n8n_execution_id = response_data.get('execution_id')
+            run.save()
+            logger.info(f"Run {run.pk} started with legacy execution {run.n8n_execution_id}")
+        else:
+            logger.error(f"Legacy fallback also failed for run {run.pk}: HTTP {response.status_code} - {response.text}")
+            
+    except Exception as e:
+        logger.error(f"Exception in legacy fallback for run {run.pk}: {str(e)}")
 
 def run_create(request):
     if request.method == 'POST':
@@ -124,29 +188,74 @@ def run_detail(request, pk):
     execution_info = get_n8n_execution_status(run.n8n_execution_id)
     execution_data_json = json.dumps(execution_info['data'])
 
-    # Prepare input data for JavaScript
-    input_json = json.dumps(run.input) if isinstance(run.input, dict) else (run.input if isinstance(run.input, str) else 'null')
+    # Parse input data
+    try:
+        if isinstance(run.input, str):
+            input_data = json.loads(run.input)
+        else:
+            input_data = run.input or {}
+    except (json.JSONDecodeError, TypeError):
+        input_data = {}
 
-    # Prepare data for display - show both new and legacy formats
+    # Prepare input data for JavaScript
+    input_json = json.dumps(input_data, indent=2)
+
+    # Prepare data for display - handle both new multi-source and legacy formats
     run_data = {}
-    if run.scraped:
+    
+    # Handle new multi-source format
+    if run.scraped and isinstance(run.scraped, dict):
+        # New format: scraped data organized by platform
+        run_data['scraped_by_platform'] = run.scraped
+        # Also create flattened view for compatibility
+        all_scraped = []
+        for platform, items in run.scraped.items():
+            if isinstance(items, list):
+                for item in items:
+                    all_scraped.append({
+                        'platform': platform,
+                        'data': item
+                    })
+        run_data['scraped'] = all_scraped
+    elif run.scraped:
+        # Legacy format or mixed format
         run_data['scraped'] = run.scraped
+
     if run.extracted:
         run_data['extracted'] = run.extracted
+        
+        # Extract metadata if available
+        if isinstance(run.extracted, dict) and 'metadata' in run.extracted:
+            run_data['extraction_metadata'] = run.extracted['metadata']
+
     if run.output:
         run_data['legacy_output'] = run.output
 
-    run_data_json = json.dumps(run_data) if run_data else 'null'
+    run_data_json = json.dumps(run_data, indent=2) if run_data else 'null'
+
+    # Parse sources for display
+    sources = input_data.get('sources', [])
+    sources_by_platform = {}
+    for source in sources:
+        platform = source.get('platform', 'unknown')
+        if platform not in sources_by_platform:
+            sources_by_platform[platform] = []
+        sources_by_platform[platform].append(source)
 
     return render(request, 'core/run_detail.html', {
         'run': run,
         'execution_status': execution_info['status'],
         'execution_data': execution_info['data'],
         'execution_data_json': execution_data_json,
+        'input_data': input_data,
         'input_json': input_json,
         'run_data': run_data,
         'run_data_json': run_data_json,
-        'run_scraped_json': json.dumps(run.scraped) if run.scraped else None
+        'sources': sources,
+        'sources_by_platform': sources_by_platform,
+        'sources_json': json.dumps(sources, indent=2),
+        'run_scraped_json': json.dumps(run.scraped, indent=2) if run.scraped else None,
+        'run_extracted_json': json.dumps(run.extracted, indent=2) if run.extracted else None
     })
 
 def run_by_n8n(request, n8n_execution_id):

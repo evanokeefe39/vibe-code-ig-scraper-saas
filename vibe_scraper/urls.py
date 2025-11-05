@@ -17,6 +17,8 @@ Including another URLconf
 
 from django.contrib import admin
 from django.urls import path
+from django.conf import settings
+from django.conf.urls.static import static
 from core.views import home, test_geocode, run_create, run_list, run_detail, run_by_n8n, run_status_api, list_list, list_detail, list_create, list_column_create, list_row_create, export_list_csv, export_list_json, export_run_csv, export_run_json, update_cell, delete_row, add_blank_row, update_column, delete_column, delete_list, table_save, validate_column_type_change
 
 urlpatterns = [
@@ -47,3 +49,7 @@ urlpatterns = [
     path("lists/<int:pk>/export/csv/", export_list_csv, name="export_list_csv"),
     path("lists/<int:pk>/export/json/", export_list_json, name="export_list_json"),
 ]
+
+# Serve static files in development
+if settings.DEBUG:
+    urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
