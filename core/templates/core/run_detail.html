@@ -387,7 +387,7 @@ function updateStatusAndDuration(data) {
     else if (statusText === 'running') statusText = 'Running';
     else if (statusText === 'waiting') statusText = 'Waiting';
     else if (statusText === 'failed' || statusText === 'error' || statusText === 'cancelled') statusText = 'Failed';
-    else statusText = statusText.charAt(0).toUpperCase() + statusText.slice(1);
+    else statusText = statusText ? statusText.charAt(0).toUpperCase() + statusText.slice(1) : 'Unknown';
     statusElement.textContent = statusText;
 
     // Update duration
@@ -442,7 +442,7 @@ try {
             sourceDiv.className = 'border rounded-lg p-4 bg-gray-50';
             
             const platformIcon = getPlatformIcon(source.platform);
-            const platformName = source.platform.charAt(0).toUpperCase() + source.platform.slice(1);
+            const platformName = source.platform ? source.platform.charAt(0).toUpperCase() + source.platform.slice(1) : 'Unknown';
             
             let configDetails = '';
             

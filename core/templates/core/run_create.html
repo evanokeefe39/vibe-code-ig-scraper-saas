@@ -3,73 +3,53 @@
 
 {% block title %}Create New Run - Vibe Scraper SaaS{% endblock %}
 
-{% block footer %}{% endblock %}
-
 {% block content %}
 <div class="max-w-6xl mx-auto px-4 py-8">
-    <div class="mb-8">
-        <h1 class="text-3xl font-bold text-gray-900 mb-2">Create New Scraping Run</h1>
-        <p class="text-gray-600">Configure multi-platform social media data extraction</p>
-    </div>
-
-    <form method="post" class="bg-white rounded-lg shadow-md p-6" id="run-form">
+    <h1 class="text-3xl font-bold text-gray-900 mb-8">Create New Scraping Run</h1>
+    
+    <form method="post" id="run-form">
         {% csrf_token %}
-        {{ form.custom_columns }}
-<input type="hidden" name="sources" id="sources-field" value="">
-
-        <!-- Step 1: Sources Configuration -->
+        
+        <!-- Hidden required fields -->
+        <input type="hidden" name="days_since" value="14">
+        <input type="hidden" name="auto_infer_columns" value="true">
+        <input type="hidden" name="custom_columns" value="[]">
+        <input type="hidden" name="max_results" value="50">
+        
+        
+        
+        <!-- Sources Configuration -->
         <div class="mb-8">
-            <h2 class="text-xl font-semibold text-gray-900 mb-4">Step 1: Configure Sources</h2>
+            <h2 class="text-xl font-semibold text-gray-900 mb-4">Sources Configuration</h2>
             
-            <div id="sources-container" class="space-y-4 mb-4">
-                <!-- Sources will be added here dynamically -->
+            <div class="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
+                <p class="text-sm text-blue-800">
+                    <strong>🔄 Multi-Source Support:</strong> Add multiple sources from different platforms (YouTube, Instagram, TikTok) in a single run. 
+                    Each source can have different configuration options based on the platform and source type.
+                </p>
             </div>
             
-            <button type="button" id="add-source-btn" class="inline-flex items-center px-4 py-2 bg-green-600 hover:bg-green-700 text-white font-medium rounded-lg transition-colors duration-200">
+            <div id="sources-container">
+                {% for form in source_formset %}
+                    {% include "core/run_create/partials/source_card.html" %}
+                {% endfor %}
+            </div>
+            
+            <button type="button" id="add-source-btn" class="inline-flex items-center px-4 py-2 bg-green-600 hover:bg-green-700 text-white font-medium rounded-lg transition-colors duration-200 shadow-md hover:shadow-lg mt-4">
                 <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/>
                 </svg>
                 Add Source
             </button>
-        </div>
-
-        <!-- Step 2: Global Settings -->
-        <div class="mb-8">
-            <h2 class="text-xl font-semibold text-gray-900 mb-4">Step 2: Global Settings</h2>
             
-            <div class="mt-6">
-                <label class="flex items-center">
-                    {{ form.auto_infer_columns }}
-                    <span class="ml-2 text-sm font-medium text-gray-700">{{ form.auto_infer_columns.label }}</span>
-                </label>
-                {% if form.auto_infer_columns.help_text %}
-                    <p class="mt-1 text-sm text-gray-500">{{ form.auto_infer_columns.help_text }}</p>
-                {% endif %}
-                {% if form.auto_infer_columns.errors %}
-                    <p class="mt-1 text-sm text-red-600">{{ form.auto_infer_columns.errors.0 }}</p>
-                {% endif %}
-            </div>
+            {{ source_formset.management_form }}
         </div>
-
-        <!-- Step 3: Extraction Configuration -->
+        
+        <!-- Extraction Configuration -->
         <div class="mb-8">
-            <h2 class="text-xl font-semibold text-gray-900 mb-4">Step 3: Extraction Configuration</h2>
+            <h2 class="text-xl font-semibold text-gray-900 mb-4">Extraction Configuration</h2>
             
             <div class="space-y-6">
-                <!-- Extraction Prompt -->
-                <div>
-                    <label for="{{ form.extraction_prompt.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-2">
-                        {{ form.extraction_prompt.label }}
-                    </label>
-                    {{ form.extraction_prompt }}
-                    {% if form.extraction_prompt.help_text %}
-                        <p class="mt-1 text-sm text-gray-500">{{ form.extraction_prompt.help_text }}</p>
-                    {% endif %}
-                    {% if form.extraction_prompt.errors %}
-                        <p class="mt-1 text-sm text-red-600">{{ form.extraction_prompt.errors.0 }}</p>
-                    {% endif %}
-                </div>
-
                 <!-- Enable Extraction -->
                 <div>
                     <label class="flex items-center">
@@ -83,30 +63,42 @@
                         <p class="mt-1 text-sm text-red-600">{{ form.enable_extraction.errors.0 }}</p>
                     {% endif %}
                 </div>
+                
+                <!-- Extraction Prompt -->
+                <div>
+                    <label for="{{ form.extraction_prompt.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-2">
+                        {{ form.extraction_prompt.label }}
+                    </label>
+                    {{ form.extraction_prompt }}
+                    {% if form.extraction_prompt.help_text %}
+                        <p class="mt-1 text-sm text-gray-500">{{ form.extraction_prompt.help_text }}</p>
+                    {% endif %}
+                    {% if form.extraction_prompt.errors %}
+                        <p class="mt-1 text-sm text-red-600">{{ form.extraction_prompt.errors.0 }}</p>
+                    {% endif %}
+                </div>
             </div>
         </div>
-
+        
         <!-- Form Actions -->
-        {% include "core/run_create/partials/form_actions.html" %}
-    </form>
+        <div class="mt-8 pt-6 border-t border-gray-200">
+            <button type="submit" class="inline-flex items-center px-6 py-3 bg-primary-600 hover:bg-primary-700 text-white font-semibold rounded-lg transition-colors duration-200 shadow-md hover:shadow-lg">
+                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/>
+                </svg>
+                Start Scraping Run
+            </button>
+            <a href="{% url 'run_list' %}" class="ml-4 inline-flex items-center px-4 py-2 text-gray-700 hover:text-gray-900 font-medium">
+                Cancel
+            </a>
+        </div>
+        
+        </form>
 </div>
 
-<!-- Source Card Template -->
-{% include "core/run_create/partials/source_card.html" %}
+<!-- Platform Configuration Templates -->
+{% include "core/run_create/platforms/youtube_search.html" %}
 
-<!-- Platform Templates -->
-{% include "core/run_create/platform_templates/youtube_search.html" %}
-{% include "core/run_create/platform_templates/instagram_profile.html" %}
-{% include "core/run_create/platform_templates/tiktok_profile.html" %}
-{% include "core/run_create/platform_templates/additional_platforms.html" %}
-
-<!-- JavaScript Modules -->
-<script src="{% static 'js/run_create/platform_configs.js' %}?v=2"></script>
-<script src="{% static 'js/run_create/utils.js' %}?v=2"></script>
-<script src="{% static 'js/run_create/source_manager.js' %}?v=2"></script>
-<script src="{% static 'js/run_create/form_validator.js' %}?v=2"></script>
-<script src="{% static 'js/run_create/extraction_handler.js' %}?v=2"></script>
-<script src="{% static 'js/run_create/main.js' %}?v=2"></script>
-
-
+<!-- Formset Management JavaScript -->
+<script src="{% static 'js/run_create/formset_manager.js' %}"></script>
 {% endblock %}

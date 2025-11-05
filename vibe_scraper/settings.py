@@ -126,6 +126,9 @@ USE_TZ = True
 
 STATIC_URL = "/static/"
 STATIC_ROOT = BASE_DIR / "staticfiles"
+STATICFILES_DIRS = [
+    BASE_DIR / "core/static",
+]
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
@@ -140,6 +143,9 @@ N8N_BASE_URL = os.getenv('N8N_BASE_URL', 'http://n8n:5678')
 
 # N8N webscrape URL
 N8N_WEBSCRAPE_URL = N8N_BASE_URL + '/webhook/scrape'
+
+# N8N test scraping URL
+N8N_TEST_SCRAPING_URL = os.getenv('N8N_TEST_SCRAPING_URL', 'http://localhost:5678/webhook-test/multi-source-scrape')
 
 # N8N API key for REST API authentication
 N8N_API_KEY = os.getenv('N8N_API_KEY')

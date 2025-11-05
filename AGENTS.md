@@ -36,3 +36,4 @@
 # N8N Workflow URLS
 - Production (Always Running): http://localhost:5678/webhook/scrape
 - Test (Only Runs when user says so): http://localhost:5678/webhook-test/scrape
+- **Testing Note**: Always use the test endpoint (`/webhook-test/`) when testing n8n workflows to avoid interfering with production runs
