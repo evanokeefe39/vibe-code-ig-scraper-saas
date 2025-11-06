@@ -14,7 +14,7 @@
         <input type="hidden" name="days_since" value="14">
         <input type="hidden" name="auto_infer_columns" value="true">
         <input type="hidden" name="custom_columns" value="[]">
-        <input type="hidden" name="max_results" value="50">
+        <input type="hidden" name="max_results" value="5">
         
         
         
@@ -192,6 +192,12 @@
 $(document).ready(function() {
     let formCount = $('.dynamic-form').length;
     
+    // Update Django formset management fields
+    function updateManagementForm() {
+        const totalForms = $('.dynamic-form').length;
+        $('input[name="form-TOTAL_FORMS"]').val(totalForms);
+    }
+
     // Add new form functionality
     function addNewForm() {
         const newFormIndex = formCount;
@@ -205,8 +211,9 @@ $(document).ready(function() {
         template.find('select').each(function() {
             const $select = $(this);
             const fieldName = $select.attr('name');
+            const className = $select.attr('class');
             
-            // Set initial values based on field name
+            // Set initial values based on field name (Django form fields)
             if (fieldName && fieldName.includes('subtitles_language')) {
                 $select.val('en'); // English
             } else if (fieldName && fieldName.includes('sorting_order')) {
@@ -215,12 +222,19 @@ $(document).ready(function() {
                 $select.val(''); // No filter
             } else if (fieldName && fieldName.includes('feed_type')) {
                 $select.val('posts'); // Posts only
+            } else if (fieldName && fieldName.includes('results_type')) {
+                $select.val('posts'); // Posts (Instagram)
             } else if (fieldName && fieldName.includes('subtitles_format')) {
                 $select.val('srt'); // SRT format
             } else {
-                $select.val(''); // Default to empty for other selects
+                $select.val(''); // Default to empty for other Django form fields
             }
         });
+        
+        // Reset hardcoded template selects (TikTok-specific fields)
+        template.find('select.profile-scrape-sections-select').val('videos'); // Videos only
+        template.find('select.profile-sorting-select').val('latest'); // Latest First
+        template.find('select.hashtag-sorting-select').val('latest'); // Latest First
         
         // Reset number inputs to their template defaults
         template.find('input[type="number"]').each(function() {
@@ -230,7 +244,7 @@ $(document).ready(function() {
             } else if ($input.hasClass('max-results-streams-input')) {
                 $input.val('5');
             } else if ($input.attr('name') && $input.attr('name').includes('max_results')) {
-                $input.val('50');
+                $input.val('5');
             } else {
                 $input.val('');
             }
@@ -267,6 +281,9 @@ $(document).ready(function() {
         $('.formset-container').append(template);
         formCount++;
         
+        // Update Django formset management fields
+        updateManagementForm();
+        
         // Initialize platform switching for new form
         template.find('.source-type-select').trigger('change');
     }
@@ -292,6 +309,9 @@ $(document).ready(function() {
         });
         
         formCount = $('.dynamic-form').length;
+        
+        // Update Django formset management fields
+        updateManagementForm();
     }
     
     // Connect our preferred buttons
