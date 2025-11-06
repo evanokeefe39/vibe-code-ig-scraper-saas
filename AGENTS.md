@@ -37,3 +37,29 @@
 - Production (Always Running): http://localhost:5678/webhook/scrape
 - Test (Only Runs when user says so): http://localhost:5678/webhook-test/scrape
 - **Testing Note**: Always use the test endpoint (`/webhook-test/`) when testing n8n workflows to avoid interfering with production runs
+
+# File Size & Modularity Guidelines
+
+## Maximum File Sizes
+- **JavaScript modules**: Max 200 lines
+- **Django templates**: Max 300 lines  
+- **Python services**: Max 400 lines
+- **Configuration files**: Max 150 lines
+
+## Single Responsibility Principle
+- One primary concern per file
+- Split files that exceed size limits
+- Use clear, descriptive naming
+- Keep related functionality together
+
+## File Organization Standards
+- **Templates**: Organize by app and feature (e.g., `core/run_create/partials/`)
+- **JavaScript**: Modular by functionality (e.g., `form_validator.js`, `source_manager.js`)
+- **Python**: Separate services, models, views, utilities
+- **Static files**: Organize by type and usage context
+
+## Code Modularity Requirements
+- Functions should be under 50 lines
+- Classes should have single responsibilities
+- Avoid deeply nested code (>3 levels)
+- Use composition over inheritance where appropriate

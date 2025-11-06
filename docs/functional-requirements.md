@@ -106,3 +106,30 @@ The Vibe Code IG Scraper SaaS allows users to extract and curate structured data
 - User prompts are sanitized to prevent malicious use.
 - Agents handle both web UI and MCP contexts seamlessly.
 - The system must be adaptable to different entity extraction schemas.
+
+## File Size & Modularity Requirements
+
+### Maximum File Sizes
+- **JavaScript modules**: Max 200 lines
+- **Django templates**: Max 300 lines  
+- **Python services**: Max 400 lines
+- **Configuration files**: Max 150 lines
+
+### Code Organization Standards
+- **Single Responsibility**: One primary concern per file
+- **Function Length**: Functions should be under 50 lines
+- **Class Scope**: Classes should have focused responsibilities
+- **Nesting Limits**: Avoid deeply nested code (>3 levels)
+- **Modular Design**: Use composition over inheritance where appropriate
+
+### File Structure Guidelines
+- **Templates**: Organize by app and feature (e.g., `core/run_create/partials/`)
+- **JavaScript**: Modular by functionality with clear separation
+- **Python**: Separate services, models, views, and utilities
+- **Static Files**: Organize by type and usage context
+
+### Frontend Consistency Requirements
+- **Alpine.js Usage**: Use for reactive components, keep components small
+- **Django Templates**: Follow standard inheritance and block patterns
+- **Progressive Enhancement**: Ensure functionality works without JavaScript
+- **Template Logic**: Keep business logic in Python, presentation in templates

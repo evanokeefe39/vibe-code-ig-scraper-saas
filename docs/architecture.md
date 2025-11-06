@@ -45,6 +45,65 @@ See [geocoding-providers.md](geocoding-providers.md) for provider details.
 - Validates extracted entities
 - Formats output based on context (DB storage for web UI, direct response for MCP)
 
+## Frontend Architecture
+
+### Alpine.js Usage Patterns
+The project uses Alpine.js for reactive components in specific contexts:
+
+**Current Implementation:**
+- **Base Template**: Alpine.js CDN loaded globally in `base.html`
+- **Table Editor**: `x-data="tableEditor"` for interactive table management in `list_detail.html`
+- **Dynamic Components**: Dropdowns, modals, and inline editing using Alpine.js directives
+
+**Usage Guidelines:**
+- Use `x-data` for component state management
+- Prefer `@click` and `@submit` for event handling
+- Keep Alpine.js components small and focused
+- Avoid complex state management in templates
+
+**Component Patterns:**
+```html
+<!-- Table Editor Component -->
+<div x-data="tableEditor">
+  <table x-data="{ sortedColumn: null, sortDirection: 'asc' }">
+    <!-- Table content -->
+  </table>
+</div>
+
+<!-- Dropdown Component -->
+<div x-data="{ open: false }">
+  <button @click="open = !open">Toggle</button>
+  <div x-show="open" @click.away="open = false">
+    <!-- Dropdown content -->
+  </div>
+</div>
+```
+
+### Django Template Migration Status
+
+**Current State (JavaScript-Heavy):**
+- Multiple JavaScript modules for form management
+- Complex DOM manipulation and state handling
+- Platform-specific templates rendered via JavaScript
+- Form validation handled in frontend
+
+**Target State (Django Template-Based):**
+- Django formsets for multi-source configuration
+- Server-side validation and error handling
+- Progressive enhancement with minimal JavaScript
+- Standard Django template patterns
+
+**Migration Progress:**
+- ✅ Migration plan documented in `django_template_migration_plan.md`
+- ⏳ Implementation pending (MVP scope)
+- 📋 Current approach functional for MVP release
+
+**Consistency Guidelines:**
+- Use Django's template inheritance (`{% extends %}`)
+- Implement proper block structure (`{% block %}`)
+- Follow Django form rendering patterns
+- Maintain separation of concerns (templates vs logic)
+
 **Data Storage Decision**: Extracted entities stored as JSONB structures in Django models for maximum flexibility across different use cases (locations, leads, research data, etc.). n8n execution data remains in n8n; correlated via execution ID.
 
 ## Architecture by Stage
