@@ -197,8 +197,45 @@ $(document).ready(function() {
         const newFormIndex = formCount;
         const template = $('.dynamic-form:first').clone();
         
-        // Clear form values
-        template.find('input, select, textarea').val('');
+        // Clear form values but preserve Django initial values
+        template.find('input[type="text"], input[type="number"], input[type="date"], textarea').val('');
+        template.find('input[type="checkbox"]').prop('checked', false);
+        
+        // Reset select fields to their initial values
+        template.find('select').each(function() {
+            const $select = $(this);
+            const fieldName = $select.attr('name');
+            
+            // Set initial values based on field name
+            if (fieldName && fieldName.includes('subtitles_language')) {
+                $select.val('en'); // English
+            } else if (fieldName && fieldName.includes('sorting_order')) {
+                $select.val('relevance'); // Relevance
+            } else if (fieldName && fieldName.includes('relative_date_filter')) {
+                $select.val(''); // No filter
+            } else if (fieldName && fieldName.includes('feed_type')) {
+                $select.val('posts'); // Posts only
+            } else if (fieldName && fieldName.includes('subtitles_format')) {
+                $select.val('srt'); // SRT format
+            } else {
+                $select.val(''); // Default to empty for other selects
+            }
+        });
+        
+        // Reset number inputs to their template defaults
+        template.find('input[type="number"]').each(function() {
+            const $input = $(this);
+            if ($input.hasClass('max-results-shorts-input')) {
+                $input.val('10');
+            } else if ($input.hasClass('max-results-streams-input')) {
+                $input.val('5');
+            } else if ($input.attr('name') && $input.attr('name').includes('max_results')) {
+                $input.val('50');
+            } else {
+                $input.val('');
+            }
+        });
+        
         template.find('.platform-config').hide();
         
         // Update form attributes
@@ -281,8 +318,9 @@ $(document).ready(function() {
             const targetConfig = card.find('.' + configClass);
             if (targetConfig.length) {
                 targetConfig.show();
-                // Only enable fields in the active config
+                // Disable all fields EXCEPT the source type selector, then enable only fields in active config
                 card.find('input, select, textarea').prop('disabled', true);
+                select.prop('disabled', false); // Always keep source type selector enabled
                 targetConfig.find('input, select, textarea').prop('disabled', false);
             }
         } else {
