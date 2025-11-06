@@ -404,6 +404,16 @@ argon2 = ["argon2-cffi (>=19.1.0)"]
 bcrypt = ["bcrypt"]
 
 [[package]]
+name = "django-dynamic-formsets"
+version = "0.0.8"
+description = "A lightweight plugin for managing Django formsets with jQuery."
+optional = false
+python-versions = "*"
+files = [
+    {file = "django-dynamic-formsets-0.0.8.tar.gz", hash = "sha256:12c49d762a90e1af6b6ca5373777d93fd259fe7ee074ff67a5af5deb9549952b"},
+]
+
+[[package]]
 name = "djangorestframework"
 version = "3.16.1"
 description = "Web APIs for Django, made easy."
@@ -1583,4 +1593,4 @@ propcache = ">=0.2.1"
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.10"
-content-hash = "472bd87b8019af933f8edd3a0e846cd89fafd0783b674eb35ce8adc741b5f6b3"
+content-hash = "5a9e1e45d5a9624f39e92180bc5bdc58115f5d04b24ab645648f061ab19b46dd"

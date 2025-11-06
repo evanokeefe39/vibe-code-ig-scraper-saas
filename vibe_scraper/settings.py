@@ -46,6 +46,7 @@ INSTALLED_APPS = [
     "rest_framework",
     "users",
     "core",
+    "dynamic_formsets",
 ]
 
 MIDDLEWARE = [

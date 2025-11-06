@@ -29,13 +29,103 @@
                 </p>
             </div>
             
-            <div id="sources-container">
+            <div class="formset-container">
                 {% for form in source_formset %}
-                    {% include "core/run_create/partials/source_card.html" %}
+                    <div class="dynamic-form source-card border border-gray-200 rounded-lg p-4 mb-4 bg-gray-50">
+                        <div class="flex justify-between items-center mb-4">
+                            <h3 class="text-lg font-semibold">Source {{ forloop.counter }}</h3>
+                            {% if source_formset.can_delete %}
+                                <button type="button" class="remove-form preferred-remove text-red-600 hover:text-red-800">
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                                    </svg>
+                                </button>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="mb-4">
+                            {{ form.source_type }}
+                            {% if form.source_type.errors %}
+                                <p class="mt-1 text-sm text-red-600">{{ form.source_type.errors.0 }}</p>
+                            {% endif %}
+                        </div>
+                        
+                        <!-- Platform-specific configuration will be shown/hidden based on selection -->
+                        <div class="platform-config-container">
+                            <!-- YouTube Search Configuration -->
+                            <div class="platform-config youtube-search-config" style="display: none;">
+                                {% include "core/run_create/platforms/youtube_search.html" %}
+                            </div>
+                            
+                            <!-- YouTube Channel Configuration -->
+                            <div class="platform-config youtube-channel-config" style="display: none;">
+                                {% include "core/run_create/platforms/youtube_channel.html" %}
+                            </div>
+                            
+                            <!-- YouTube Playlist Configuration -->
+                            <div class="platform-config youtube-playlist-config" style="display: none;">
+                                {% include "core/run_create/platforms/youtube_playlist.html" %}
+                            </div>
+                            
+                            <!-- YouTube Hashtag Configuration -->
+                            <div class="platform-config youtube-hashtag-config" style="display: none;">
+                                {% include "core/run_create/platforms/youtube_hashtag.html" %}
+                            </div>
+                            
+                            <!-- YouTube Video Configuration -->
+                            <div class="platform-config youtube-video-config" style="display: none;">
+                                {% include "core/run_create/platforms/youtube_video.html" %}
+                            </div>
+                            
+                            <!-- Instagram Profile Configuration -->
+                            <div class="platform-config instagram-profile-config" style="display: none;">
+                                {% include "core/run_create/platforms/instagram_profile.html" %}
+                            </div>
+                            
+                            <!-- Instagram Post Configuration -->
+                            <div class="platform-config instagram-post-config" style="display: none;">
+                                {% include "core/run_create/platforms/instagram_post.html" %}
+                            </div>
+                            
+                            <!-- Instagram Hashtag Configuration -->
+                            <div class="platform-config instagram-hashtag-config" style="display: none;">
+                                {% include "core/run_create/platforms/instagram_hashtag.html" %}
+                            </div>
+                            
+                            <!-- Instagram Search Configuration - HIDDEN -->
+                            <div class="platform-config instagram-search-config" style="display: none;">
+                                {% include "core/run_create/platforms/instagram_search.html" %}
+                            </div>
+                            
+                            <!-- TikTok Profile Configuration -->
+                            <div class="platform-config tiktok-profile-config" style="display: none;">
+                                {% include "core/run_create/platforms/tiktok_profile.html" %}
+                            </div>
+                            
+                            <!-- TikTok Hashtag Configuration -->
+                            <div class="platform-config tiktok-hashtag-config" style="display: none;">
+                                {% include "core/run_create/platforms/tiktok_hashtag.html" %}
+                            </div>
+                            
+                            <!-- TikTok Search Configuration -->
+                            <div class="platform-config tiktok-search-config" style="display: none;">
+                                {% include "core/run_create/platforms/tiktok_search.html" %}
+                            </div>
+                            
+                            <!-- TikTok Video Configuration -->
+                            <div class="platform-config tiktok-video-config" style="display: none;">
+                                {% include "core/run_create/platforms/tiktok_video.html" %}
+                            </div>
+                        </div>
+                        
+                        {% if form.DELETE %}
+                            <div style="display: none;">{{ form.DELETE }}</div>
+                        {% endif %}
+                    </div>
                 {% endfor %}
             </div>
             
-            <button type="button" id="add-source-btn" class="inline-flex items-center px-4 py-2 bg-green-600 hover:bg-green-700 text-white font-medium rounded-lg transition-colors duration-200 shadow-md hover:shadow-lg mt-4">
+            <button type="button" class="add-form preferred-add inline-flex items-center px-4 py-2 bg-green-600 hover:bg-green-700 text-white font-medium rounded-lg transition-colors duration-200 shadow-md hover:shadow-lg mt-4">
                 <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/>
                 </svg>
@@ -95,142 +185,115 @@
         
         </form>
 </div>
+{% endblock %}
 
-<!-- Multi-Source Form JavaScript -->
+{% block extra_js %}
 <script>
-// Make updatePlatformConfig globally accessible
-function updatePlatformConfig(sourceTypeSelect) {
-    const sourceCard = sourceTypeSelect.closest('.source-card');
-    if (!sourceCard) return;
+$(document).ready(function() {
+    let formCount = $('.dynamic-form').length;
     
-    const container = sourceCard.querySelector('.platform-config-container');
-    if (!container) return;
-    
-    const selectedType = sourceTypeSelect.value;
-    
-    // Hide all platform configs and disable their form fields
-    const allConfigs = container.querySelectorAll('.platform-config');
-    allConfigs.forEach(config => {
-        config.style.display = 'none';
-        // Disable all form fields in hidden configs
-        const fields = config.querySelectorAll('input, select, textarea');
-        fields.forEach(field => {
-            field.disabled = true;
+    // Add new form functionality
+    function addNewForm() {
+        const newFormIndex = formCount;
+        const template = $('.dynamic-form:first').clone();
+        
+        // Clear form values
+        template.find('input, select, textarea').val('');
+        template.find('.platform-config').hide();
+        
+        // Update form attributes
+        template.find('input, select, textarea').each(function() {
+            const name = $(this).attr('name');
+            if (name) {
+                const newName = name.replace(/form-\d+/, 'form-' + newFormIndex);
+                $(this).attr('name', newName);
+                const id = $(this).attr('id');
+                if (id) {
+                    $(this).attr('id', id.replace(/form-\d+/, 'form-' + newFormIndex));
+                }
+            }
         });
+        
+        // Update source number
+        template.find('h3').text('Source ' + (newFormIndex + 1));
+        
+        // Add remove button if not present
+        if (!template.find('.preferred-remove').length) {
+            const removeBtn = $('<button type="button" class="preferred-remove text-red-600 hover:text-red-800">' +
+                '<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">' +
+                '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>' +
+                '</svg></button>');
+            template.find('.flex.justify-between').append(removeBtn);
+        }
+        
+        // Add to DOM
+        $('.formset-container').append(template);
+        formCount++;
+        
+        // Initialize platform switching for new form
+        template.find('.source-type-select').trigger('change');
+    }
+    
+    // Remove form functionality
+    function removeForm(button) {
+        $(button).closest('.dynamic-form').remove();
+        
+        // Renumber remaining forms
+        $('.dynamic-form').each(function(index) {
+            $(this).find('h3').text('Source ' + (index + 1));
+            $(this).find('input, select, textarea').each(function() {
+                const name = $(this).attr('name');
+                if (name) {
+                    const newName = name.replace(/form-\d+/, 'form-' + index);
+                    $(this).attr('name', newName);
+                    const id = $(this).attr('id');
+                    if (id) {
+                        $(this).attr('id', id.replace(/form-\d+/, 'form-' + index));
+                    }
+                }
+            });
+        });
+        
+        formCount = $('.dynamic-form').length;
+    }
+    
+    // Connect our preferred buttons
+    $(document).on('click', '.preferred-add', function(e) {
+        e.preventDefault();
+        addNewForm();
     });
     
-    // Show selected platform config and enable its form fields
-    if (selectedType) {
-        const configClassName = selectedType + '-config';
-        const targetConfig = container.querySelector('.' + configClassName);
-        if (targetConfig) {
-            targetConfig.style.display = 'block';
-            // Enable all form fields in visible config
-            const fields = targetConfig.querySelectorAll('input, select, textarea');
-            fields.forEach(field => {
-                field.disabled = false;
-            });
-        }
-    }
-}
+    $(document).on('click', '.preferred-remove', function(e) {
+        e.preventDefault();
+        removeForm(this);
+    });
+    
+    // Platform config switching
+    $(document).on('change', '.source-type-select', function() {
+        const select = $(this);
+        const card = select.closest('.source-card');
+        const configs = card.find('.platform-config');
 
-document.addEventListener('DOMContentLoaded', function() {
-    const addSourceBtn = document.getElementById('add-source-btn');
-    const sourcesContainer = document.getElementById('sources-container');
-    
-    // Add source functionality
-    if (addSourceBtn) {
-        addSourceBtn.addEventListener('click', function() {
-            const formCount = document.querySelectorAll('.source-card').length;
-            const totalFormsInput = document.querySelector('#id_form-TOTAL_FORMS');
-            
-            // Clone the first form as a template
-            const firstForm = document.querySelector('.source-card');
-            if (!firstForm) return;
-            
-            const newForm = firstForm.cloneNode(true);
-            
-            // Update form indices
-            const newFormHtml = newForm.innerHTML.replace(/form-\d+/g, `form-${formCount}`);
-            newForm.innerHTML = newFormHtml;
-            
-            // Clear values in the new form
-            const inputs = newForm.querySelectorAll('input, select, textarea');
-            inputs.forEach(input => {
-                if (input.type === 'checkbox') {
-                    input.checked = false;
-                } else if (input.type !== 'hidden') {
-                    input.value = '';
-                }
-            });
-            
-            // Hide all platform configs in the new form
-            const platformConfigs = newForm.querySelectorAll('.platform-config');
-            platformConfigs.forEach(config => {
-                config.style.display = 'none';
-            });
-            
-            // Update source number
-            const title = newForm.querySelector('h3');
-            if (title) {
-                title.textContent = `Source ${formCount + 1}`;
+        configs.hide();
+        
+        if (select.val()) {
+            const configClass = select.val() + '-config';
+            const targetConfig = card.find('.' + configClass);
+            if (targetConfig.length) {
+                targetConfig.show();
+                // Only enable fields in the active config
+                card.find('input, select, textarea').prop('disabled', true);
+                targetConfig.find('input, select, textarea').prop('disabled', false);
             }
-            
-            sourcesContainer.appendChild(newForm);
-            
-            // Update formset management form
-            if (totalFormsInput) {
-                totalFormsInput.value = formCount + 1;
-            }
-        });
-    }
-    
-    // Handle source type changes for all forms
-    document.addEventListener('change', function(e) {
-        if (e.target.matches('.source-type-select')) {
-            updatePlatformConfig(e.target);
-        }
-    });
-    
-    // Handle remove source buttons
-    document.addEventListener('click', function(e) {
-        if (e.target.closest('.remove-source')) {
-            e.preventDefault();
-            const sourceCard = e.target.closest('.source-card');
-            if (!sourceCard) return;
-            
-            // Find DELETE checkbox and check it
-            const deleteCheckbox = sourceCard.querySelector('[name$="-DELETE"]');
-            if (deleteCheckbox) {
-                deleteCheckbox.checked = true;
-                sourceCard.style.display = 'none';
-            } else {
-                // If no DELETE checkbox, just remove it
-                sourceCard.remove();
-            }
-            
-            // Update form count and management form
-            const totalFormsInput = document.querySelector('#id_form-TOTAL_FORMS');
-            const visibleCards = document.querySelectorAll('.source-card:not([style*="display: none"])');
-            
-            if (totalFormsInput) {
-                totalFormsInput.value = visibleCards.length;
-            }
-            
-            // Renumber visible sources
-            visibleCards.forEach((card, index) => {
-                const title = card.querySelector('h3');
-                if (title) {
-                    title.textContent = `Source ${index + 1}`;
-                }
-            });
+        } else {
+            // No platform selected - enable only the source type selector
+            card.find('input, select, textarea').prop('disabled', true);
+            select.prop('disabled', false);
         }
     });
     
     // Initialize existing forms
-    document.querySelectorAll('.source-type-select').forEach(select => {
-        updatePlatformConfig(select);
-    });
+    $('.source-type-select').trigger('change');
 });
 </script>
 {% endblock %}

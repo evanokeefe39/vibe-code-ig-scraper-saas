@@ -439,8 +439,14 @@ class SourceForm(forms.Form):
         })
     )
 
-# Create formset factory
-SourceFormSet = formset_factory(SourceForm, extra=1, can_delete=True)
+# Create formset factory with limits
+SourceFormSet = formset_factory(
+    SourceForm, 
+    extra=0, 
+    can_delete=True,
+    max_num=10,  # Prevent unlimited form addition
+    min_num=1    # Require at least one source
+)
 
 class RunForm(forms.ModelForm):
     # Multi-source configuration
