@@ -18,9 +18,22 @@ def run_create(request):
         if source_formset.is_valid():
             for source_form in source_formset:
                 if source_form.is_valid() and source_form.cleaned_data.get('source_type'):
+                    source_type = source_form.cleaned_data['source_type']
                     source_config = build_source_config(source_form.cleaned_data)
+                    
+                    # Extract platform from sourceType
+                    if source_type.startswith('youtube-'):
+                        platform = 'youtube'
+                    elif source_type.startswith('instagram-'):
+                        platform = 'instagram'
+                    elif source_type.startswith('tiktok-'):
+                        platform = 'tiktok'
+                    else:
+                        platform = 'unknown'
+                    
                     sources.append({
-                        "sourceType": source_form.cleaned_data['source_type'],
+                        "sourceType": source_type,
+                        "platform": platform,
                         "config": source_config
                     })
             

@@ -1,0 +1,54 @@
+<div class="source-card border border-gray-200 rounded-lg p-4 mb-4 bg-gray-50">
+    <div class="flex justify-between items-center mb-4">
+        <h3 class="text-lg font-semibold">Source __prefix__</h3>
+        <button type="button" class="remove-source text-red-600 hover:text-red-800">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+            </svg>
+        </button>
+    </div>
+    
+    <div class="mb-4">
+        <select name="form-__prefix__-source_type" class="source-type-select w-full px-3 py-2 border border-gray-200 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500" id="id_form-__prefix__-source_type">
+  <option value="" selected>🔍 Select Source Type</option>
+
+  <optgroup label="YouTube">
+  <option value="youtube-search">🎥 YouTube Search</option>
+
+  <option value="youtube-channel">📺 YouTube Channel</option>
+
+  <option value="youtube-playlist">📋 YouTube Playlist</option>
+
+  <option value="youtube-hashtag">#️⃣ YouTube Hashtag</option>
+
+  <option value="youtube-video">🎬 YouTube Video</option>
+
+  </optgroup>
+  <optgroup label="Instagram">
+  <option value="instagram-profile">📷 Instagram Profile</option>
+
+  <option value="instagram-post">📸 Instagram Post</option>
+
+  <option value="instagram-hashtag">#️⃣ Instagram Hashtag</option>
+
+  </optgroup>
+  <optgroup label="TikTok">
+  <option value="tiktok-profile">👤 TikTok Profile</option>
+
+  <option value="tiktok-hashtag">#️⃣ TikTok Hashtag</option>
+
+  <option value="tiktok-search">🔍 TikTok Search</option>
+
+  <option value="tiktok-video">🎵 TikTok Video</option>
+
+  </optgroup>
+</select>
+    </div>
+    
+    <!-- Platform-specific configuration will be shown/hidden based on selection -->
+    <div class="platform-config-container">
+        <!-- All platform configs will be cloned here based on selection -->
+    </div>
+    
+    <div style="display: none;"><input type="checkbox" name="form-__prefix__-DELETE" id="id_form-__prefix__-DELETE"></div>
+</div>

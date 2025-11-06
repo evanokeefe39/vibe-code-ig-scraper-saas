@@ -441,16 +441,28 @@ try {
             const sourceDiv = document.createElement('div');
             sourceDiv.className = 'border rounded-lg p-4 bg-gray-50';
             
-            const platformIcon = getPlatformIcon(source.platform);
-            const platformName = source.platform ? source.platform.charAt(0).toUpperCase() + source.platform.slice(1) : 'Unknown';
+            // Extract platform from platform field or fallback to sourceType
+            let platform = source.platform;
+            if (!platform && source.sourceType) {
+                if (source.sourceType.startsWith('youtube-')) {
+                    platform = 'youtube';
+                } else if (source.sourceType.startsWith('instagram-')) {
+                    platform = 'instagram';
+                } else if (source.sourceType.startsWith('tiktok-')) {
+                    platform = 'tiktok';
+                }
+            }
+            
+            const platformIcon = getPlatformIcon(platform);
+            const platformName = platform ? platform.charAt(0).toUpperCase() + platform.slice(1) : 'Unknown';
             
             let configDetails = '';
             
-            if (source.platform === 'instagram') {
+            if (platform === 'instagram') {
                 configDetails = renderInstagramConfig(source);
-            } else if (source.platform === 'tiktok') {
+            } else if (platform === 'tiktok') {
                 configDetails = renderTiktokConfig(source);
-            } else if (source.platform === 'youtube') {
+            } else if (platform === 'youtube') {
                 configDetails = renderYoutubeConfig(source);
             }
             
@@ -502,7 +514,7 @@ function getPlatformIcon(platform) {
 }
 
 function renderInstagramConfig(source) {
-    const config = source.configuration;
+    const config = source.config;
     let details = '<div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">';
     
     if (config.directUrls && config.directUrls.length > 0) {
@@ -557,7 +569,7 @@ function renderInstagramConfig(source) {
 }
 
 function renderTiktokConfig(source) {
-    const config = source.configuration;
+    const config = source.config;
     let details = '<div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">';
     
     if (config.profiles && config.profiles.length > 0) {
@@ -616,7 +628,7 @@ function renderTiktokConfig(source) {
 }
 
 function renderYoutubeConfig(source) {
-    const config = source.configuration;
+    const config = source.config;
     let details = '<div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">';
     
     if (config.startUrls && config.startUrls.length > 0) {
@@ -624,7 +636,7 @@ function renderYoutubeConfig(source) {
             <div class="md:col-span-2">
                 <span class="font-medium text-gray-600">Channel URLs:</span>
                 <div class="mt-1 bg-white rounded p-2">
-                    ${config.startUrls.map(url => `<div class="text-gray-800 truncate">${url}</div>`).join('')}
+                    ${config.startUrls.map(urlObj => `<div class="text-gray-800 truncate">${urlObj.url}</div>`).join('')}
                 </div>
             </div>
         `;

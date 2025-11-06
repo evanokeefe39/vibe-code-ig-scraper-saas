@@ -144,8 +144,12 @@ N8N_BASE_URL = os.getenv('N8N_BASE_URL', 'http://n8n:5678')
 # N8N webscrape URL
 N8N_WEBSCRAPE_URL = N8N_BASE_URL + '/webhook/scrape'
 
-# N8N test scraping URL
-N8N_TEST_SCRAPING_URL = os.getenv('N8N_TEST_SCRAPING_URL', 'http://localhost:5678/webhook-test/multi-source-scrape')
+# N8N multi-source scraping URL (use production endpoint, not test)
+N8N_MULTI_SOURCE_URL = N8N_BASE_URL + '/webhook/multi-source-scrape'
+
+# N8N basic auth credentials
+N8N_BASIC_AUTH_USER = os.getenv('N8N_BASIC_AUTH_USER', 'admin@vibescraper.com')
+N8N_BASIC_AUTH_PASSWORD = os.getenv('N8N_BASIC_AUTH_PASSWORD', 'vibescraper123')
 
 # N8N API key for REST API authentication
 N8N_API_KEY = os.getenv('N8N_API_KEY')

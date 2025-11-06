@@ -46,6 +46,189 @@ class SourceForm(forms.Form):
         })
     )
     
+    # YouTube-specific additional fields
+    max_results_shorts = forms.IntegerField(
+        required=False,
+        initial=0,
+        min_value=0,
+        max_value=999999,
+        widget=forms.NumberInput(attrs={
+            'class': 'max-results-shorts-input w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500'
+        })
+    )
+    
+    max_result_streams = forms.IntegerField(
+        required=False,
+        initial=0,
+        min_value=0,
+        max_value=999999,
+        widget=forms.NumberInput(attrs={
+            'class': 'max-results-streams-input w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500'
+        })
+    )
+    
+    # TikTok-specific fields
+    results_per_page = forms.IntegerField(
+        required=False,
+        initial=1,
+        min_value=1,
+        max_value=1000000,
+        widget=forms.NumberInput(attrs={
+            'class': 'results-per-page-input w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500'
+        })
+    )
+    
+    max_profiles_per_query = forms.IntegerField(
+        required=False,
+        initial=10,
+        min_value=1,
+        widget=forms.NumberInput(attrs={
+            'class': 'max-profiles-per-query-input w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500'
+        })
+    )
+    
+    profile_scrape_sections = forms.MultipleChoiceField(
+        required=False,
+        initial=['videos'],
+        choices=[
+            ('videos', 'Videos'),
+            ('reposts', 'Reposts'),
+        ],
+        widget=forms.SelectMultiple(attrs={
+            'class': 'profile-scrape-sections-select w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500'
+        })
+    )
+    
+    profile_sorting = forms.ChoiceField(
+        required=False,
+        initial='latest',
+        choices=[
+            ('latest', 'Latest'),
+            ('popular', 'Popular'),
+            ('oldest', 'Oldest'),
+        ],
+        widget=forms.Select(attrs={
+            'class': 'profile-sorting-select w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500'
+        })
+    )
+    
+    search_section = forms.ChoiceField(
+        required=False,
+        initial='',
+        choices=[
+            ('', 'Top Results'),
+            ('/video', 'Video'),
+            ('/user', 'User'),
+        ],
+        widget=forms.Select(attrs={
+            'class': 'search-section-select w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500'
+        })
+    )
+    
+    exclude_pinned_posts = forms.BooleanField(
+        required=False,
+        initial=False,
+        widget=forms.CheckboxInput(attrs={
+            'class': 'exclude-pinned-posts-checkbox'
+        })
+    )
+    
+    should_download_videos = forms.BooleanField(
+        required=False,
+        initial=False,
+        widget=forms.CheckboxInput(attrs={
+            'class': 'download-video-checkbox'
+        })
+    )
+    
+    should_download_covers = forms.BooleanField(
+        required=False,
+        initial=False,
+        widget=forms.CheckboxInput(attrs={
+            'class': 'download-covers-checkbox'
+        })
+    )
+    
+    should_download_slideshow_images = forms.BooleanField(
+        required=False,
+        initial=False,
+        widget=forms.CheckboxInput(attrs={
+            'class': 'download-slideshow-checkbox'
+        })
+    )
+    
+    newest_post_date = forms.CharField(
+        required=False,
+        widget=forms.TextInput(attrs={
+            'class': 'newest-post-date-input w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500',
+            'placeholder': '2025-11-04'
+        })
+    )
+    
+    video_kv_store_id_or_name = forms.CharField(
+        required=False,
+        widget=forms.TextInput(attrs={
+            'class': 'video-kv-store-id-or-name-input w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500',
+            'placeholder': 'tiktok-videos-archive'
+        })
+    )
+    
+    # Instagram-specific fields
+    is_user_tagged_feed_url = forms.BooleanField(
+        required=False,
+        initial=False,
+        widget=forms.CheckboxInput(attrs={
+            'class': 'is-user-tagged-feed-url-checkbox'
+        })
+    )
+    
+    is_user_reel_feed_url = forms.BooleanField(
+        required=False,
+        initial=False,
+        widget=forms.CheckboxInput(attrs={
+            'class': 'is-user-reel-feed-url-checkbox'
+        })
+    )
+    
+    enhance_user_search_with_facebook_page = forms.BooleanField(
+        required=False,
+        initial=False,
+        widget=forms.CheckboxInput(attrs={
+            'class': 'enhance-user-search-with-facebook-page-checkbox'
+        })
+    )
+    
+    search_type = forms.ChoiceField(
+        required=False,
+        initial='hashtag',
+        choices=[
+            ('user', 'User'),
+            ('hashtag', 'Hashtag'),
+            ('place', 'Place'),
+        ],
+        widget=forms.Select(attrs={
+            'class': 'search-type-select w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500'
+        })
+    )
+    
+    results_limit = forms.IntegerField(
+        required=False,
+        initial=50,
+        min_value=1,
+        max_value=250,
+        widget=forms.NumberInput(attrs={
+            'class': 'results-limit-input w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500'
+        })
+    )
+    
+    add_parent_data = forms.BooleanField(
+        required=False,
+        initial=False,
+        widget=forms.CheckboxInput(attrs={
+            'class': 'add-parent-data-checkbox'
+        })
+    )
+    
     # Platform-specific fields (all present, validation based on source_type)
     search_queries = forms.CharField(
         required=False,
@@ -83,6 +266,7 @@ class SourceForm(forms.Form):
     # YouTube-specific fields
     sorting_order = forms.ChoiceField(
         required=False,
+        initial='relevance',
         choices=[
             ('relevance', 'Relevance'),
             ('rating', 'Rating'),
@@ -95,6 +279,7 @@ class SourceForm(forms.Form):
     )
     date_filter = forms.ChoiceField(
         required=False,
+        initial='',
         choices=[
             ('', 'Any time'),
             ('hour', 'Last hour'),
@@ -109,6 +294,7 @@ class SourceForm(forms.Form):
     )
     video_type = forms.ChoiceField(
         required=False,
+        initial='video',
         choices=[
             ('video', 'Video'),
             ('movie', 'Movie'),
@@ -119,6 +305,7 @@ class SourceForm(forms.Form):
     )
     length_filter = forms.ChoiceField(
         required=False,
+        initial='',
         choices=[
             ('', 'Any length'),
             ('under4', 'Under 4 minutes'),
@@ -133,44 +320,50 @@ class SourceForm(forms.Form):
     # Quality filters
     is_hd = forms.BooleanField(
         required=False,
+        initial=False,
         widget=forms.CheckboxInput(attrs={
             'class': 'is-hd-checkbox'
         })
     )
     has_subtitles = forms.BooleanField(
         required=False,
+        initial=False,
         widget=forms.CheckboxInput(attrs={
             'class': 'has-subtitles-checkbox'
         })
     )
-    has_cc = forms.BooleanField(required=False)
+    has_cc = forms.BooleanField(required=False, initial=False)
     is_3d = forms.BooleanField(
         required=False,
+        initial=False,
         widget=forms.CheckboxInput(attrs={
             'class': 'is-3d-checkbox'
         })
     )
     is_live = forms.BooleanField(
         required=False,
+        initial=False,
         widget=forms.CheckboxInput(attrs={
             'class': 'is-live-checkbox'
         })
     )
     is_4k = forms.BooleanField(
         required=False,
+        initial=False,
         widget=forms.CheckboxInput(attrs={
             'class': 'is-4k-checkbox'
         })
     )
-    is_360 = forms.BooleanField(required=False)
-    has_location = forms.BooleanField(required=False)
-    is_hdr = forms.BooleanField(required=False)
-    is_vr180 = forms.BooleanField(required=False)
-    is_bought = forms.BooleanField(required=False)
+    is_360 = forms.BooleanField(required=False, initial=False)
+    has_location = forms.BooleanField(required=False, initial=False)
+    is_hdr = forms.BooleanField(required=False, initial=False)
+    is_vr180 = forms.BooleanField(required=False, initial=False)
+    is_bought = forms.BooleanField(required=False, initial=False)
     
     # Subtitle options
     subtitles_language = forms.ChoiceField(
         required=False,
+        initial='en',
         choices=[
             ('any', 'Any'),
             ('en', 'English'),
@@ -182,11 +375,12 @@ class SourceForm(forms.Form):
             'class': 'subtitles-language-select w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500'
         })
     )
-    download_subtitles = forms.BooleanField(required=False)
-    prefer_auto_generated_subtitles = forms.BooleanField(required=False)
-    save_subs_to_kvs = forms.BooleanField(required=False)
+    download_subtitles = forms.BooleanField(required=False, initial=False)
+    prefer_auto_generated_subtitles = forms.BooleanField(required=False, initial=False)
+    save_subs_to_kvs = forms.BooleanField(required=False, initial=False)
     subtitles_format = forms.ChoiceField(
         required=False,
+        initial='srt',
         choices=[
             ('srt', 'SRT'),
             ('vtt', 'VTT'),
@@ -199,6 +393,7 @@ class SourceForm(forms.Form):
     # Instagram-specific fields
     feed_type = forms.ChoiceField(
         required=False,
+        initial='posts',
         choices=[
             ('posts', 'Posts only'),
             ('tagged', 'Tagged posts'),
@@ -217,6 +412,7 @@ class SourceForm(forms.Form):
     )
     relative_date_filter = forms.ChoiceField(
         required=False,
+        initial='',
         choices=[
             ('', 'No filter'),
             ('1 minute', 'Last minute'),
@@ -232,6 +428,7 @@ class SourceForm(forms.Form):
     )
     results_type = forms.ChoiceField(
         required=False,
+        initial='posts',
         choices=[
             ('posts', 'Posts'),
             ('comments', 'Comments'),
