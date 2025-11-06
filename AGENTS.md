@@ -63,3 +63,9 @@
 - Classes should have single responsibilities
 - Avoid deeply nested code (>3 levels)
 - Use composition over inheritance where appropriate
+
+# Testing Profiles and Channels
+For consistent testing, use these profiles/channels with specified parameters:
+- **Instagram Profile**: https://www.instagram.com/sabrina_ramonov
+- **YouTube Channel**: https://www.youtube.com/@sabrina_ramonov
+- **Parameters**: Max results 5 for each, going back 1 month only

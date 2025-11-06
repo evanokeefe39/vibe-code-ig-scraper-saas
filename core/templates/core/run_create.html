@@ -96,6 +96,141 @@
         </form>
 </div>
 
-<!-- Formset Management JavaScript -->
-<script src="{% static 'js/run_create/formset_manager.js' %}"></script>
+<!-- Multi-Source Form JavaScript -->
+<script>
+// Make updatePlatformConfig globally accessible
+function updatePlatformConfig(sourceTypeSelect) {
+    const sourceCard = sourceTypeSelect.closest('.source-card');
+    if (!sourceCard) return;
+    
+    const container = sourceCard.querySelector('.platform-config-container');
+    if (!container) return;
+    
+    const selectedType = sourceTypeSelect.value;
+    
+    // Hide all platform configs and disable their form fields
+    const allConfigs = container.querySelectorAll('.platform-config');
+    allConfigs.forEach(config => {
+        config.style.display = 'none';
+        // Disable all form fields in hidden configs
+        const fields = config.querySelectorAll('input, select, textarea');
+        fields.forEach(field => {
+            field.disabled = true;
+        });
+    });
+    
+    // Show selected platform config and enable its form fields
+    if (selectedType) {
+        const configClassName = selectedType + '-config';
+        const targetConfig = container.querySelector('.' + configClassName);
+        if (targetConfig) {
+            targetConfig.style.display = 'block';
+            // Enable all form fields in visible config
+            const fields = targetConfig.querySelectorAll('input, select, textarea');
+            fields.forEach(field => {
+                field.disabled = false;
+            });
+        }
+    }
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    const addSourceBtn = document.getElementById('add-source-btn');
+    const sourcesContainer = document.getElementById('sources-container');
+    
+    // Add source functionality
+    if (addSourceBtn) {
+        addSourceBtn.addEventListener('click', function() {
+            const formCount = document.querySelectorAll('.source-card').length;
+            const totalFormsInput = document.querySelector('#id_form-TOTAL_FORMS');
+            
+            // Clone the first form as a template
+            const firstForm = document.querySelector('.source-card');
+            if (!firstForm) return;
+            
+            const newForm = firstForm.cloneNode(true);
+            
+            // Update form indices
+            const newFormHtml = newForm.innerHTML.replace(/form-\d+/g, `form-${formCount}`);
+            newForm.innerHTML = newFormHtml;
+            
+            // Clear values in the new form
+            const inputs = newForm.querySelectorAll('input, select, textarea');
+            inputs.forEach(input => {
+                if (input.type === 'checkbox') {
+                    input.checked = false;
+                } else if (input.type !== 'hidden') {
+                    input.value = '';
+                }
+            });
+            
+            // Hide all platform configs in the new form
+            const platformConfigs = newForm.querySelectorAll('.platform-config');
+            platformConfigs.forEach(config => {
+                config.style.display = 'none';
+            });
+            
+            // Update source number
+            const title = newForm.querySelector('h3');
+            if (title) {
+                title.textContent = `Source ${formCount + 1}`;
+            }
+            
+            sourcesContainer.appendChild(newForm);
+            
+            // Update formset management form
+            if (totalFormsInput) {
+                totalFormsInput.value = formCount + 1;
+            }
+        });
+    }
+    
+    // Handle source type changes for all forms
+    document.addEventListener('change', function(e) {
+        if (e.target.matches('.source-type-select')) {
+            updatePlatformConfig(e.target);
+        }
+    });
+    
+    // Handle remove source buttons
+    document.addEventListener('click', function(e) {
+        if (e.target.closest('.remove-source')) {
+            e.preventDefault();
+            const sourceCard = e.target.closest('.source-card');
+            if (!sourceCard) return;
+            
+            // Find DELETE checkbox and check it
+            const deleteCheckbox = sourceCard.querySelector('[name$="-DELETE"]');
+            if (deleteCheckbox) {
+                deleteCheckbox.checked = true;
+                sourceCard.style.display = 'none';
+            } else {
+                // If no DELETE checkbox, just remove it
+                sourceCard.remove();
+            }
+            
+            // Update form count and management form
+            const totalFormsInput = document.querySelector('#id_form-TOTAL_FORMS');
+            const visibleCards = document.querySelectorAll('.source-card:not([style*="display: none"])');
+            
+            if (totalFormsInput) {
+                totalFormsInput.value = visibleCards.length;
+            }
+            
+            // Renumber visible sources
+            visibleCards.forEach((card, index) => {
+                const title = card.querySelector('h3');
+                if (title) {
+                    title.textContent = `Source ${index + 1}`;
+                }
+            });
+        }
+    });
+    
+    // Initialize existing forms
+    document.querySelectorAll('.source-type-select').forEach(select => {
+        updatePlatformConfig(select);
+    });
+});
+</script>
 {% endblock %}

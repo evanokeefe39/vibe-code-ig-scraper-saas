@@ -19,7 +19,10 @@ from django.contrib import admin
 from django.urls import path
 from django.conf import settings
 from django.conf.urls.static import static
-from core.views import home, test_geocode, run_create, run_list, run_detail, run_by_n8n, run_status_api, empty_source_form, platform_config, list_list, list_detail, list_create, list_column_create, list_row_create, export_list_csv, export_list_json, export_run_csv, export_run_json, update_cell, delete_row, add_blank_row, update_column, delete_column, delete_list, table_save, validate_column_type_change
+from core.utility_views import home, test_geocode
+from core.views.run_views import run_create, run_list, run_detail, run_by_n8n, run_status_api, empty_source_form, platform_config
+from core.views.list_views import list_list, list_detail, list_create, list_column_create, list_row_create, update_cell, delete_row, add_blank_row, update_column, delete_column, delete_list, table_save, validate_column_type_change
+from core.views.export_views import export_list_csv, export_list_json, export_run_csv, export_run_json
 
 urlpatterns = [
     path("admin/", admin.site.urls),
