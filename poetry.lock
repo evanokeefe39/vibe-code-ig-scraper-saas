@@ -404,6 +404,16 @@ argon2 = ["argon2-cffi (>=19.1.0)"]
 bcrypt = ["bcrypt"]
 
 [[package]]
+name = "django-dynamic-formsets"
+version = "0.0.8"
+description = "A lightweight plugin for managing Django formsets with jQuery."
+optional = false
+python-versions = "*"
+files = [
+    {file = "django-dynamic-formsets-0.0.8.tar.gz", hash = "sha256:12c49d762a90e1af6b6ca5373777d93fd259fe7ee074ff67a5af5deb9549952b"},
+]
+
+[[package]]
 name = "djangorestframework"
 version = "3.16.1"
 description = "Web APIs for Django, made easy."
@@ -1130,6 +1140,20 @@ docs = ["sphinx", "sphinx-rtd-theme", "zope.interface"]
 tests = ["coverage[toml] (==5.0.4)", "pytest (>=6.0.0,<7.0.0)"]
 
 [[package]]
+name = "python-dotenv"
+version = "1.1.1"
+description = "Read key-value pairs from a .env file and set them as environment variables"
+optional = false
+python-versions = ">=3.9"
+files = [
+    {file = "python_dotenv-1.1.1-py3-none-any.whl", hash = "sha256:31f23644fe2602f88ff55e1f5c79ba497e01224ee7737937930c448e4d0e24dc"},
+    {file = "python_dotenv-1.1.1.tar.gz", hash = "sha256:a8a6399716257f45be6a007360200409fce5cda2661e3dec71d23dc15f6189ab"},
+]
+
+[package.extras]
+cli = ["click (>=5.0)"]
+
+[[package]]
 name = "realtime"
 version = "2.22.1"
 description = ""
@@ -1569,4 +1593,4 @@ propcache = ">=0.2.1"
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.10"
-content-hash = "0d0dd253c37309e538e9d9acc2dce00f206c66ddc518f015b90d9909ca486452"
+content-hash = "5a9e1e45d5a9624f39e92180bc5bdc58115f5d04b24ab645648f061ab19b46dd"

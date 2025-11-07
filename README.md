@@ -1,6 +1,6 @@
 # Vibe Scraper SaaS
 
-A lightweight B2C SaaS that curates location-based recommendations from social media profiles into personalized lists for Google Maps. Evolving towards an agentic platform where AI agents dynamically orchestrate scraping operations based on user goals and cost constraints.
+A flexible B2C SaaS that extracts and curates structured data from social media profiles into personalized collections. Currently focused on location-based recommendations for Google Maps, but designed to adapt to various use cases like lead generation, investment research, or custom data analysis. Evolving towards an agentic platform where AI agents dynamically orchestrate scraping operations based on user goals and cost constraints.
 
 ## Prerequisites
 
