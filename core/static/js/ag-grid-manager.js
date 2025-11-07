@@ -319,8 +319,8 @@ class AgGridManager {
     }
 
     updatePaginationControls() {
-        const paginationInfo = document.getElementById('pagination-info');
-        const paginationButtons = document.getElementById('pagination-buttons');
+        const paginationInfo = document.querySelector('.pagination-info');
+        const paginationButtons = document.querySelector('.pagination-buttons');
         
         if (!this.gridApi || !paginationInfo || !paginationButtons) return;
         
@@ -378,26 +378,26 @@ class AgGridManager {
 
     // Operations
     changePageSize(size) {
-        const paginationControls = document.getElementById('pagination-controls');
-        const paginationInfo = document.getElementById('pagination-info');
-        const paginationButtons = document.getElementById('pagination-buttons');
-        
         if (size === 'all') {
-            // Switch to infinite scroll and hide pagination controls
+            // Switch to infinite scroll and hide pagination footer
             this.gridApi.setGridOption('pagination', false);
             this.gridApi.setGridOption('rowModelType', 'infinite');
             
-            if (paginationControls) {
-                paginationControls.style.display = 'none';
+            // Hide pagination footer
+            const paginationFooter = document.querySelector('.pagination-footer');
+            if (paginationFooter) {
+                paginationFooter.style.display = 'none';
             }
         } else {
-            // Use pagination and show pagination controls
+            // Use pagination and show pagination footer
             this.gridApi.setGridOption('pagination', true);
             this.gridApi.setGridOption('rowModelType', 'clientSide');
             this.gridApi.setGridOption('paginationPageSize', parseInt(size));
             
-            if (paginationControls) {
-                paginationControls.style.display = 'flex';
+            // Show pagination footer
+            const paginationFooter = document.querySelector('.pagination-footer');
+            if (paginationFooter) {
+                paginationFooter.style.display = 'flex';
                 this.updatePaginationControls();
             }
         }

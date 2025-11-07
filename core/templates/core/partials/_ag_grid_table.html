@@ -60,16 +60,6 @@ Built according to table_editor_requirements.md v2.0
                 </button>
             </div>
         </div>
-        
-        <!-- Pagination Controls (hidden when "All rows" is selected) -->
-        <div id="pagination-controls" class="flex justify-between items-center text-sm text-gray-600">
-            <div id="pagination-info">
-                <!-- Pagination info will be inserted here by JavaScript -->
-            </div>
-            <div id="pagination-buttons">
-                <!-- Pagination buttons will be inserted here by JavaScript -->
-            </div>
-        </div>
     </div>
 
     <!-- AG-Grid Container -->
@@ -78,12 +68,12 @@ Built according to table_editor_requirements.md v2.0
     </div>
 
     <!-- Table Footer -->
-    <div class="px-6 py-4 border-t border-gray-200 bg-gray-50">
+    <div class="pagination-footer px-6 py-4 border-t border-gray-200 bg-gray-50">
         <div class="flex justify-between items-center">
-            <div class="text-sm text-gray-500" id="footer-info">
+            <div class="pagination-info text-sm text-gray-500" id="footer-info">
                 Ready
             </div>
-            <div class="flex items-center space-x-4">
+            <div class="pagination-buttons flex items-center space-x-4">
                 <button
                     id="export-csv-btn"
                     class="inline-flex items-center px-3 py-2 bg-gray-600 hover:bg-gray-700 text-white text-sm font-medium rounded-md transition-colors"
