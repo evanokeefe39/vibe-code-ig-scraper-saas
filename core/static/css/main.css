@@ -82,6 +82,114 @@ body {
 }
 
 /* ==========================================================================
+   AG-Grid Styles
+   ========================================================================== */
+
+/* AG-Grid theme customization */
+.ag-theme-alpine {
+  --ag-borders: solid 1px;
+  --ag-border-color: #e5e7eb;
+  --ag-row-border-color: #f3f4f6;
+  --ag-header-background-color: #f9fafb;
+  --ag-odd-row-background-color: #ffffff;
+  --ag-even-row-background-color: #f9fafb;
+  --ag-font-family: 'Inter', sans-serif;
+  --ag-font-size: 14px;
+  --ag-row-hover-color: #f3f4f6;
+  --ag-selected-row-color: #eff6ff;
+}
+
+/* Custom AG-Grid cell styling */
+.ag-theme-alpine .ag-cell {
+  padding: 8px 12px;
+  border-right: 1px solid #f3f4f6;
+}
+
+.ag-theme-alpine .ag-header-cell {
+  padding: 8px 12px;
+  font-weight: 600;
+  color: #374151;
+  background-color: #f9fafb;
+}
+
+.ag-theme-alpine .ag-header-cell-label {
+  font-weight: 600;
+}
+
+/* Checkbox column styling */
+.ag-theme-alpine .ag-cell[col-id="checkbox"] {
+  text-align: center;
+  padding: 8px 4px;
+}
+
+/* URL link styling */
+.ag-cell-value a {
+  color: #2563eb;
+  text-decoration: underline;
+}
+
+.ag-cell-value a:hover {
+  color: #1d4ed8;
+}
+
+/* Number cell styling */
+.ag-cell-value .text-right {
+  text-align: right;
+}
+
+/* Boolean cell styling */
+.ag-cell-value .text-center {
+  text-align: center;
+}
+
+/* Pagination styling */
+.ag-theme-alpine .ag-paging-panel {
+  border-top: 1px solid #e5e7eb;
+  padding: 8px 16px;
+  background-color: #f9fafb;
+}
+
+.ag-theme-alpine .ag-paging-row-summary-panel {
+  color: #6b7280;
+  font-size: 14px;
+}
+
+/* Filter styling */
+.ag-theme-alpine .ag-filter-toolpanel {
+  border: 1px solid #e5e7eb;
+  border-radius: 6px;
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
+}
+
+.ag-theme-alpine .ag-filter-input {
+  border: 1px solid #d1d5db;
+  border-radius: 4px;
+  padding: 6px 8px;
+  font-size: 14px;
+}
+
+.ag-theme-alpine .ag-filter-input:focus {
+  outline: none;
+  border-color: #2563eb;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+}
+
+/* Loading overlay */
+.ag-theme-alpine .ag-overlay-loading-wrapper {
+  background-color: rgba(255, 255, 255, 0.9);
+}
+
+.ag-theme-alpine .ag-overlay-loading-center {
+  color: #374151;
+}
+
+/* No rows overlay */
+.ag-theme-alpine .ag-overlay-no-rows-center {
+  color: #6b7280;
+  font-size: 16px;
+}
+
+/* ==========================================================================
    Monaco Editor Styles (for snippets)
    ========================================================================== */
 

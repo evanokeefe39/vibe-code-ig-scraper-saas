@@ -63,6 +63,11 @@ class ListColumn(models.Model):
 
     def __str__(self):
         return f"{self.user_list.name} - {self.name} ({self.column_type})"
+    
+    @property
+    def field(self):
+        """Generate field name for AG-Grid (slugified column name)"""
+        return self.name.lower().replace(' ', '_').replace('-', '_')
 
 
 class ListRow(models.Model):
