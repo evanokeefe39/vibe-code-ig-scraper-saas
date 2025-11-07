@@ -206,7 +206,7 @@
                     <pre id="output-json" class="text-sm text-gray-800 whitespace-pre-wrap"></pre>
                 </div>
             </div>
-            {% else %}
+            {% elif not run.scraped %}
             <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-6">
                 <div class="flex">
                     <div class="flex-shrink-0">
@@ -223,17 +223,31 @@
                 </div>
              {% endif %}
 
-             {% if run.scraped %}
-              <div class="border-t pt-4">
-      <button id="scraped-toggle" class="text-sm text-blue-600 hover:text-blue-800 underline" onclick="toggleScrapedData()">
-          Hide Raw Scraped Data
-      </button>
-                  <div id="scraped-data" class="mt-2 bg-gray-50 rounded-lg p-4 max-h-96 overflow-y-auto">
-                      <h3 class="text-sm font-medium text-gray-900 mb-2">Raw Scraped Posts</h3>
-                      {% include "core/json_editor.html" with json_data=run_scraped_json %}
-                  </div>
-              </div>
-             {% endif %}
+              {% if run.scraped %}
+               <div class="border-t pt-4">
+                   <div class="bg-white rounded-lg shadow-md p-6">
+                       <div class="flex justify-between items-center mb-4">
+                           <h3 class="text-xl font-semibold text-gray-900">Raw Scraped Posts</h3>
+                           <div class="flex space-x-2">
+                               <button id="scraped-toggle" class="p-2 rounded-md hover:bg-gray-100 text-gray-600 hover:text-gray-900 transition-colors" onclick="toggleScrapedData()" title="Toggle visibility">
+                                   <svg id="scraped-toggle-icon" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7"/>
+                                   </svg>
+                               </button>
+                               <a href="{% url 'export_run_scraped_json' run.pk %}"
+                                  class="p-2 rounded-md hover:bg-gray-100 text-gray-600 hover:text-gray-900 transition-colors" title="Export JSON">
+                                   <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
+                                   </svg>
+                               </a>
+                           </div>
+                       </div>
+                       <div id="scraped-data" class="bg-gray-50 rounded-lg p-4 max-h-96 overflow-y-auto">
+                           {% include "core/json_editor.html" with json_data=run_scraped_json %}
+                       </div>
+                   </div>
+               </div>
+              {% endif %}
         </div>
     </div>
 </div>
@@ -750,14 +764,16 @@ function toggleLegacyData() {
 
 function toggleScrapedData() {
     const scrapedDiv = document.getElementById('scraped-data');
-    const toggleButton = document.getElementById('scraped-toggle');
+    const toggleIcon = document.getElementById('scraped-toggle-icon');
 
     if (scrapedDiv.classList.contains('hidden')) {
         scrapedDiv.classList.remove('hidden');
-        toggleButton.textContent = 'Hide Raw Scraped Data';
+        // Change to up arrow (chevron-up) when expanded
+        toggleIcon.setAttribute('d', 'M5 15l7-7 7 7');
     } else {
         scrapedDiv.classList.add('hidden');
-        toggleButton.textContent = 'Show Raw Scraped Data';
+        // Change to down arrow (chevron-down) when collapsed
+        toggleIcon.setAttribute('d', 'M19 9l-7 7-7-7');
     }
 }
 

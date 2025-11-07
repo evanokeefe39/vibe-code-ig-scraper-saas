@@ -22,7 +22,7 @@ from django.conf.urls.static import static
 from core.utility_views import home, test_geocode
 from core.views.run_views import run_create, run_list, run_detail, run_by_n8n, run_status_api, empty_source_form, platform_config
 from core.views.list_views import list_list, list_detail, list_create, list_column_create, list_row_create, update_cell, delete_row, add_blank_row, update_column, delete_column, delete_list, table_save, validate_column_type_change
-from core.views.export_views import export_list_csv, export_list_json, export_run_csv, export_run_json
+from core.views.export_views import export_list_csv, export_list_json, export_run_csv, export_run_json, export_run_scraped_json
 
 urlpatterns = [
     path("admin/", admin.site.urls),
@@ -36,6 +36,7 @@ path("runs/create/", run_create, name="run_create"),
     path("runs/<int:pk>/status/", run_status_api, name="run_status_api"),
     path("runs/<int:pk>/export/csv/", export_run_csv, name="export_run_csv"),
     path("runs/<int:pk>/export/json/", export_run_json, name="export_run_json"),
+    path("runs/<int:pk>/export/scraped/json/", export_run_scraped_json, name="export_run_scraped_json"),
     path("runs/by-n8n/<int:n8n_execution_id>/", run_by_n8n, name="run_by_n8n"),
     # User List Management
     path("lists/", list_list, name="list_list"),

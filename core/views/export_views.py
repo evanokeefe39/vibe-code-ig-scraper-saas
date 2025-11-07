@@ -156,3 +156,21 @@ def export_run_json(request, pk):
     response['Content-Disposition'] = f'attachment; filename="run_{pk}_extracted.json"'
 
     return response
+
+
+def export_run_scraped_json(request, pk):
+    run = get_object_or_404(Run, pk=pk)
+    
+    if not run.scraped:
+        return JsonResponse({"error": "No scraped data available for export"}, status=404)
+    
+    data = {
+        "run_id": run.pk,
+        "created_at": run.created_at.isoformat(),
+        "scraped_data": run.scraped
+    }
+    
+    response = HttpResponse(json.dumps(data, indent=2), content_type='application/json')
+    response['Content-Disposition'] = f'attachment; filename="run_{pk}_scraped.json"'
+    
+    return response
