@@ -1,6 +1,9 @@
 services:
    django:
-    build: .
+    build:
+      context: .
+      cache_from:
+        - python:3.10-slim
     ports:
       - "8000:8000"
     environment:
@@ -12,11 +15,36 @@ services:
     depends_on:
       - postgres
     volumes:
-      - .:/app
+      - ./core:/app/core
+      - ./users:/app/users
+      - ./vibe_scraper:/app/vibe_scraper
+      - ./n8n:/app/n8n
+      - ./templates:/app/templates
+      - ./static:/app/static
       - /app/__pycache__
     restart: unless-stopped
     networks:
       - testnet
+    develop:
+      watch:
+        - path: ./core
+          action: sync
+          target: /app/core
+        - path: ./users
+          action: sync
+          target: /app/users
+        - path: ./vibe_scraper
+          action: sync
+          target: /app/vibe_scraper
+        - path: ./n8n
+          action: sync
+          target: /app/n8n
+        - path: ./templates
+          action: sync
+          target: /app/templates
+        - path: ./static
+          action: sync
+          target: /app/static
 
    n8n:
       image: n8nio/n8n:latest

@@ -46,6 +46,7 @@ INSTALLED_APPS = [
     "rest_framework",
     "users",
     "core",
+    "dynamic_formsets",
 ]
 
 MIDDLEWARE = [
@@ -124,7 +125,11 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.2/howto/static-files/
 
-STATIC_URL = "static/"
+STATIC_URL = "/static/"
+STATIC_ROOT = BASE_DIR / "staticfiles"
+STATICFILES_DIRS = [
+    BASE_DIR / "core/static",
+]
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
@@ -139,6 +144,13 @@ N8N_BASE_URL = os.getenv('N8N_BASE_URL', 'http://n8n:5678')
 
 # N8N webscrape URL
 N8N_WEBSCRAPE_URL = N8N_BASE_URL + '/webhook/scrape'
+
+# N8N multi-source scraping URL (use production endpoint, not test)
+N8N_MULTI_SOURCE_URL = N8N_BASE_URL + '/webhook/multi-source-scrape'
+
+# N8N basic auth credentials
+N8N_BASIC_AUTH_USER = os.getenv('N8N_BASIC_AUTH_USER', 'admin@vibescraper.com')
+N8N_BASIC_AUTH_PASSWORD = os.getenv('N8N_BASIC_AUTH_PASSWORD', 'vibescraper123')
 
 # N8N API key for REST API authentication
 N8N_API_KEY = os.getenv('N8N_API_KEY')

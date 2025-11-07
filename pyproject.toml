@@ -18,6 +18,7 @@ stripe = "^8.0"
  psycopg = {extras = ["c"], version = "^3.1"}
  dj-database-url = "^2.1"
  python-dotenv = "^1.0"
+django-dynamic-formsets = "^0.0.8"
 
 [build-system]
 requires = ["poetry-core"]

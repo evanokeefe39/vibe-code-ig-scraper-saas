@@ -1,98 +1,163 @@
 {% extends "base.html" %}
+{% load static %}
 
 {% block title %}Create New Run - Vibe Scraper SaaS{% endblock %}
 
-{% block footer %}{% endblock %}
-
 {% block content %}
 <div class="max-w-6xl mx-auto px-4 py-8">
-    <div class="mb-8">
-        <h1 class="text-3xl font-bold text-gray-900 mb-2">Create New Scraping Run</h1>
-        <p class="text-gray-600">Configure your social media data extraction parameters</p>
-    </div>
-
-    <form method="post" class="bg-white rounded-lg shadow-md p-6" id="run-form">
+    <h1 class="text-3xl font-bold text-gray-900 mb-8">Create New Scraping Run</h1>
+    
+    <form method="post" id="run-form">
         {% csrf_token %}
-
-        <div class="grid md:grid-cols-2 gap-8">
-             <!-- Left Column: Parameters -->
-             <div class="space-y-6">
-                 <h2 class="text-xl font-semibold text-gray-900 mb-4">Extraction Parameters</h2>
-
-                 <div>
-                     <label for="{{ form.platform.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-2">
-                         Platform
-                     </label>
-                     {{ form.platform }}
-                     {% if form.platform.help_text %}
-                         <p class="mt-1 text-sm text-gray-500">{{ form.platform.help_text }}</p>
-                     {% endif %}
-                     {% if form.platform.errors %}
-                         <p class="mt-1 text-sm text-red-600">{{ form.platform.errors.0 }}</p>
-                     {% endif %}
-                 </div>
-
-                <div>
-                    <label for="{{ form.days_since.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-2">
-                        Days Since
-                    </label>
-                    {{ form.days_since }}
-                    {% if form.days_since.help_text %}
-                        <p class="mt-1 text-sm text-gray-500">{{ form.days_since.help_text }}</p>
-                    {% endif %}
-                    {% if form.days_since.errors %}
-                        <p class="mt-1 text-sm text-red-600">{{ form.days_since.errors.0 }}</p>
-                    {% endif %}
-                </div>
-
-                 <div>
-                     <label for="{{ form.max_results.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-2">
-                         Max Results per Profile
-                     </label>
-                     {{ form.max_results }}
-                     {% if form.max_results.help_text %}
-                         <p class="mt-1 text-sm text-gray-500">{{ form.max_results.help_text }}</p>
-                     {% endif %}
-                     {% if form.max_results.errors %}
-                         <p class="mt-1 text-sm text-red-600">{{ form.max_results.errors.0 }}</p>
-                     {% endif %}
-                 </div>
-
-                 <div>
-                     <label class="flex items-center">
-                         {{ form.enable_extraction }}
-                         <span class="ml-2 text-sm font-medium text-gray-700">{{ form.enable_extraction.label }}</span>
-                     </label>
-                     {% if form.enable_extraction.help_text %}
-                         <p class="mt-1 text-sm text-gray-500">{{ form.enable_extraction.help_text }}</p>
-                     {% endif %}
-                     {% if form.enable_extraction.errors %}
-                         <p class="mt-1 text-sm text-red-600">{{ form.enable_extraction.errors.0 }}</p>
-                     {% endif %}
-                 </div>
-
-                 <!-- Hidden for now: Include Comments and Stories options -->
+        
+        <!-- Hidden required fields -->
+        <input type="hidden" name="days_since" value="14">
+        <input type="hidden" name="auto_infer_columns" value="true">
+        <input type="hidden" name="custom_columns" value="[]">
+        <input type="hidden" name="max_results" value="5">
+        
+        
+        
+        <!-- Sources Configuration -->
+        <div class="mb-8">
+            <h2 class="text-xl font-semibold text-gray-900 mb-4">Sources Configuration</h2>
+            
+            <div class="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
+                <p class="text-sm text-blue-800">
+                    <strong>🔄 Multi-Source Support:</strong> Add multiple sources from different platforms (YouTube, Instagram, TikTok) in a single run. 
+                    Each source can have different configuration options based on the platform and source type.
+                </p>
             </div>
-
-             <!-- Right Column: Profiles and Prompt -->
-             <div class="space-y-6">
-                 <div>
-                     <label for="{{ form.profiles.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-2" id="profiles-label">
-                         Instagram Profiles
-                     </label>
-                    {{ form.profiles }}
-                    {% if form.profiles.help_text %}
-                        <p class="mt-1 text-sm text-gray-500">{{ form.profiles.help_text }}</p>
+            
+            <div class="formset-container">
+                {% for form in source_formset %}
+                    <div class="dynamic-form source-card border border-gray-200 rounded-lg p-4 mb-4 bg-gray-50">
+                        <div class="flex justify-between items-center mb-4">
+                            <h3 class="text-lg font-semibold">Source {{ forloop.counter }}</h3>
+                            {% if source_formset.can_delete %}
+                                <button type="button" class="remove-form preferred-remove text-red-600 hover:text-red-800">
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                                    </svg>
+                                </button>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="mb-4">
+                            {{ form.source_type }}
+                            {% if form.source_type.errors %}
+                                <p class="mt-1 text-sm text-red-600">{{ form.source_type.errors.0 }}</p>
+                            {% endif %}
+                        </div>
+                        
+                        <!-- Platform-specific configuration will be shown/hidden based on selection -->
+                        <div class="platform-config-container">
+                            <!-- YouTube Search Configuration -->
+                            <div class="platform-config youtube-search-config" style="display: none;">
+                                {% include "core/run_create/platforms/youtube_search.html" %}
+                            </div>
+                            
+                            <!-- YouTube Channel Configuration -->
+                            <div class="platform-config youtube-channel-config" style="display: none;">
+                                {% include "core/run_create/platforms/youtube_channel.html" %}
+                            </div>
+                            
+                            <!-- YouTube Playlist Configuration -->
+                            <div class="platform-config youtube-playlist-config" style="display: none;">
+                                {% include "core/run_create/platforms/youtube_playlist.html" %}
+                            </div>
+                            
+                            <!-- YouTube Hashtag Configuration -->
+                            <div class="platform-config youtube-hashtag-config" style="display: none;">
+                                {% include "core/run_create/platforms/youtube_hashtag.html" %}
+                            </div>
+                            
+                            <!-- YouTube Video Configuration -->
+                            <div class="platform-config youtube-video-config" style="display: none;">
+                                {% include "core/run_create/platforms/youtube_video.html" %}
+                            </div>
+                            
+                            <!-- Instagram Profile Configuration -->
+                            <div class="platform-config instagram-profile-config" style="display: none;">
+                                {% include "core/run_create/platforms/instagram_profile.html" %}
+                            </div>
+                            
+                            <!-- Instagram Post Configuration -->
+                            <div class="platform-config instagram-post-config" style="display: none;">
+                                {% include "core/run_create/platforms/instagram_post.html" %}
+                            </div>
+                            
+                            <!-- Instagram Hashtag Configuration -->
+                            <div class="platform-config instagram-hashtag-config" style="display: none;">
+                                {% include "core/run_create/platforms/instagram_hashtag.html" %}
+                            </div>
+                            
+                            <!-- Instagram Search Configuration - HIDDEN -->
+                            <div class="platform-config instagram-search-config" style="display: none;">
+                                {% include "core/run_create/platforms/instagram_search.html" %}
+                            </div>
+                            
+                            <!-- TikTok Profile Configuration -->
+                            <div class="platform-config tiktok-profile-config" style="display: none;">
+                                {% include "core/run_create/platforms/tiktok_profile.html" %}
+                            </div>
+                            
+                            <!-- TikTok Hashtag Configuration -->
+                            <div class="platform-config tiktok-hashtag-config" style="display: none;">
+                                {% include "core/run_create/platforms/tiktok_hashtag.html" %}
+                            </div>
+                            
+                            <!-- TikTok Search Configuration -->
+                            <div class="platform-config tiktok-search-config" style="display: none;">
+                                {% include "core/run_create/platforms/tiktok_search.html" %}
+                            </div>
+                            
+                            <!-- TikTok Video Configuration -->
+                            <div class="platform-config tiktok-video-config" style="display: none;">
+                                {% include "core/run_create/platforms/tiktok_video.html" %}
+                            </div>
+                        </div>
+                        
+                        {% if form.DELETE %}
+                            <div style="display: none;">{{ form.DELETE }}</div>
+                        {% endif %}
+                    </div>
+                {% endfor %}
+            </div>
+            
+            <button type="button" class="add-form preferred-add inline-flex items-center px-4 py-2 bg-green-600 hover:bg-green-700 text-white font-medium rounded-lg transition-colors duration-200 shadow-md hover:shadow-lg mt-4">
+                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/>
+                </svg>
+                Add Source
+            </button>
+            
+            {{ source_formset.management_form }}
+        </div>
+        
+        <!-- Extraction Configuration -->
+        <div class="mb-8">
+            <h2 class="text-xl font-semibold text-gray-900 mb-4">Extraction Configuration</h2>
+            
+            <div class="space-y-6">
+                <!-- Enable Extraction -->
+                <div>
+                    <label class="flex items-center">
+                        {{ form.enable_extraction }}
+                        <span class="ml-2 text-sm font-medium text-gray-700">{{ form.enable_extraction.label }}</span>
+                    </label>
+                    {% if form.enable_extraction.help_text %}
+                        <p class="mt-1 text-sm text-gray-500">{{ form.enable_extraction.help_text }}</p>
                     {% endif %}
-                    {% if form.profiles.errors %}
-                        <p class="mt-1 text-sm text-red-600">{{ form.profiles.errors.0 }}</p>
+                    {% if form.enable_extraction.errors %}
+                        <p class="mt-1 text-sm text-red-600">{{ form.enable_extraction.errors.0 }}</p>
                     {% endif %}
-                    <div id="profile-tags" class="mt-2 flex flex-wrap gap-2 max-h-20 overflow-y-auto"></div>
                 </div>
-
+                
+                <!-- Extraction Prompt -->
                 <div>
                     <label for="{{ form.extraction_prompt.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-2">
-                        Extraction Prompt
+                        {{ form.extraction_prompt.label }}
                     </label>
                     {{ form.extraction_prompt }}
                     {% if form.extraction_prompt.help_text %}
@@ -104,143 +169,189 @@
                 </div>
             </div>
         </div>
-
-        <!-- Submit Button -->
+        
+        <!-- Form Actions -->
         <div class="mt-8 pt-6 border-t border-gray-200">
             <button type="submit" class="inline-flex items-center px-6 py-3 bg-primary-600 hover:bg-primary-700 text-white font-semibold rounded-lg transition-colors duration-200 shadow-md hover:shadow-lg">
                 <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/>
                 </svg>
-                Create Run
+                Start Scraping Run
             </button>
             <a href="{% url 'run_list' %}" class="ml-4 inline-flex items-center px-4 py-2 text-gray-700 hover:text-gray-900 font-medium">
                 Cancel
             </a>
         </div>
-    </form>
+        
+        </form>
 </div>
+{% endblock %}
 
+{% block extra_js %}
 <script>
-document.addEventListener('DOMContentLoaded', function() {
-    const profilesTextarea = document.getElementById('{{ form.profiles.id_for_label|lower }}');
-    const profileTags = document.getElementById('profile-tags');
-    const form = document.getElementById('run-form');
-    const enableExtractionCheckbox = document.getElementById('{{ form.enable_extraction.id_for_label|lower }}');
-    const extractionPromptDiv = document.querySelector('label[for="{{ form.extraction_prompt.id_for_label }}"]').closest('div');
-    const platformSelect = document.getElementById('{{ form.platform.id_for_label|lower }}');
-    const profilesLabel = document.getElementById('profiles-label');
-
-    // Function to parse profiles
-    function parseProfiles(text) {
-        if (text.includes('\n')) {
-            return text.split('\n').map(p => p.trim()).filter(p => p);
-        } else {
-            return text.split(',').map(p => p.trim()).filter(p => p);
-        }
+$(document).ready(function() {
+    let formCount = $('.dynamic-form').length;
+    
+    // Update Django formset management fields
+    function updateManagementForm() {
+        const totalForms = $('.dynamic-form').length;
+        $('input[name="form-TOTAL_FORMS"]').val(totalForms);
     }
 
-    // Function to render profile tags
-    function renderProfileTags(profiles) {
-        profileTags.innerHTML = '';
-        profiles.forEach((profile, index) => {
-            const tag = document.createElement('span');
-            tag.className = 'inline-flex items-center px-3 py-1 rounded-full text-sm bg-primary-100 text-primary-800';
-            tag.innerHTML = `
-                ${profile}
-                <button type="button" class="ml-2 text-primary-600 hover:text-primary-800" data-index="${index}">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
-                    </svg>
-                </button>
-            `;
-            profileTags.appendChild(tag);
+    // Add new form functionality
+    function addNewForm() {
+        const newFormIndex = formCount;
+        const template = $('.dynamic-form:first').clone();
+        
+        // Clear form values but preserve Django initial values
+        template.find('input[type="text"], input[type="number"], input[type="date"], textarea').val('');
+        template.find('input[type="checkbox"]').prop('checked', false);
+        
+        // Reset select fields to their initial values
+        template.find('select').each(function() {
+            const $select = $(this);
+            const fieldName = $select.attr('name');
+            const className = $select.attr('class');
+            
+            // Set initial values based on field name (Django form fields)
+            if (fieldName && fieldName.includes('subtitles_language')) {
+                $select.val('en'); // English
+            } else if (fieldName && fieldName.includes('sorting_order')) {
+                $select.val('relevance'); // Relevance
+            } else if (fieldName && fieldName.includes('relative_date_filter')) {
+                $select.val(''); // No filter
+            } else if (fieldName && fieldName.includes('feed_type')) {
+                $select.val('posts'); // Posts only
+            } else if (fieldName && fieldName.includes('results_type')) {
+                $select.val('posts'); // Posts (Instagram)
+            } else if (fieldName && fieldName.includes('subtitles_format')) {
+                $select.val('srt'); // SRT format
+            } else {
+                $select.val(''); // Default to empty for other Django form fields
+            }
         });
+        
+        // Reset hardcoded template selects (TikTok-specific fields)
+        template.find('select.profile-scrape-sections-select').val('videos'); // Videos only
+        template.find('select.profile-sorting-select').val('latest'); // Latest First
+        template.find('select.hashtag-sorting-select').val('latest'); // Latest First
+        
+        // Reset number inputs to their template defaults
+        template.find('input[type="number"]').each(function() {
+            const $input = $(this);
+            if ($input.hasClass('max-results-shorts-input')) {
+                $input.val('10');
+            } else if ($input.hasClass('max-results-streams-input')) {
+                $input.val('5');
+            } else if ($input.attr('name') && $input.attr('name').includes('max_results')) {
+                $input.val('5');
+            } else {
+                $input.val('');
+            }
+        });
+        
+        template.find('.platform-config').hide();
+        
+        // Update form attributes
+        template.find('input, select, textarea').each(function() {
+            const name = $(this).attr('name');
+            if (name) {
+                const newName = name.replace(/form-\d+/, 'form-' + newFormIndex);
+                $(this).attr('name', newName);
+                const id = $(this).attr('id');
+                if (id) {
+                    $(this).attr('id', id.replace(/form-\d+/, 'form-' + newFormIndex));
+                }
+            }
+        });
+        
+        // Update source number
+        template.find('h3').text('Source ' + (newFormIndex + 1));
+        
+        // Add remove button if not present
+        if (!template.find('.preferred-remove').length) {
+            const removeBtn = $('<button type="button" class="preferred-remove text-red-600 hover:text-red-800">' +
+                '<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">' +
+                '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>' +
+                '</svg></button>');
+            template.find('.flex.justify-between').append(removeBtn);
+        }
+        
+        // Add to DOM
+        $('.formset-container').append(template);
+        formCount++;
+        
+        // Update Django formset management fields
+        updateManagementForm();
+        
+        // Initialize platform switching for new form
+        template.find('.source-type-select').trigger('change');
     }
+    
+    // Remove form functionality
+    function removeForm(button) {
+        $(button).closest('.dynamic-form').remove();
+        
+        // Renumber remaining forms
+        $('.dynamic-form').each(function(index) {
+            $(this).find('h3').text('Source ' + (index + 1));
+            $(this).find('input, select, textarea').each(function() {
+                const name = $(this).attr('name');
+                if (name) {
+                    const newName = name.replace(/form-\d+/, 'form-' + index);
+                    $(this).attr('name', newName);
+                    const id = $(this).attr('id');
+                    if (id) {
+                        $(this).attr('id', id.replace(/form-\d+/, 'form-' + index));
+                    }
+                }
+            });
+        });
+        
+        formCount = $('.dynamic-form').length;
+        
+        // Update Django formset management fields
+        updateManagementForm();
+    }
+    
+    // Connect our preferred buttons
+    $(document).on('click', '.preferred-add', function(e) {
+        e.preventDefault();
+        addNewForm();
+    });
+    
+    $(document).on('click', '.preferred-remove', function(e) {
+        e.preventDefault();
+        removeForm(this);
+    });
+    
+    // Platform config switching
+    $(document).on('change', '.source-type-select', function() {
+        const select = $(this);
+        const card = select.closest('.source-card');
+        const configs = card.find('.platform-config');
 
-    // Function to toggle extraction prompt visibility
-    function toggleExtractionPrompt() {
-        if (enableExtractionCheckbox.checked) {
-            extractionPromptDiv.style.display = 'block';
+        configs.hide();
+        
+        if (select.val()) {
+            const configClass = select.val() + '-config';
+            const targetConfig = card.find('.' + configClass);
+            if (targetConfig.length) {
+                targetConfig.show();
+                // Disable all fields EXCEPT the source type selector, then enable only fields in active config
+                card.find('input, select, textarea').prop('disabled', true);
+                select.prop('disabled', false); // Always keep source type selector enabled
+                targetConfig.find('input, select, textarea').prop('disabled', false);
+            }
         } else {
-            extractionPromptDiv.style.display = 'none';
-        }
-    }
-
-    // Function to update labels based on platform
-    function updatePlatformLabels() {
-        const platform = platformSelect.value;
-        const platformNames = {
-            'instagram': 'Instagram',
-            'tiktok': 'TikTok'
-        };
-        profilesLabel.textContent = platformNames[platform] + ' Profiles';
-    }
-
-    // Update tags on input
-    profilesTextarea.addEventListener('input', function() {
-        const profiles = parseProfiles(this.value);
-        renderProfileTags(profiles);
-    });
-
-    // Toggle extraction prompt on checkbox change
-    enableExtractionCheckbox.addEventListener('change', toggleExtractionPrompt);
-
-    // Update labels on platform change
-    platformSelect.addEventListener('change', updatePlatformLabels);
-
-    // Handle tag deletion
-    profileTags.addEventListener('click', function(e) {
-        if (e.target.closest('button')) {
-            const index = parseInt(e.target.closest('button').dataset.index);
-            const profiles = parseProfiles(profilesTextarea.value);
-            profiles.splice(index, 1);
-            profilesTextarea.value = profiles.join('\n');
-            renderProfileTags(profiles);
+            // No platform selected - enable only the source type selector
+            card.find('input, select, textarea').prop('disabled', true);
+            select.prop('disabled', false);
         }
     });
-
-    // Form validation
-    form.addEventListener('submit', function(e) {
-        const profiles = parseProfiles(profilesTextarea.value);
-        const platform = platformSelect.value;
-        const platformNames = {
-            'instagram': 'Instagram',
-            'tiktok': 'TikTok'
-        };
-        if (profiles.length === 0) {
-            e.preventDefault();
-            alert(`Please enter at least one ${platformNames[platform]} profile URL.`);
-            return;
-        }
-
-        // Show loading state
-        const submitBtn = form.querySelector('button[type="submit"]');
-        const originalText = submitBtn.innerHTML;
-        submitBtn.innerHTML = `
-            <svg class="w-5 h-5 mr-2 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
-            </svg>
-            Creating Run...
-        `;
-        submitBtn.disabled = true;
-
-        // Re-enable after 10 seconds as fallback
-        setTimeout(() => {
-            submitBtn.innerHTML = originalText;
-            submitBtn.disabled = false;
-        }, 10000);
-    });
-
-    // Initial render if there's existing value
-    if (profilesTextarea.value) {
-        renderProfileTags(parseProfiles(profilesTextarea.value));
-    }
-
-    // Initial toggle for extraction prompt
-    toggleExtractionPrompt();
-
-    // Initial platform labels
-    updatePlatformLabels();
+    
+    // Initialize existing forms
+    $('.source-type-select').trigger('change');
 });
 </script>
 {% endblock %}

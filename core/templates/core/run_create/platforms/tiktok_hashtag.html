@@ -1,0 +1,60 @@
+<div class="bg-black text-white rounded-lg p-3">
+    <span class="text-sm font-medium">💰 Cost: $5.00 per 1000 results</span>
+</div>
+
+<div class="space-y-4">
+    <div>
+        <label>Hashtags *</label>
+        {{ form.hashtags }}
+        <p class="text-xs text-gray-500">Enter hashtags without # symbol, one per line</p>
+        {% if form.hashtags.errors %}
+            <p class="mt-1 text-sm text-red-600">{{ form.hashtags.errors.0 }}</p>
+        {% endif %}
+    </div>
+    
+    <div>
+        <label>Hashtag Sorting</label>
+        <select class="hashtag-sorting-select w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500">
+            <option value="latest">Latest First</option>
+            <option value="popular">Most Popular</option>
+            <option value="oldest">Oldest First</option>
+        </select>
+        <p class="text-xs text-gray-500">Order in which to retrieve videos from hashtags</p>
+    </div>
+    
+    <!-- Max Results -->
+    <div class="border border-gray-200 rounded-lg p-4">
+        <h5 class="text-sm font-medium text-gray-900 mb-3">📊 Results Limits</h5>
+        <div>
+            <label>Max Videos</label>
+            {{ form.max_results }}
+            <p class="text-xs text-gray-500">Maximum videos per hashtag</p>
+            {% if form.max_results.errors %}
+                <p class="mt-1 text-sm text-red-600">{{ form.max_results.errors.0 }}</p>
+            {% endif %}
+        </div>
+    </div>
+    
+    <!-- Download Options -->
+    <div class="border border-gray-200 rounded-lg p-4">
+        <h5 class="text-sm font-medium text-gray-900 mb-3">💾 Download Options</h5>
+        <div class="grid grid-cols-2 gap-4">
+            <label class="flex items-center">
+                <input type="checkbox" class="download-video-checkbox mr-2">
+                <span class="text-sm">Download Videos</span>
+            </label>
+            <label class="flex items-center">
+                <input type="checkbox" class="download-covers-checkbox mr-2">
+                <span class="text-sm">Download Covers</span>
+            </label>
+            <label class="flex items-center">
+                <input type="checkbox" class="download-subtitles-checkbox mr-2">
+                <span class="text-sm">Download Subtitles</span>
+            </label>
+            <label class="flex items-center">
+                <input type="checkbox" class="download-slideshow-checkbox mr-2">
+                <span class="text-sm">Download Slideshow Images</span>
+            </label>
+        </div>
+    </div>
+</div>

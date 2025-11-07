@@ -1,0 +1,44 @@
+<div class="bg-red-50 border border-red-200 rounded-lg p-3">
+    <span class="text-sm font-medium text-red-800">💰 Cost: $5.00 per 1000 results</span>
+</div>
+
+<div class="space-y-4">
+    <div>
+        <label>Playlist URLs *</label>
+        {{ form.profile_urls }}
+        <p class="text-xs text-gray-500">Enter YouTube playlist URLs, one per line</p>
+        {% if form.profile_urls.errors %}
+            <p class="mt-1 text-sm text-red-600">{{ form.profile_urls.errors.0 }}</p>
+        {% endif %}
+    </div>
+    
+    <div>
+        <label>Max Videos</label>
+        {{ form.max_results }}
+        <p class="text-xs text-gray-500">Maximum number of videos to scrape from each playlist</p>
+        {% if form.max_results.errors %}
+            <p class="mt-1 text-sm text-red-600">{{ form.max_results.errors.0 }}</p>
+        {% endif %}
+    </div>
+    
+    <!-- Subtitle Options -->
+    <div class="border border-gray-200 rounded-lg p-4">
+        <h5 class="text-sm font-medium text-gray-900 mb-3">💬 Subtitle Options</h5>
+        
+        <div class="grid grid-cols-2 gap-4 mb-4">
+            <div>
+                <label>Subtitle Language</label>
+                {{ form.subtitles_language }}
+            </div>
+        </div>
+        
+        <div class="grid grid-cols-2 gap-4">
+            <label class="flex items-center">
+                {{ form.download_subtitles }} Download Subtitles
+            </label>
+            <label class="flex items-center">
+                {{ form.prefer_auto_generated_subtitles }} Prefer Auto-Generated Subtitles
+            </label>
+        </div>
+    </div>
+</div>
