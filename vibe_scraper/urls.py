@@ -21,7 +21,7 @@ from django.conf import settings
 from django.conf.urls.static import static
 from core.utility_views import home, test_geocode
 from core.views.run_views import run_create, run_list, run_detail, run_by_n8n, run_status_api, empty_source_form, platform_config
-from core.views.list_views import list_list, list_detail, list_create, list_column_create, list_row_create, update_cell, delete_row, add_blank_row, update_column, delete_column, delete_list, table_save, validate_column_type_change
+from core.views.list_views import list_list, list_detail, list_create, list_column_create, list_row_create, update_cell, delete_row, add_blank_row, update_column, delete_column, delete_list, table_save, validate_column_type_change, delete_selected_rows, add_column_ag_grid
 from core.views.export_views import export_list_csv, export_list_json, export_run_csv, export_run_json, export_run_scraped_json
 
 urlpatterns = [
@@ -52,6 +52,8 @@ path("runs/create/", run_create, name="run_create"),
     path("lists/<int:pk>/rows/delete/", delete_row, name="delete_row"),
     path("lists/<int:pk>/rows/add-blank/", add_blank_row, name="add_blank_row"),
     path("lists/<int:pk>/table/save/", table_save, name="table_save"),
+    path("lists/<int:pk>/delete-rows/", delete_selected_rows, name="delete_selected_rows"),
+    path("lists/<int:pk>/add-column/", add_column_ag_grid, name="add_column_ag_grid"),
     path("lists/<int:pk>/export/csv/", export_list_csv, name="export_list_csv"),
     path("lists/<int:pk>/export/json/", export_list_json, name="export_list_json"),
 ]

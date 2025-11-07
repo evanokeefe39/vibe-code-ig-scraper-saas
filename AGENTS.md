@@ -64,6 +64,18 @@
 - Avoid deeply nested code (>3 levels)
 - Use composition over inheritance where appropriate
 
+# Table Editor Implementation
+- **Current Implementation**: AG-Grid based table editor (DEFAULT)
+- **Legacy Implementation**: HTMX + Alpine.js table editor (DEPRECATED - use ?grid=legacy)
+- **Requirements**: Defined in @table_editor_requirements.md
+- **Migration Status**: Complete - AG-Grid is now default
+- **File Locations**:
+  - Active: `core/templates/core/partials/_ag_grid_table.html`
+  - Legacy: `core/templates/core/partials/_table_editor.html` (deprecated)
+  - Views: `core/templates/core/list_detail_ag_grid.html` (default)
+  - Legacy: `core/templates/core/list_detail.html` (fallback)
+- **Container Management**: Always rebuild and restart Docker container after making changes to Django code, templates, or static files to ensure updates are properly applied. Use `docker-compose down && docker-compose up --build -d` for full rebuilds.
+
 # Testing Profiles and Channels
 For consistent testing, use these profiles/channels with specified parameters:
 - **Instagram Profile**: https://www.instagram.com/sabrina_ramonov

@@ -22,30 +22,67 @@ def list_detail(request, pk):
     columns = list_obj.columns.all().order_by('order')
     rows = list_obj.rows.all()
 
-    # Serialize data for Alpine.js table editor
-    columns_data = []
-    for column in columns:
-        columns_data.append({
-            'id': column.pk,
-            'name': column.name,
-            'type': column.column_type,
-            'options': column.options or {}
-        })
+    # Check if user wants AG-Grid version (default to AG-Grid, legacy for old table)
+    use_ag_grid = request.GET.get('grid', 'ag') != 'legacy'
 
-    rows_data = []
-    for row in rows:
-        rows_data.append({
-            'id': row.pk,
-            'data': row.data or {}
-        })
+    # Serialize data for AG-Grid
+    if use_ag_grid:
+        columns_data = []
+        for column in columns:
+            columns_data.append({
+                'id': column.pk,
+                'name': column.name,
+                'field': column.field,
+                'column_type': column.column_type,
+                'options': column.options or {}
+            })
 
-    return render(request, 'core/list_detail.html', {
-        'list': list_obj,
-        'columns': columns,
-        'rows': rows,
-        'columns_json': json.dumps(columns_data),
-        'rows_json': json.dumps(rows_data)
-    })
+        rows_data = []
+        for row in rows:
+            row_data = {'id': row.pk}
+            # Flatten data for AG-Grid
+            if row.data:
+                for column in columns:
+                    field_name = column.field
+                    row_data[field_name] = row.data.get(field_name, '')
+            else:
+                for column in columns:
+                    row_data[column.field] = ''
+
+            rows_data.append(row_data)
+
+        return render(request, 'core/list_detail_ag_grid.html', {
+            'list': list_obj,
+            'columns': columns,
+            'rows': rows,
+            'columns_json': json.dumps(columns_data),
+            'rows_json': json.dumps(rows_data)
+        })
+    else:
+        # Legacy Alpine.js table editor
+        columns_data = []
+        for column in columns:
+            columns_data.append({
+                'id': column.pk,
+                'name': column.name,
+                'type': column.column_type,
+                'options': column.options or {}
+            })
+
+        rows_data = []
+        for row in rows:
+            rows_data.append({
+                'id': row.pk,
+                'data': row.data or {}
+            })
+
+        return render(request, 'core/list_detail.html', {
+            'list': list_obj,
+            'columns': columns,
+            'rows': rows,
+            'columns_json': json.dumps(columns_data),
+            'rows_json': json.dumps(rows_data)
+        })
 
 
 def list_create(request):
@@ -638,9 +675,16 @@ def delete_column(request, pk, column_id):
 def delete_list(request, pk):
     if request.method == 'POST':
         list_obj = get_object_or_404(UserList, pk=pk, user__id=1)
+        
+        # For form submission, redirect after deletion
+        if not request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+            # Delete all related data
+            list_obj.delete()
+            messages.success(request, f'List "{list_obj.name}" has been deleted successfully.')
+            return redirect('list_list')
+        
+        # For AJAX requests, check confirmation
         confirmation = request.POST.get('confirmation', '').strip()
-
-        # Check confirmation matches list name
         if confirmation != list_obj.name:
             return JsonResponse({'success': False, 'error': 'Confirmation text does not match list name'})
 
@@ -649,3 +693,74 @@ def delete_list(request, pk):
         return JsonResponse({'success': True})
 
     return JsonResponse({'success': False, 'error': 'Invalid request'})
+
+
+# AG-Grid specific views
+@require_http_methods(["POST"])
+def delete_selected_rows(request, pk):
+    """Delete multiple rows selected in AG-Grid"""
+    try:
+        list_obj = get_object_or_404(UserList, pk=pk, user__id=1)
+        data = json.loads(request.body)
+        row_ids = data.get('ids', [])
+        
+        if not row_ids:
+            return JsonResponse({'success': False, 'error': 'No rows selected'})
+        
+        # Delete rows
+        deleted_count = ListRow.objects.filter(
+            pk__in=row_ids,
+            user_list=list_obj
+        ).delete()[0]
+        
+        return JsonResponse({
+            'success': True, 
+            'deleted_count': deleted_count,
+            'message': f'Deleted {deleted_count} row(s)'
+        })
+        
+    except json.JSONDecodeError:
+        return JsonResponse({'success': False, 'error': 'Invalid JSON data'})
+    except Exception as e:
+        logger.error(f"Error deleting selected rows: {e}")
+        return JsonResponse({'success': False, 'error': 'Server error'})
+
+
+@require_http_methods(["POST"])
+def add_column_ag_grid(request, pk):
+    """Add new column for AG-Grid table"""
+    try:
+        list_obj = get_object_or_404(UserList, pk=pk, user__id=1)
+        data = json.loads(request.body)
+        
+        name = data.get('name', '').strip()
+        column_type = data.get('type', 'text')
+        
+        if not name:
+            return JsonResponse({'success': False, 'error': 'Column name is required'})
+        
+        if column_type not in dict(ListColumn.COLUMN_TYPES):
+            return JsonResponse({'success': False, 'error': 'Invalid column type'})
+        
+        # Create new column
+        order = list_obj.columns.count()
+        new_column = ListColumn.objects.create(
+            user_list=list_obj,
+            name=name,
+            column_type=column_type,
+            order=order
+        )
+        
+        return JsonResponse({
+            'success': True,
+            'id': new_column.pk,
+            'field': new_column.field,
+            'name': new_column.name,
+            'type': new_column.column_type
+        })
+        
+    except json.JSONDecodeError:
+        return JsonResponse({'success': False, 'error': 'Invalid JSON data'})
+    except Exception as e:
+        logger.error(f"Error adding column: {e}")
+        return JsonResponse({'success': False, 'error': 'Server error'})

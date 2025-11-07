@@ -1,7 +1,7 @@
 # Table Editor (HTMX + Alpine.js) – MVP Functional Specification
 **Version:** 0.1  
 **Date:** 2025-11-01  
-**Status:** Draft
+**Status:** **DEPRECATED** - See table_editor_requirements.md v2.0 for AG-Grid implementation
 
 ---
 
