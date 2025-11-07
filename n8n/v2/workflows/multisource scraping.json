@@ -6,6 +6,7 @@
         "httpMethod": "POST",
         "path": "multi-source-scrape",
         "authentication": "basicAuth",
+        "responseMode": "responseNode",
         "options": {}
       },
       "id": "002c27bc-dca0-4718-9783-22dc658c1195",
@@ -13,8 +14,8 @@
       "type": "n8n-nodes-base.webhook",
       "typeVersion": 1,
       "position": [
-        -512,
-        192
+        -624,
+        96
       ],
       "webhookId": "multi-source-scrape",
       "credentials": {
@@ -43,17 +44,103 @@
                     "operator": {
                       "type": "string",
                       "operation": "equals"
-},
+                    },
+                    "id": "5fcf6e07-8ef6-45cd-82ef-14c399d7dc88"
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "934d106a-72e1-44b6-a053-da30c44938d6",
+                    "leftValue": "={{ $json.sources.platform }}",
+                    "rightValue": "tiktok",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "0c4181e0-4432-4814-a156-5b0e23790fd2",
+                    "leftValue": "={{ $json.sources.platform }}",
+                    "rightValue": "instagram",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.2,
+      "position": [
+        48,
+        80
+      ],
+      "id": "9cfd740b-326d-4a7f-ae69-47bfa2b3bc75",
+      "name": "Switch"
+    },
+    {
+      "parameters": {
+        "operation": "Run actor and get dataset",
+        "actorId": {
+          "__rl": true,
+          "value": "h7sDV53CddomktSi5",
+          "mode": "list",
+          "cachedResultName": "YouTube Scraper (streamers/youtube-scraper)",
+          "cachedResultUrl": "https://console.apify.com/actors/h7sDV53CddomktSi5/input"
+        },
+        "customBody": "={{ $json.sources.config }}",
+        "timeout": {}
+      },
+      "type": "@apify/n8n-nodes-apify.apify",
+      "typeVersion": 1,
+      "position": [
+        272,
+        -96
+      ],
+      "id": "cc08b685-b9e1-401d-883b-becf81988fa1",
+      "name": "youtube scrape",
       "credentials": {
         "apifyApi": {
           "id": "zgZrzwrt52ADOrF3",
           "name": "Apify account"
         }
-      },
-      "disabled": false
+      }
     },
     {
       "parameters": {
+        "operation": "Run actor and get dataset",
         "actorId": {
           "__rl": true,
           "value": "OtzYfK1ndEGdwWFKQ",
@@ -61,12 +148,13 @@
           "cachedResultName": "TikTok Data Extractor (clockworks/free-tiktok-scraper)",
           "cachedResultUrl": "https://console.apify.com/actors/OtzYfK1ndEGdwWFKQ/input"
         },
-        "customBody": "={{ $json.sources.configuration }}"
+        "customBody": "={{ $json.sources.config }}",
+        "timeout": {}
       },
       "type": "@apify/n8n-nodes-apify.apify",
       "typeVersion": 1,
       "position": [
-        176,
+        272,
         96
       ],
       "id": "06ab480a-618f-4f69-a92b-96e41bfb7b1b",
@@ -76,11 +164,11 @@
           "id": "zgZrzwrt52ADOrF3",
           "name": "Apify account"
         }
-      },
-      "disabled": false
+      }
     },
     {
       "parameters": {
+        "operation": "Run actor and get dataset",
         "actorId": {
           "__rl": true,
           "value": "shu8hvrXbJbY3Eb9W",
@@ -88,12 +176,13 @@
           "cachedResultName": "Instagram Scraper (apify/instagram-scraper)",
           "cachedResultUrl": "https://console.apify.com/actors/shu8hvrXbJbY3Eb9W/input"
         },
-        "customBody": "={{ $json.sources.configuration }}"
+        "customBody": "={{ $json.sources.config }}",
+        "timeout": {}
       },
       "type": "@apify/n8n-nodes-apify.apify",
       "typeVersion": 1,
       "position": [
-        176,
+        272,
         288
       ],
       "id": "8a8203af-6373-4776-ab66-dcc52163d26c",
@@ -103,111 +192,307 @@
           "id": "zgZrzwrt52ADOrF3",
           "name": "Apify account"
         }
+      }
+    },
+    {
+      "parameters": {
+        "numberInputs": 3
       },
-      "disabled": false
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        720,
+        80
+      ],
+      "id": "a55d7f30-d181-45dd-9fa5-cb37feca3450",
+      "name": "Merge"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "833a5ae8-ee73-4b25-9f6a-c8de75650ca1",
+              "name": "sources.platform",
+              "value": "={{ $('Switch').item.json.sources.platform }}",
+              "type": "string"
+            },
+            {
+              "id": "256c5d3b-5e04-4601-bd06-c38d08839463",
+              "name": "sources.sourceType",
+              "value": "={{ $('Switch').item.json.sources.sourceType }}",
+              "type": "string"
+            },
+            {
+              "id": "d5c13dea-2281-44b6-aa6a-0528f737de05",
+              "name": "run_id",
+              "value": "={{ $('Switch').item.json.run_id }}",
+              "type": "number"
+            },
+            {
+              "id": "9f615dec-695c-470a-88d6-d8efc4fc0396",
+              "name": "customer_id",
+              "value": "={{ $('Switch').item.json.customer_id }}",
+              "type": "number"
+            }
+          ]
+        },
+        "includeOtherFields": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        496,
+        -96
+      ],
+      "id": "13845ea0-32fa-4d43-a57a-be41996733d3",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {
+        "mode": "raw",
+        "jsonOutput": "={\n  \"platform\": \"{{ $json.sources.platform }}\",\n  \"source_type\": \"{{ $json.sources.sourceType }}\",\n  \"user_id\": {{ $json.customer_id }},\n  \"run_id\": {{ $json.run_id }},\n\"data\": {{ JSON.stringify($json) }}\n}\n ",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        944,
+        96
+      ],
+      "id": "ef749148-99d7-4cdb-a692-96feb7b9c093",
+      "name": "Edit Fields3"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "833a5ae8-ee73-4b25-9f6a-c8de75650ca1",
+              "name": "sources.platform",
+              "value": "={{ $('Switch').item.json.sources.platform }}",
+              "type": "string"
+            },
+            {
+              "id": "256c5d3b-5e04-4601-bd06-c38d08839463",
+              "name": "sources.sourceType",
+              "value": "={{ $('Switch').item.json.sources.sourceType }}",
+              "type": "string"
+            },
+            {
+              "id": "d5c13dea-2281-44b6-aa6a-0528f737de05",
+              "name": "run_id",
+              "value": "={{ $('Switch').item.json.run_id }}",
+              "type": "number"
+            },
+            {
+              "id": "9f615dec-695c-470a-88d6-d8efc4fc0396",
+              "name": "customer_id",
+              "value": "={{ $('Switch').item.json.customer_id }}",
+              "type": "number"
+            }
+          ]
+        },
+        "includeOtherFields": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        496,
+        96
+      ],
+      "id": "7bc48f71-6019-43c8-8e53-bf1115870637",
+      "name": "Edit Fields1"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "833a5ae8-ee73-4b25-9f6a-c8de75650ca1",
+              "name": "sources.platform",
+              "value": "={{ $('Switch').item.json.sources.platform }}",
+              "type": "string"
+            },
+            {
+              "id": "256c5d3b-5e04-4601-bd06-c38d08839463",
+              "name": "sources.sourceType",
+              "value": "={{ $('Switch').item.json.sources.sourceType }}",
+              "type": "string"
+            },
+            {
+              "id": "d5c13dea-2281-44b6-aa6a-0528f737de05",
+              "name": "run_id",
+              "value": "={{ $('Switch').item.json.run_id }}",
+              "type": "number"
+            },
+            {
+              "id": "9f615dec-695c-470a-88d6-d8efc4fc0396",
+              "name": "customer_id",
+              "value": "={{ $('Switch').item.json.customer_id }}",
+              "type": "number"
+            }
+          ]
+        },
+        "includeOtherFields": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        496,
+        288
+      ],
+      "id": "357ee599-d465-4de5-9a20-5feee120c117",
+      "name": "Edit Fields2"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Explode Array Items Node for n8n\n// Takes an array field and creates separate items for each element\n\nconst items = $input.all();\nconst explodedItems = [];\n\n// Get the field name to explode from node parameters\nconst fieldName = 'sources';\n\nitems.forEach(item => {\n  const arrayToExplode = item.json.body[fieldName];\n  \n  if (Array.isArray(arrayToExplode)) {\n    arrayToExplode.forEach((arrayItem, index) => {\n      // Create new item with the exploded array item\n      // Keep all other fields from original item\n      const newItem = {\n        ...item.json.body,\n        [fieldName]: arrayItem,\n        [fieldName + '_index']: index, // Optional: add original index\n        [fieldName + '_count']: arrayToExplode.length // Optional: add total count\n      };\n      \n      explodedItems.push(newItem);\n    });\n  } else {\n    // If not an array, pass through original item\n    explodedItems.push(item.json);\n  }\n});\n\nreturn explodedItems;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -176,
+        96
+      ],
+      "id": "978352c1-9669-4992-b83c-e60d93202058",
+      "name": "Explode Sources List"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "UPDATE public.core_run \n  SET scraped = COALESCE(scraped, '[]'::jsonb) || $1::jsonb \nWHERE id = $2",
+        "options": {
+          "queryReplacement": "={{ [$json] }},{{ $json.run_id }}"
+        }
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        1168,
+        96
+      ],
+      "id": "41da3588-0170-4792-a76b-a68639ba6698",
+      "name": "Append Scraped Data",
+      "credentials": {
+        "postgres": {
+          "id": "rxwJrBrYs2fAJdzT",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={\n  \"n8n_execution_id\": {{ $execution.id }}\n}",
+        "options": {
+          "responseCode": 200
+        }
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.4,
+      "position": [
+        -400,
+        96
+      ],
+      "id": "4fa19171-261c-4c6a-b496-47aebd076d20",
+      "name": "Respond with execution id"
     }
   ],
   "pinData": {
     "Webhook": [
       {
         "json": {
-          "user_id": 1,
-          "run_id": 123,
-          "extraction_prompt": "Extract location information, business mentions, contact details, and other relevant data from social media posts. Adapt to the specific platform and content type.",
-          "sources": [
-            {
-              "platform": "youtube",
-              "sourceType": "youtube-search",
-              "configuration": {
-                "searchQueries": [
-                  "python tutorials",
-                  "django development"
-                ],
-                "maxResults": 50,
-                "maxResultsShorts": 0,
-                "maxResultStreams": 0,
-                "sortingOrder": "relevance",
-                "dateFilter": "month",
-                "videoType": "video",
-                "lengthFilter": "between420",
-                "qualityFilters": {
-                  "isHD": true,
-                  "hasSubtitles": true,
-                  "hasCC": false,
-                  "is3D": false,
-                  "isLive": false,
-                  "is4K": false,
-                  "is360": false,
-                  "hasLocation": false,
-                  "isHDR": false,
-                  "isVR180": false,
-                  "isBought": false
+          "headers": {
+            "host": "localhost:5678",
+            "authorization": "Basic YWRtaW5AdmliZXNjcmFwZXIuY29tOnZpYmVzY3JhcGVyMTIz",
+            "user-agent": "curl/8.14.1",
+            "accept": "*/*",
+            "content-type": "application/json",
+            "content-length": "1502"
+          },
+          "params": {},
+          "query": {},
+          "body": {
+            "run_id": 123,
+            "customer_id": 1,
+            "sources": [
+              {
+                "platform": "instagram",
+                "sourceType": "instagram-profile",
+                "config": {
+                  "directUrls": [
+                    "https://www.instagram.com/sabrina_ramonov"
+                  ],
+                  "resultsType": "posts",
+                  "resultsLimit": 1,
+                  "oldestPostDate": "",
+                  "relativeDateFilter": "30d",
+                  "feedType": "posts"
                 },
-                "subtitleOptions": {
-                  "language": "en",
+                "directUrls": [
+                  "https://www.instagram.com/sabrina_ramonov"
+                ]
+              },
+              {
+                "platform": "youtube",
+                "sourceType": "youtube-channel",
+                "config": {
+                  "maxResults": 1,
+                  "maxResultsShorts": 0,
+                  "maxResultStreams": 0,
+                  "startUrls": [
+                    {
+                      "url": "https://www.youtube.com/@sabrina_ramonov"
+                    }
+                  ],
+                  "sortingOrder": "date",
+                  "dateFilter": "month",
+                  "videoType": "video",
+                  "lengthFilter": "between420",
+                  "qualityFilters": {
+                    "isHD": false,
+                    "hasSubtitles": false,
+                    "hasCC": false,
+                    "is3D": false,
+                    "isLive": false,
+                    "is4K": false,
+                    "is360": false,
+                    "hasLocation": false,
+                    "isHDR": false,
+                    "isVR180": false,
+                    "isBought": false
+                  },
+                  "subtitleOptions": {
+                    "language": "en",
+                    "downloadSubtitles": false,
+                    "saveSubsToKVS": false,
+                    "preferAutoGeneratedSubtitles": false,
+                    "subtitlesFormat": "srt"
+                  },
                   "downloadSubtitles": false,
                   "saveSubsToKVS": false,
+                  "subtitlesLanguage": "en",
                   "preferAutoGeneratedSubtitles": false,
                   "subtitlesFormat": "srt"
-                }
-              },
-              "searchQueries": [
-                "python tutorials",
-                "django development"
-              ]
-            },
-            {
-              "platform": "instagram",
-              "sourceType": "instagram-profile",
-              "configuration": {
-                "directUrls": [
-                  "https://instagram.com/example_profile",
-                  "https://instagram.com/another_profile"
-                ],
-                "resultsType": "posts",
-                "resultsLimit": 50,
-                "onlyPostsNewerThan": "30 days",
-                "isUserTaggedFeedURL": false,
-                "isUserReelFeedURL": false,
-                "addParentData": false
-              },
-              "directUrls": [
-                "https://instagram.com/example_profile",
-                "https://instagram.com/another_profile"
-              ]
-            },
-            {
-              "platform": "tiktok",
-              "sourceType": "tiktok-hashtag",
-              "configuration": {
-                "hashtags": [
-                  "coding",
-                  "programming",
-                  "tech"
-                ],
-                "resultsPerPage": 50,
-                "profileScrapeSections": [
-                  "videos"
-                ],
-                "profileSorting": "latest",
-                "excludePinnedPosts": false,
-                "shouldDownloadVideos": false,
-                "shouldDownloadCovers": false,
-                "shouldDownloadSubtitles": false,
-                "shouldDownloadSlideshowImages": false
-              },
-              "hashtags": [
-                "coding",
-                "programming",
-                "tech"
-              ]
-            }
-          ],
-          "daysSince": 14,
-          "maxResults": 50,
-          "auto_infer_columns": true,
-          "custom_columns": [],
-          "enable_extraction": true
+                },
+                "startUrls": [
+                  {
+                    "url": "https://www.youtube.com/@sabrina_ramonov"
+                  }
+                ]
+              }
+            ],
+            "auto_infer_columns": true,
+            "custom_columns": [],
+            "enable_extraction": true,
+            "extraction_prompt": "Extract location information, business mentions, contact details, and other relevant data from social media posts. Adapt to the specific platform and content type."
+          },
+          "webhookUrl": "http://localhost:5678/webhook-test/multi-source-scrape",
+          "executionMode": "test"
         }
       }
     ]
@@ -217,18 +502,7 @@
       "main": [
         [
           {
-            "node": "Code",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Code": {
-      "main": [
-        [
-          {
-            "node": "Switch",
+            "node": "Respond with execution id",
             "type": "main",
             "index": 0
           }
@@ -257,10 +531,113 @@
             "type": "main",
             "index": 0
           }
-        ],
+        ]
+      ]
+    },
+    "youtube scrape": {
+      "main": [
         [
           {
-            "node": "Error: Invalid Source",
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "tiktok scrape": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "instagram scrape": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields3": {
+      "main": [
+        [
+          {
+            "node": "Append Scraped Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields1": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Edit Fields2": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 2
+          }
+        ]
+      ]
+    },
+    "Explode Sources List": {
+      "main": [
+        [
+          {
+            "node": "Switch",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Respond with execution id": {
+      "main": [
+        [
+          {
+            "node": "Explode Sources List",
             "type": "main",
             "index": 0
           }
@@ -272,7 +649,7 @@
   "settings": {
     "executionOrder": "v1"
   },
-  "versionId": "3c83f2d2-472b-4411-beba-9bee3475be1f",
+  "versionId": "05ec53dc-1d0a-4894-be27-c3b8d65fc999",
   "meta": {
     "templateCredsSetupCompleted": true,
     "instanceId": "6111e667fb260e03f3f61db7495ce953c5edf27cc92b44562178587f6683c693"
