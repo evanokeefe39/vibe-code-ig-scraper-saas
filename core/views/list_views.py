@@ -675,9 +675,16 @@ def delete_column(request, pk, column_id):
 def delete_list(request, pk):
     if request.method == 'POST':
         list_obj = get_object_or_404(UserList, pk=pk, user__id=1)
+        
+        # For form submission, redirect after deletion
+        if not request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+            # Delete all related data
+            list_obj.delete()
+            messages.success(request, f'List "{list_obj.name}" has been deleted successfully.')
+            return redirect('list_list')
+        
+        # For AJAX requests, check confirmation
         confirmation = request.POST.get('confirmation', '').strip()
-
-        # Check confirmation matches list name
         if confirmation != list_obj.name:
             return JsonResponse({'success': False, 'error': 'Confirmation text does not match list name'})
 

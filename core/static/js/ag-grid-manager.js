@@ -23,10 +23,15 @@ class AgGridManager {
         const gridOptions = {
             columnDefs: processedColumns,
             rowData: processedRows,
-            rowSelection: 'multiple',
+            rowSelection: {
+                mode: 'multiRow',
+                checkboxes: true, // Use built-in checkboxes
+                headerCheckbox: true, // Add header checkbox
+                enableClickSelection: true,
+                enableSelectionWithoutKeys: false
+            },
             enableCellTextSelection: true,
-            suppressRowClickSelection: false,
-            rowMultiSelectWithClick: true,
+            cellSelection: false,
             pagination: true,
             paginationPageSize: 20,
             paginationPageSizeSelector: [10, 20, 50],
@@ -48,7 +53,7 @@ class AgGridManager {
         // Initialize grid
         const gridElement = document.getElementById(this.gridId);
         this.gridApi = agGrid.createGrid(gridElement, gridOptions);
-        this.columnApi = this.gridApi;
+        // columnApi will be set in onGridReady
 
         // Setup event listeners
         this.setupEventListeners();
@@ -75,17 +80,6 @@ class AgGridManager {
                 ...this.getColumnConfig(detectedType)
             };
 
-            // Add checkbox column as first column
-            if (col.field === 'checkbox') {
-                columnDef.headerCheckboxSelection = true;
-                columnDef.checkboxSelection = true;
-                columnDef.width = 50;
-                columnDef.maxWidth = 50;
-                columnDef.resizable = false;
-                columnDef.sortable = false;
-                columnDef.filter = false;
-            }
-
             return columnDef;
         });
     }
@@ -107,17 +101,14 @@ class AgGridManager {
     }
 
     getColumnConfig(detectedType) {
+        const self = this;
         const configs = {
-            text: { filter: 'agTextColumnFilter', cellRenderer: this.textCellRenderer.bind(this) },
-            number: { filter: 'agNumberColumnFilter', cellRenderer: this.numberCellRenderer.bind(this), comparator: this.numberComparator.bind(this) },
-            date: { filter: 'agDateColumnFilter', cellRenderer: this.dateCellRenderer.bind(this), comparator: this.dateComparator.bind(this) },
-            url: { filter: 'agTextColumnFilter', cellRenderer: this.urlCellRenderer.bind(this) },
-            boolean: { filter: 'agSetColumnFilter', cellRenderer: this.booleanCellRenderer.bind(this), cellEditor: 'agCheckboxCellEditor' }
+            text: { filter: 'agTextColumnFilter', cellRenderer: function(params) { return self.textCellRenderer(params); } },
+            number: { filter: 'agNumberColumnFilter', cellRenderer: function(params) { return self.numberCellRenderer(params); }, comparator: this.numberComparator.bind(this) },
+            date: { filter: 'agDateColumnFilter', cellRenderer: function(params) { return self.dateCellRenderer(params); }, comparator: this.dateComparator.bind(this) },
+            url: { filter: 'agTextColumnFilter', cellRenderer: function(params) { return self.urlCellRenderer(params); } },
+            boolean: { filter: 'agSetColumnFilter', cellRenderer: function(params) { return self.booleanCellRenderer(params); }, cellEditor: 'agCheckboxCellEditor' }
         };
-        return configs[detectedType] || configs.text;
-    }
-        };
-
         return configs[detectedType] || configs.text;
     }
 
@@ -125,7 +116,7 @@ class AgGridManager {
     textCellRenderer(params) {
         const value = params.value;
         if (value === null || value === undefined) return '';
-        return `<span class="text-gray-900">${this.escapeHtml(value.toString())}</span>`;
+        return `<span class="text-gray-900">${AgGridManager.escapeHtml(value.toString())}</span>`;
     }
 
     numberCellRenderer(params) {
@@ -151,7 +142,7 @@ class AgGridManager {
 
     urlCellRenderer(params) {
         const value = params.value;
-        if (!value || !value.startsWith('http')) return this.textCellRenderer.call(this, params);
+        if (!value || !value.startsWith('http')) return AgGridManager.textCellRendererStatic(params);
         const displayText = value.length > 50 ? value.substring(0, 47) + '...' : value;
         return `<a href="${value}" target="_blank" class="text-blue-600 hover:text-blue-800 underline" title="${value}">${displayText}</a>`;
     }
@@ -199,11 +190,16 @@ class AgGridManager {
     // Grid Event Handlers
     onGridReady(params) {
         this.gridApi = params.api;
+        // In newer AG-Grid versions, columnApi is part of the main api
+        this.columnApi = params.api;
         // Auto-size columns initially
         setTimeout(() => {
-            this.gridApi.autoSizeAllColumns(false);
-            // Initialize pagination controls
-            this.updatePaginationControls();
+            try {
+                this.gridApi.autoSizeAllColumns(false);
+            } catch (e) {
+                console.log('Auto-size columns not available:', e);
+            }
+
         }, 100);
     }
 
@@ -234,7 +230,6 @@ class AgGridManager {
 
     onFilterChanged(params) {
         this.updateRowCount();
-        this.updatePaginationControls();
     }
 
     // Event Listeners
@@ -243,25 +238,13 @@ class AgGridManager {
         const searchInput = document.getElementById('global-search');
         if (searchInput) {
             searchInput.addEventListener('input', (e) => {
-                this.gridApi.setQuickFilter(e.target.value);
+                this.gridApi.setGridOption('quickFilterText', e.target.value);
             });
         }
 
-        // Page size selector
-        const pageSizeSelect = document.getElementById('page-size');
-        if (pageSizeSelect) {
-            pageSizeSelect.addEventListener('change', (e) => {
-                this.changePageSize(e.target.value);
-            });
-        }
 
-        // Add column button
-        const addColumnBtn = document.getElementById('add-column-btn');
-        if (addColumnBtn) {
-            addColumnBtn.addEventListener('click', () => {
-                this.showAddColumnModal();
-            });
-        }
+
+
 
         // Delete selected button
         const deleteBtn = document.getElementById('delete-selected-btn');
@@ -278,12 +261,20 @@ class AgGridManager {
                 this.exportToCsv();
             });
         }
+
+        // Table Settings button
+        const settingsBtn = document.getElementById('table-settings-btn');
+        if (settingsBtn) {
+            settingsBtn.addEventListener('click', () => {
+                this.openTableSettings();
+            });
+        }
     }
 
     // UI Updates
     updateRowCount() {
         const rowCount = this.gridApi.getDisplayedRowCount();
-        const totalCount = this.gridApi.getRowCount();
+        const totalCount = this.data.rows.length;
         const countElement = document.getElementById('row-count');
         
         if (countElement) {
@@ -296,9 +287,12 @@ class AgGridManager {
     }
 
     updateSelectedCount() {
-        const countElement = document.getElementById('selected-count');
-        if (countElement) {
-            countElement.textContent = this.selectedRows.length;
+        // Update button title with selected count
+        const deleteBtn = document.getElementById('delete-selected-btn');
+        if (deleteBtn) {
+            deleteBtn.title = this.selectedRows.length > 0 
+                ? `Delete Selected (${this.selectedRows.length})` 
+                : 'Delete Selected';
         }
     }
 
@@ -318,90 +312,7 @@ class AgGridManager {
         }
     }
 
-    updatePaginationControls() {
-        const paginationInfo = document.querySelector('.pagination-info');
-        const paginationButtons = document.querySelector('.pagination-buttons');
-        
-        if (!this.gridApi || !paginationInfo || !paginationButtons) return;
-        
-        const currentPage = this.gridApi.getCurrentPage() + 1;
-        const totalPages = this.gridApi.getTotalPages();
-        const pageSize = this.gridApi.getPaginationPageSize();
-        const totalRows = this.gridApi.getRowCount();
-        const startRow = (currentPage - 1) * pageSize + 1;
-        const endRow = Math.min(currentPage * pageSize, totalRows);
-        
-        // Update pagination info
-        paginationInfo.innerHTML = `
-            <span>Showing ${startRow} to ${endRow} of ${totalRows} rows</span>
-            <span class="ml-4">Page ${currentPage} of ${totalPages}</span>
-        `;
-        
-        // Update pagination buttons
-        paginationButtons.innerHTML = `
-            <button 
-                class="px-3 py-1 border rounded ${currentPage === 1 ? 'bg-gray-100 text-gray-400 cursor-not-allowed' : 'bg-white hover:bg-gray-50'}"
-                onclick="window.agGridManager.goToPage(1)"
-                ${currentPage === 1 ? 'disabled' : ''}
-            >
-                First
-            </button>
-            <button 
-                class="px-3 py-1 border rounded ${currentPage === 1 ? 'bg-gray-100 text-gray-400 cursor-not-allowed' : 'bg-white hover:bg-gray-50'}"
-                onclick="window.agGridManager.goToPage(${currentPage - 1})"
-                ${currentPage === 1 ? 'disabled' : ''}
-            >
-                Previous
-            </button>
-            <button 
-                class="px-3 py-1 border rounded ${currentPage === totalPages ? 'bg-gray-100 text-gray-400 cursor-not-allowed' : 'bg-white hover:bg-gray-50'}"
-                onclick="window.agGridManager.goToPage(${currentPage + 1})"
-                ${currentPage === totalPages ? 'disabled' : ''}
-            >
-                Next
-            </button>
-            <button 
-                class="px-3 py-1 border rounded ${currentPage === totalPages ? 'bg-gray-100 text-gray-400 cursor-not-allowed' : 'bg-white hover:bg-gray-50'}"
-                onclick="window.agGridManager.goToPage(${totalPages})"
-                ${currentPage === totalPages ? 'disabled' : ''}
-            >
-                Last
-            </button>
-        `;
-    }
 
-    goToPage(pageNumber) {
-        if (this.gridApi && this.gridApi.paginationIsActive()) {
-            this.gridApi.goToPage(pageNumber - 1); // AG-Grid uses 0-based indexing
-        }
-    }
-
-    // Operations
-    changePageSize(size) {
-        if (size === 'all') {
-            // Switch to infinite scroll and hide pagination footer
-            this.gridApi.setGridOption('pagination', false);
-            this.gridApi.setGridOption('rowModelType', 'infinite');
-            
-            // Hide pagination footer
-            const paginationFooter = document.querySelector('.pagination-footer');
-            if (paginationFooter) {
-                paginationFooter.style.display = 'none';
-            }
-        } else {
-            // Use pagination and show pagination footer
-            this.gridApi.setGridOption('pagination', true);
-            this.gridApi.setGridOption('rowModelType', 'clientSide');
-            this.gridApi.setGridOption('paginationPageSize', parseInt(size));
-            
-            // Show pagination footer
-            const paginationFooter = document.querySelector('.pagination-footer');
-            if (paginationFooter) {
-                paginationFooter.style.display = 'flex';
-                this.updatePaginationControls();
-            }
-        }
-    }
 
     showAddColumnModal() {
         const modal = document.getElementById('add-column-modal');
@@ -452,9 +363,41 @@ class AgGridManager {
     }
 
     exportToCsv() {
-        this.gridApi.exportDataAsCsv({
-            fileName: `table-export-${new Date().toISOString().split('T')[0]}.csv`
+        // Simple CSV export with all data and headers
+        const dataToExport = this.data.rows;
+        const columnDefs = this.gridApi.getColumnDefs();
+        
+        // Build CSV content
+        let csvContent = '';
+        
+        // Add headers
+        const headers = columnDefs.map(col => col.headerName || col.field || '');
+        csvContent += headers.map(header => `"${header}"`).join(',') + '\n';
+        
+        // Add data rows
+        dataToExport.forEach(row => {
+            const rowData = columnDefs.map(col => {
+                const value = row[col.field] || '';
+                return `"${value.toString().replace(/"/g, '""')}"`;
+            });
+            csvContent += rowData.join(',') + '\n';
         });
+        
+        // Create and download file
+        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+        const link = document.createElement('a');
+        const url = URL.createObjectURL(blob);
+        link.setAttribute('href', url);
+        link.setAttribute('download', `table-export-${new Date().toISOString().split('T')[0]}.csv`);
+        link.style.visibility = 'hidden';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+    }
+
+    openTableSettings() {
+        this.loadCurrentSettings();
+        document.getElementById('table-settings-modal').classList.remove('hidden');
     }
 
     // Utility methods
@@ -469,10 +412,57 @@ class AgGridManager {
         return '';
     }
 
-    escapeHtml(text) {
+    static escapeHtml(text) {
         const div = document.createElement('div');
         div.textContent = text;
         return div.innerHTML;
+    }
+
+    static textCellRendererStatic(params) {
+        const value = params.value;
+        if (value === null || value === undefined) return '';
+        return `<span class="text-gray-900">${AgGridManager.escapeHtml(value.toString())}</span>`;
+    }
+
+
+
+    loadCurrentSettings() {
+        // Setup delete list confirmation
+        this.setupDeleteListConfirmation();
+    }
+
+    applyTableSettings() {
+        closeTableSettingsModal();
+    }
+
+
+
+    setupDeleteListConfirmation() {
+        const confirmationInput = document.getElementById('delete-list-confirmation');
+        const confirmBtn = document.getElementById('confirm-delete-list-btn');
+        
+        if (!confirmationInput || !confirmBtn) return;
+        
+        // Get list name from page title if not in data
+        const listName = this.data.listName || document.querySelector('h1')?.textContent?.trim() || '';
+        
+        // Remove existing listener if any
+        if (this._deleteListHandler) {
+            confirmationInput.removeEventListener('input', this._deleteListHandler);
+        }
+        
+        // Create new handler
+        this._deleteListHandler = (e) => {
+            const isMatch = e.target.value.trim() === listName;
+            confirmBtn.disabled = !isMatch;
+        };
+        
+        // Add new listener
+        confirmationInput.addEventListener('input', this._deleteListHandler);
+        
+        // Initial check
+        const isMatch = confirmationInput.value.trim() === listName;
+        confirmBtn.disabled = !isMatch;
     }
 
     // Editable Header Component (for future use)
@@ -486,6 +476,28 @@ function closeAddColumnModal() {
         modal.classList.add('hidden');
         document.getElementById('new-column-name').value = '';
         document.getElementById('new-column-type').value = 'text';
+    }
+}
+
+function closeTableSettingsModal() {
+    const modal = document.getElementById('table-settings-modal');
+    if (modal) {
+        modal.classList.add('hidden');
+    }
+    
+    // Clean up delete list listener
+    if (window.agGridManager && window.agGridManager._deleteListHandler) {
+        const confirmationInput = document.getElementById('delete-list-confirmation');
+        if (confirmationInput) {
+            confirmationInput.removeEventListener('input', window.agGridManager._deleteListHandler);
+        }
+        window.agGridManager._deleteListHandler = null;
+    }
+}
+
+function applyTableSettings() {
+    if (window.agGridManager) {
+        window.agGridManager.applyTableSettings();
     }
 }
 
@@ -528,4 +540,32 @@ function addNewColumn() {
         console.error('Error adding column:', error);
         alert('Error adding column');
     });
+}
+
+function confirmDeleteList() {
+    if (!window.agGridManager) return;
+    
+    // Get list name from page title if not in data
+    const listName = window.agGridManager.data.listName || document.querySelector('h1')?.textContent?.trim() || '';
+    const confirmationInput = document.getElementById('delete-list-confirmation');
+    const enteredName = confirmationInput?.value?.trim();
+    
+    if (enteredName !== listName) {
+        return;
+    }
+    
+    // Create and submit form for deletion
+    const form = document.createElement('form');
+    form.method = 'POST';
+    form.action = `/lists/${window.agGridManager.data.listId}/delete/`;
+    
+    // Add CSRF token
+    const csrfInput = document.createElement('input');
+    csrfInput.type = 'hidden';
+    csrfInput.name = 'csrfmiddlewaretoken';
+    csrfInput.value = window.agGridManager.getCsrfToken();
+    form.appendChild(csrfInput);
+    
+    document.body.appendChild(form);
+    form.submit();
 }
