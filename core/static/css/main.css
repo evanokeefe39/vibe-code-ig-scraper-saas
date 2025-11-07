@@ -190,6 +190,36 @@ body {
 }
 
 /* ==========================================================================
+   AG-Grid Display Density Options
+   ========================================================================== */
+
+/* Compact density */
+.ag-density-compact .ag-cell {
+  padding: 4px 8px !important;
+}
+
+.ag-density-compact .ag-header-cell {
+  padding: 4px 8px !important;
+}
+
+.ag-density-compact .ag-row {
+  height: 32px !important;
+}
+
+/* Comfortable density */
+.ag-density-comfortable .ag-cell {
+  padding: 12px 16px !important;
+}
+
+.ag-density-comfortable .ag-header-cell {
+  padding: 12px 16px !important;
+}
+
+.ag-density-comfortable .ag-row {
+  height: 56px !important;
+}
+
+/* ==========================================================================
    Monaco Editor Styles (for snippets)
    ========================================================================== */
 

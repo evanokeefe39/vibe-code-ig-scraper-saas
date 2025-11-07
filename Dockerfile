@@ -21,6 +21,9 @@ RUN poetry config virtualenvs.create false \
 # Copy source code LAST so it doesn't invalidate dependency layer
 COPY . .
 
+# Collect static files during build
+RUN python manage.py collectstatic --noinput --clear
+
 # Create non-root user for security
 RUN useradd -m -u 1000 appuser && chown -R appuser:appuser /app
 USER appuser
