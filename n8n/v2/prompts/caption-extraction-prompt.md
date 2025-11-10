@@ -26,7 +26,7 @@ You are an expert at analyzing social media captions for location-based recommen
    - **Other**: other
    If unclear, infer from context and choose the most specific category.
 
-4. **Vibes**: 1-3 descriptive words capturing the atmosphere/mood. Choose from:
+4. **Vibes**: 1-3 descriptive words capturing the atmosphere/mood. you can label with anything appropriate here are some examples:
    - cool, chic, hip, artsy, romantic, exciting, natural_beauty, cosy, good_value, trendy, elegant, modern, creative, lively, scenic, warm, intimate, affordable, energetic, neutral
 
 5. **Cost Note**: Extract or estimate cost information from the caption. Include:

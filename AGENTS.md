@@ -80,4 +80,4 @@
 For consistent testing, use these profiles/channels with specified parameters:
 - **Instagram Profile**: https://www.instagram.com/sabrina_ramonov
 - **YouTube Channel**: https://www.youtube.com/@sabrina_ramonov
-- **Parameters**: Max results 5 for each, going back 1 month only
+- **Parameters**: Max results and results size can be max 5, going back 1 month only
