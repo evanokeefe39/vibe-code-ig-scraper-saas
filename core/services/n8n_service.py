@@ -120,9 +120,21 @@ def build_source_config(cleaned_data):
         else:
             config['directUrls'] = get_string_list('profile_urls')
         
-        config['resultsType'] = cleaned_data.get('results_type', 'posts')
+        # Ensure resultsType always has a valid value
+        results_type = cleaned_data.get('results_type', 'posts')
+        if not results_type:
+            results_type = 'posts'  # Force default if None or empty
+        config['resultsType'] = results_type
+        
         config['resultsLimit'] = cleaned_data.get('max_results', 100)
-        config['oldestPostDate'] = cleaned_data.get('oldest_post_date', '')
+        
+        # Handle date serialization - convert date objects to strings
+        oldest_post_date = cleaned_data.get('oldest_post_date', '')
+        if oldest_post_date and hasattr(oldest_post_date, 'strftime'):
+            config['oldestPostDate'] = oldest_post_date.strftime('%Y-%m-%d')
+        else:
+            config['oldestPostDate'] = str(oldest_post_date) if oldest_post_date else ''
+            
         config['relativeDateFilter'] = cleaned_data.get('relative_date_filter', '')
         config['feedType'] = cleaned_data.get('feed_type', 'posts')
     

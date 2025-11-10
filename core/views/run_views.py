@@ -39,20 +39,47 @@ def run_create(request):
             
             # Populate the sources field in the form for validation
             form.data = form.data.copy()
-            form.data['sources'] = json.dumps(sources)
+            try:
+                form.data['sources'] = json.dumps(sources)
+            except (TypeError, ValueError) as e:
+                # Debug: log the problematic data
+                import logging
+                logger = logging.getLogger(__name__)
+                logger.error(f"JSON serialization error: {e}")
+                logger.error(f"Sources data: {sources}")
+                # Try to fix date objects by converting them to strings
+                def serialize_dates(obj):
+                    if hasattr(obj, 'strftime'):
+                        return obj.strftime('%Y-%m-%d')
+                    elif isinstance(obj, dict):
+                        return {k: serialize_dates(v) for k, v in obj.items()}
+                    elif isinstance(obj, list):
+                        return [serialize_dates(item) for item in obj]
+                    return obj
+                
+                sources = serialize_dates(sources)
+                form.data['sources'] = json.dumps(sources)
         
         # Validate both forms and create run
         if source_formset.is_valid() and form.is_valid():
             # Create run with processed sources
             run = form.save(commit=False)
             run.user_id = 1  # Dummy user_id for development
+            # Helper function to serialize any date objects
+            def serialize_dates(obj):
+                if hasattr(obj, 'strftime'):
+                    return obj.strftime('%Y-%m-%d')
+                elif isinstance(obj, dict):
+                    return {k: serialize_dates(v) for k, v in obj.items()}
+                elif isinstance(obj, list):
+                    return [serialize_dates(item) for item in obj]
+                return obj
+            
+            # Serialize sources to handle any date objects
+            sources = serialize_dates(sources)
+            
             run.input = json.dumps({
-                'sources': sources,
-                'days_since': form.cleaned_data['days_since'],
-                'max_results': form.cleaned_data['max_results'],
-                'auto_infer_columns': form.cleaned_data['auto_infer_columns'],
-                'custom_columns': form.cleaned_data['custom_columns'],
-                'extraction_prompt': form.cleaned_data['extraction_prompt']
+                'sources': sources
             })
             run.save()
             trigger_run(run)
