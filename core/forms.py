@@ -433,10 +433,10 @@ class SourceForm(forms.Form):
             ('posts', 'Posts'),
             ('comments', 'Comments'),
             ('mentions', 'Mentions'),
-            ('details', 'Details'),
-            ('stories', 'Stories'),
         ],
-        widget=forms.HiddenInput()  # Hidden field - always defaults to 'posts'
+        widget=forms.Select(attrs={
+            'class': 'results-type-select w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500'
+        })
     )
 
 # Create formset factory with limits
@@ -506,7 +506,7 @@ class RunForm(forms.ModelForm):
             'placeholder': 'Describe what data to extract from posts...',
             'class': 'w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500 max-h-40 overflow-y-auto'
         }),
-        required=False,
+        initial="Extract location information, business mentions, contact details, and other relevant data from social media posts. Adapt to the specific platform and content type.",
         help_text="Custom prompt for AI extraction (leave default for standard data extraction)"
     )
 
@@ -524,11 +524,7 @@ class RunForm(forms.ModelForm):
             self.fields['max_results'].initial = data.get('max_results', 50)
             self.fields['auto_infer_columns'].initial = data.get('auto_infer_columns', True)
             self.fields['custom_columns'].initial = data.get('custom_columns', [])
-            # Use extraction_prompt from separate field, fallback to input JSON for backward compatibility
-            if self.instance.extraction_prompt:
-                self.fields['extraction_prompt'].initial = self.instance.extraction_prompt
-            else:
-                self.fields['extraction_prompt'].initial = data.get('extraction_prompt', "")
+            self.fields['extraction_prompt'].initial = data.get('extraction_prompt', "Extract location information, business mentions, contact details, and other relevant data from social media posts. Adapt to the specific platform and content type.")
             self.fields['enable_extraction'].initial = self.instance.enable_extraction
 
     def clean_sources(self):
@@ -592,19 +588,13 @@ class RunForm(forms.ModelForm):
     def save(self, commit=True):
         instance = super().save(commit=False)
         instance.enable_extraction = self.cleaned_data['enable_extraction']
-        
-        # Handle extraction prompt - use default if empty
-        extraction_prompt = self.cleaned_data['extraction_prompt']
-        if not extraction_prompt.strip():
-            extraction_prompt = "Extract location information, business mentions, contact details, and other relevant data from social media posts. Adapt to the specific platform and content type."
-        
-        instance.extraction_prompt = extraction_prompt
         instance.input = json.dumps({
             'sources': self.cleaned_data['sources'],
             'days_since': self.cleaned_data['days_since'],
             'max_results': self.cleaned_data['max_results'],
             'auto_infer_columns': self.cleaned_data['auto_infer_columns'],
-            'custom_columns': self.cleaned_data['custom_columns']
+            'custom_columns': self.cleaned_data['custom_columns'],
+            'extraction_prompt': self.cleaned_data['extraction_prompt']
         })
         if commit:
             instance.save()

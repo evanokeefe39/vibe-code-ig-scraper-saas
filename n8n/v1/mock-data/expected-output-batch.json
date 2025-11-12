@@ -1,0 +1,194 @@
+{
+  "user_id": 1,
+  "locations": [
+    {
+      "address": "Le Grenier de Notre-Dame, Paris",
+      "latitude": 48.8534,
+      "longitude": 2.3488,
+      "category": "restaurant",
+      "source_profile": "https://www.instagram.com/parisfoodguide_/",
+      "post_caption": "Amazing brunch spot 📍Le Grenier de Notre-Dame",
+      "confidence_score": 0.95
+    },
+    {
+      "address": "Café de Flore, Saint-Germain-des-Prés",
+      "latitude": 48.8543,
+      "longitude": 2.3325,
+      "category": "cafe",
+      "source_profile": "https://www.instagram.com/ellevousguide/",
+      "post_caption": "Perfect for people watching 📍Café de Flore",
+      "confidence_score": 0.88
+    },
+    {
+      "address": "Jardin du Luxembourg, Paris",
+      "latitude": 48.8462,
+      "longitude": 2.3372,
+      "category": "park",
+      "source_profile": "https://www.instagram.com/_lavieparisienne__/",
+      "post_caption": "Morning stroll in the gardens 📍Jardin du Luxembourg",
+      "confidence_score": 0.93
+    },
+    {
+      "address": "Eiffel Tower, Paris",
+      "latitude": 48.8584,
+      "longitude": 2.2945,
+      "category": "landmark",
+      "source_profile": "https://www.instagram.com/le__walk/",
+      "post_caption": "Iconic view from the top 📍Eiffel Tower",
+      "confidence_score": 0.97
+    },
+    {
+      "address": "Shakespeare & Company, Paris",
+      "latitude": 48.8531,
+      "longitude": 2.3458,
+      "category": "bookstore",
+      "source_profile": "https://www.instagram.com/sagevanalstine/",
+      "post_caption": "Literary paradise 📍Shakespeare & Company",
+      "confidence_score": 0.90
+    },
+    {
+      "address": "Le Grenier de Notre-Dame, Paris",
+      "latitude": 48.8534,
+      "longitude": 2.3488,
+      "category": "restaurant",
+      "source_profile": "https://www.instagram.com/paname_in_my_belly/",
+      "post_caption": "Cozy spot for dinner 📍Le Grenier de Notre-Dame",
+      "confidence_score": 0.85
+    },
+    {
+      "address": "Moulin Rouge, Paris",
+      "latitude": 48.8842,
+      "longitude": 2.3321,
+      "category": "entertainment",
+      "source_profile": "https://www.instagram.com/ellevousguide/",
+      "post_caption": "Cabaret night out 📍Moulin Rouge",
+      "confidence_score": 0.87
+    },
+    {
+      "address": "Palais Garnier, Paris",
+      "latitude": 48.8718,
+      "longitude": 2.3317,
+      "category": "theater",
+      "source_profile": "https://www.instagram.com/_lavieparisienne__/",
+      "post_caption": "Opera house beauty 📍Palais Garnier",
+      "confidence_score": 0.94
+    },
+    {
+      "address": "Arc de Triomphe, Paris",
+      "latitude": 48.8738,
+      "longitude": 2.2950,
+      "category": "landmark",
+      "source_profile": "https://www.instagram.com/le__walk/",
+      "post_caption": "Victory arch view 📍Arc de Triomphe",
+      "confidence_score": 0.96
+    },
+    {
+      "address": "Musée d'Orsay, Paris",
+      "latitude": 48.8600,
+      "longitude": 2.3264,
+      "category": "museum",
+      "source_profile": "https://www.instagram.com/sagevanalstine/",
+      "post_caption": "Impressionist masterpieces 📍Musée d'Orsay",
+      "confidence_score": 0.92
+    },
+    {
+      "address": "Pierre Hermé, Paris",
+      "latitude": 48.8656,
+      "longitude": 2.3078,
+      "category": "bakery",
+      "source_profile": "https://www.instagram.com/paname_in_my_belly/",
+      "post_caption": "Macaron heaven 📍Pierre Hermé",
+      "confidence_score": 0.89
+    },
+    {
+      "address": "Seine River Cruise, Paris",
+      "latitude": 48.8566,
+      "longitude": 2.3522,
+      "category": "activity",
+      "source_profile": "https://www.instagram.com/ellevousguide/",
+      "post_caption": "Romantic boat ride 📍Seine River",
+      "confidence_score": 0.83
+    },
+    {
+      "address": "Montmartre, Paris",
+      "latitude": 48.8867,
+      "longitude": 2.3431,
+      "category": "neighborhood",
+      "source_profile": "https://www.instagram.com/_lavieparisienne__/",
+      "post_caption": "Artists' hill vibes 📍Montmartre",
+      "confidence_score": 0.91
+    },
+    {
+      "address": "Champs-Élysées, Paris",
+      "latitude": 48.8698,
+      "longitude": 2.3076,
+      "category": "shopping",
+      "source_profile": "https://www.instagram.com/le__walk/",
+      "post_caption": "Luxury shopping street 📍Champs-Élysées",
+      "confidence_score": 0.88
+    },
+    {
+      "address": "Louvre Museum, Paris",
+      "latitude": 48.8606,
+      "longitude": 2.3376,
+      "category": "museum",
+      "source_profile": "https://www.instagram.com/sagevanalstine/",
+      "post_caption": "Mona Lisa and more 📍Louvre Museum",
+      "confidence_score": 0.95
+    },
+    {
+      "address": "Angelina, Paris",
+      "latitude": 48.8642,
+      "longitude": 2.3284,
+      "category": "cafe",
+      "source_profile": "https://www.instagram.com/paname_in_my_belly/",
+      "post_caption": "Afternoon tea perfection 📍Angelina",
+      "confidence_score": 0.90
+    },
+    {
+      "address": "Sacré-Cœur, Paris",
+      "latitude": 48.8867,
+      "longitude": 2.3431,
+      "category": "landmark",
+      "source_profile": "https://www.instagram.com/ellevousguide/",
+      "post_caption": "Basilica views 📍Sacré-Cœur",
+      "confidence_score": 0.93
+    },
+    {
+      "address": "Notre-Dame Cathedral, Paris",
+      "latitude": 48.8530,
+      "longitude": 2.3499,
+      "category": "landmark",
+      "source_profile": "https://www.instagram.com/_lavieparisienne__/",
+      "post_caption": "Gothic masterpiece 📍Notre-Dame Cathedral",
+      "confidence_score": 0.96
+    },
+    {
+      "address": "Tuileries Garden, Paris",
+      "latitude": 48.8635,
+      "longitude": 2.3273,
+      "category": "park",
+      "source_profile": "https://www.instagram.com/le__walk/",
+      "post_caption": "Peaceful garden stroll 📍Tuileries Garden",
+      "confidence_score": 0.87
+    },
+    {
+      "address": "Centre Pompidou, Paris",
+      "latitude": 48.8606,
+      "longitude": 2.3522,
+      "category": "museum",
+      "source_profile": "https://www.instagram.com/sagevanalstine/",
+      "post_caption": "Modern art hub 📍Centre Pompidou",
+      "confidence_score": 0.89
+    },
+    {
+      "address": "Le Comptoir du Relais, Paris",
+      "latitude": 48.8549,
+      "longitude": 2.3331,
+      "category": "restaurant",
+      "source_profile": "https://www.instagram.com/paname_in_my_belly/",
+      "post_caption": "Traditional French bistro 📍Le Comptoir du Relais",
+      "confidence_score": 0.91
+    }
+  ]
+}

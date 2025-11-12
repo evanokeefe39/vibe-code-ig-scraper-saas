@@ -1,0 +1,12 @@
+{
+  "user_id": 1,
+  "tier": "free",
+  "profiles": [
+    {
+      "url": "https://www.instagram.com/parisfoodguide_/",
+      "days_since": 30,
+      "type": "instagram",
+      "max_results": 10
+    }
+  ]
+}
