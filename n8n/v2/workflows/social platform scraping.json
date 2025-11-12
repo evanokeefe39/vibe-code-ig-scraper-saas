@@ -1,0 +1,586 @@
+{
+  "name": "social platform scraping",
+  "nodes": [
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.sources.platform }}",
+                    "rightValue": "youtube",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "id": "5fcf6e07-8ef6-45cd-82ef-14c399d7dc88"
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "934d106a-72e1-44b6-a053-da30c44938d6",
+                    "leftValue": "={{ $json.sources.platform }}",
+                    "rightValue": "tiktok",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "0c4181e0-4432-4814-a156-5b0e23790fd2",
+                    "leftValue": "={{ $json.sources.platform }}",
+                    "rightValue": "instagram",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.2,
+      "position": [
+        64,
+        80
+      ],
+      "id": "2e72cee4-bfb9-42e2-9b35-93b38973e602",
+      "name": "Switch"
+    },
+    {
+      "parameters": {
+        "operation": "Run actor and get dataset",
+        "actorId": {
+          "__rl": true,
+          "value": "h7sDV53CddomktSi5",
+          "mode": "list",
+          "cachedResultName": "YouTube Scraper (streamers/youtube-scraper)",
+          "cachedResultUrl": "https://console.apify.com/actors/h7sDV53CddomktSi5/input"
+        },
+        "customBody": "={{ $json.sources.config }}",
+        "timeout": {}
+      },
+      "type": "@apify/n8n-nodes-apify.apify",
+      "typeVersion": 1,
+      "position": [
+        288,
+        -96
+      ],
+      "id": "3f4d66f5-04ce-468a-8f48-201fffbac72a",
+      "name": "youtube scrape",
+      "credentials": {
+        "apifyApi": {
+          "id": "zgZrzwrt52ADOrF3",
+          "name": "Apify account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "Run actor and get dataset",
+        "actorId": {
+          "__rl": true,
+          "value": "OtzYfK1ndEGdwWFKQ",
+          "mode": "list",
+          "cachedResultName": "TikTok Data Extractor (clockworks/free-tiktok-scraper)",
+          "cachedResultUrl": "https://console.apify.com/actors/OtzYfK1ndEGdwWFKQ/input"
+        },
+        "customBody": "={{ $json.sources.config }}",
+        "timeout": {}
+      },
+      "type": "@apify/n8n-nodes-apify.apify",
+      "typeVersion": 1,
+      "position": [
+        288,
+        96
+      ],
+      "id": "8908b150-26ae-47d1-ba9a-db619654d9e8",
+      "name": "tiktok scrape",
+      "credentials": {
+        "apifyApi": {
+          "id": "zgZrzwrt52ADOrF3",
+          "name": "Apify account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "Run actor and get dataset",
+        "actorId": {
+          "__rl": true,
+          "value": "shu8hvrXbJbY3Eb9W",
+          "mode": "list",
+          "cachedResultName": "Instagram Scraper (apify/instagram-scraper)",
+          "cachedResultUrl": "https://console.apify.com/actors/shu8hvrXbJbY3Eb9W/input"
+        },
+        "customBody": "={{ $json.sources.config }}",
+        "timeout": {}
+      },
+      "type": "@apify/n8n-nodes-apify.apify",
+      "typeVersion": 1,
+      "position": [
+        288,
+        288
+      ],
+      "id": "f89deb29-e5ec-4773-ab37-c44085e8df64",
+      "name": "instagram scrape",
+      "credentials": {
+        "apifyApi": {
+          "id": "zgZrzwrt52ADOrF3",
+          "name": "Apify account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "numberInputs": 3
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        736,
+        80
+      ],
+      "id": "5df8c1e2-008e-42b3-aeaa-509d882ea300",
+      "name": "Merge"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "833a5ae8-ee73-4b25-9f6a-c8de75650ca1",
+              "name": "sources.platform",
+              "value": "={{ $('Switch').item.json.sources.platform }}",
+              "type": "string"
+            },
+            {
+              "id": "256c5d3b-5e04-4601-bd06-c38d08839463",
+              "name": "sources.sourceType",
+              "value": "={{ $('Switch').item.json.sources.sourceType }}",
+              "type": "string"
+            },
+            {
+              "id": "d5c13dea-2281-44b6-aa6a-0528f737de05",
+              "name": "run_id",
+              "value": "={{ $('Switch').item.json.run_id }}",
+              "type": "number"
+            },
+            {
+              "id": "9f615dec-695c-470a-88d6-d8efc4fc0396",
+              "name": "customer_id",
+              "value": "={{ $('Switch').item.json.customer_id }}",
+              "type": "number"
+            }
+          ]
+        },
+        "includeOtherFields": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        512,
+        -96
+      ],
+      "id": "bb0ef3f1-4a82-4983-a15c-348988e318d3",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {
+        "mode": "raw",
+        "jsonOutput": "={\n  \"platform\": \"{{ $json.sources.platform }}\",\n  \"source_type\": \"{{ $json.sources.sourceType }}\",\n  \"user_id\": {{ $json.customer_id }},\n  \"run_id\": {{ $json.run_id }},\n\"data\": {{ JSON.stringify($json) }}\n}\n ",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        960,
+        96
+      ],
+      "id": "22d3c953-91e3-40f7-b14f-5393366d5895",
+      "name": "Edit Fields3"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "833a5ae8-ee73-4b25-9f6a-c8de75650ca1",
+              "name": "sources.platform",
+              "value": "={{ $('Switch').item.json.sources.platform }}",
+              "type": "string"
+            },
+            {
+              "id": "256c5d3b-5e04-4601-bd06-c38d08839463",
+              "name": "sources.sourceType",
+              "value": "={{ $('Switch').item.json.sources.sourceType }}",
+              "type": "string"
+            },
+            {
+              "id": "d5c13dea-2281-44b6-aa6a-0528f737de05",
+              "name": "run_id",
+              "value": "={{ $('Switch').item.json.run_id }}",
+              "type": "number"
+            },
+            {
+              "id": "9f615dec-695c-470a-88d6-d8efc4fc0396",
+              "name": "customer_id",
+              "value": "={{ $('Switch').item.json.customer_id }}",
+              "type": "number"
+            }
+          ]
+        },
+        "includeOtherFields": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        512,
+        96
+      ],
+      "id": "b24351b1-bed2-4485-84b1-54c80b36d022",
+      "name": "Edit Fields1"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "833a5ae8-ee73-4b25-9f6a-c8de75650ca1",
+              "name": "sources.platform",
+              "value": "={{ $('Switch').item.json.sources.platform }}",
+              "type": "string"
+            },
+            {
+              "id": "256c5d3b-5e04-4601-bd06-c38d08839463",
+              "name": "sources.sourceType",
+              "value": "={{ $('Switch').item.json.sources.sourceType }}",
+              "type": "string"
+            },
+            {
+              "id": "d5c13dea-2281-44b6-aa6a-0528f737de05",
+              "name": "run_id",
+              "value": "={{ $('Switch').item.json.run_id }}",
+              "type": "number"
+            },
+            {
+              "id": "9f615dec-695c-470a-88d6-d8efc4fc0396",
+              "name": "customer_id",
+              "value": "={{ $('Switch').item.json.customer_id }}",
+              "type": "number"
+            }
+          ]
+        },
+        "includeOtherFields": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        512,
+        288
+      ],
+      "id": "8ce7ba67-a83c-4432-908e-a3c857014877",
+      "name": "Edit Fields2"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Explode Array Items Node for n8n\n// Takes an array field and creates separate items for each element\n\nconst items = $input.all();\nconst explodedItems = [];\n\n// Get the field name to explode from node parameters\nconst fieldName = 'sources';\n\nitems.forEach(item => {\n  const arrayToExplode = item.json.body[fieldName];\n  \n  if (Array.isArray(arrayToExplode)) {\n    arrayToExplode.forEach((arrayItem, index) => {\n      // Create new item with the exploded array item\n      // Keep all other fields from original item\n      const newItem = {\n        ...item.json.body,\n        [fieldName]: arrayItem,\n        [fieldName + '_index']: index, // Optional: add original index\n        [fieldName + '_count']: arrayToExplode.length // Optional: add total count\n      };\n      \n      explodedItems.push(newItem);\n    });\n  } else {\n    // If not an array, pass through original item\n    explodedItems.push(item.json);\n  }\n});\n\nreturn explodedItems;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -160,
+        96
+      ],
+      "id": "50890379-6374-420e-8d78-cde4962d681d",
+      "name": "Explode Sources List"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "UPDATE public.core_run \n  SET scraped = COALESCE(scraped, '[]'::jsonb) || $1::jsonb \nWHERE id = $2",
+        "options": {
+          "queryReplacement": "={{ [$json] }},{{ $json.run_id }}"
+        }
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        1184,
+        96
+      ],
+      "id": "fab3378a-0358-4aa6-a05d-c02f474518bf",
+      "name": "Append Scraped Data",
+      "credentials": {
+        "postgres": {
+          "id": "rxwJrBrYs2fAJdzT",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "inputSource": "passthrough"
+      },
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        -384,
+        96
+      ],
+      "id": "42a02154-39eb-421c-acf7-55f9b9045751",
+      "name": "When Executed by Another Workflow"
+    },
+    {
+      "parameters": {
+        "mode": "raw",
+        "jsonOutput": "={\n  \"run_id\": {{ $('When Executed by Another Workflow').item.json.body.run_id }}\n}\n",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1392,
+        96
+      ],
+      "id": "924f86f1-3fcd-4cf2-a69a-6c8a181b1c9c",
+      "name": "run id return"
+    }
+  ],
+  "pinData": {
+    "When Executed by Another Workflow": [
+      {
+        "json": {
+          "body": {
+            "run_id": 66,
+            "customer_id": 1,
+            "sources": [
+              {
+                "platform": "instagram",
+                "sourceType": "instagram-profile",
+                "config": {
+                  "directUrls": [
+                    "https://www.instagram.com/_lavieparisienne__/"
+                  ],
+                  "resultsType": "posts",
+                  "resultsLimit": 5,
+                  "oldestPostDate": "",
+                  "relativeDateFilter": "30 days",
+                  "feedType": "posts"
+                },
+                "directUrls": [
+                  "https://www.instagram.com/_lavieparisienne__/"
+                ]
+              }
+            ],
+            "auto_infer_columns": true,
+            "custom_columns": [],
+            "enable_extraction": true,
+            "extraction_prompt": "Extract location information, business mentions, contact details, and other relevant data from social media posts. Adapt to the specific platform and content type."
+          }
+        }
+      }
+    ]
+  },
+  "connections": {
+    "Switch": {
+      "main": [
+        [
+          {
+            "node": "youtube scrape",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "tiktok scrape",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "instagram scrape",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "youtube scrape": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "tiktok scrape": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "instagram scrape": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields3": {
+      "main": [
+        [
+          {
+            "node": "Append Scraped Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields1": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Edit Fields2": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 2
+          }
+        ]
+      ]
+    },
+    "Explode Sources List": {
+      "main": [
+        [
+          {
+            "node": "Switch",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Append Scraped Data": {
+      "main": [
+        [
+          {
+            "node": "run id return",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "When Executed by Another Workflow": {
+      "main": [
+        [
+          {
+            "node": "Explode Sources List",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "8b94895a-0e90-4e70-ba3b-7e9e20786f1d",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "6111e667fb260e03f3f61db7495ce953c5edf27cc92b44562178587f6683c693"
+  },
+  "id": "A8PW0bVN4ROONR7p",
+  "tags": []
+}

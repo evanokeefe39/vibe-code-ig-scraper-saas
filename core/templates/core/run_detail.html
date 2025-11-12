@@ -699,7 +699,7 @@ function renderYoutubeConfig(source) {
 // Format table output
 {% if run.extracted %}
 try {
-    const extractedData = {{ run.extracted|safe }};
+    const extractedData = {{ run_extracted_json|safe }};
     renderExtractedTable(extractedData);
 } catch (e) {
     

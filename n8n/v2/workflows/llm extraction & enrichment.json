@@ -1,0 +1,314 @@
+{
+  "name": "llm extraction & enrichment",
+  "nodes": [
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.scraped.data }}",
+        "messages": {
+          "messageValues": [
+            {
+              "message": "={{ $json.enhanced_prompt }}\n\nThe user will provide the data in the next message."
+            }
+          ]
+        },
+        "batching": {
+          "batchSize": 1,
+          "delayBetweenBatches": 1
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.7,
+      "position": [
+        352,
+        184
+      ],
+      "id": "3c99a9c6-d593-4810-b0aa-6458d92c8412",
+      "name": "Basic LLM Chain"
+    },
+    {
+      "parameters": {
+        "workflowInputs": {
+          "values": [
+            {
+              "name": "run_id",
+              "type": "any"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        -544,
+        184
+      ],
+      "id": "a53dd0d2-a596-4703-bc30-90d856712056",
+      "name": "When Executed by Another Workflow"
+    },
+    {
+      "parameters": {
+        "operation": "select",
+        "schema": {
+          "__rl": true,
+          "value": "public",
+          "mode": "list",
+          "cachedResultName": "public"
+        },
+        "table": {
+          "__rl": true,
+          "value": "core_run",
+          "mode": "list",
+          "cachedResultName": "core_run"
+        },
+        "returnAll": true,
+        "where": {
+          "values": [
+            {
+              "column": "id",
+              "value": "={{ $json.run_id }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        -320,
+        184
+      ],
+      "id": "7c0f130b-81c9-4dd7-a44e-91aee72e2b45",
+      "name": "Select rows from a table",
+      "credentials": {
+        "postgres": {
+          "id": "rxwJrBrYs2fAJdzT",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "fieldToSplitOut": "scraped",
+        "include": "allOtherFields",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitOut",
+      "typeVersion": 1,
+      "position": [
+        -96,
+        184
+      ],
+      "id": "f9e12525-1d72-4b49-b33e-1ddb2d34cf1e",
+      "name": "Split Out"
+    },
+    {
+      "parameters": {
+        "model": "x-ai/grok-code-fast-1",
+        "options": {
+          "responseFormat": "json_object",
+          "temperature": 0.1
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenRouter",
+      "typeVersion": 1,
+      "position": [
+        424,
+        408
+      ],
+      "id": "7fd7dc29-0ce5-4558-bd16-3f90ac36b9e2",
+      "name": "GROK CODE FAST 1 [PAID]",
+      "credentials": {
+        "openRouterApi": {
+          "id": "u1JijGESjYNmQKSl",
+          "name": "OpenRouter account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "UPDATE public.core_run \n  SET extracted = COALESCE(extracted, '[]'::jsonb) || $1::jsonb \nWHERE id = $2",
+        "options": {
+          "queryReplacement": "={{ $json }}, {{ $('When Executed by Another Workflow').item.json.run_id }}"
+        }
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        704,
+        184
+      ],
+      "id": "16f586a0-36ca-436b-8bfd-87131471a771",
+      "name": "Execute a SQL query",
+      "credentials": {
+        "postgres": {
+          "id": "rxwJrBrYs2fAJdzT",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "fca22f5c-191c-4f17-a9c9-6171ef5606e2",
+              "name": "scraped.data.caption",
+              "value": "={{ $('Split Out').item.json.scraped.data.caption }}",
+              "type": "string"
+            },
+            {
+              "id": "0326fb67-4299-4168-8eb0-9f3edb33e34d",
+              "name": "scraped.data.url",
+              "value": "={{ $('Split Out').item.json.scraped.data.url }}",
+              "type": "string"
+            }
+          ]
+        },
+        "includeOtherFields": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -544,
+        -144
+      ],
+      "id": "dc4f4c49-9f02-4d6b-a2b7-a86fb12c2c0a",
+      "name": "DEBUG",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "a392dfe4-6dc9-4f72-8b36-0bf31764381a",
+              "leftValue": "={{ $itemIndex }}",
+              "rightValue": 5,
+              "operator": {
+                "type": "number",
+                "operation": "lt"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        128,
+        184
+      ],
+      "id": "97ae44f8-1dd6-4169-828e-c544ef1b784e",
+      "name": "HARD RESULT LIMIT [DEV ONLY]"
+    }
+  ],
+  "pinData": {
+    "When Executed by Another Workflow": [
+      {
+        "json": {
+          "run_id": 51
+        }
+      }
+    ]
+  },
+  "connections": {
+    "When Executed by Another Workflow": {
+      "main": [
+        [
+          {
+            "node": "Select rows from a table",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Select rows from a table": {
+      "main": [
+        [
+          {
+            "node": "Split Out",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Split Out": {
+      "main": [
+        [
+          {
+            "node": "HARD RESULT LIMIT [DEV ONLY]",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "GROK CODE FAST 1 [PAID]": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Basic LLM Chain",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Basic LLM Chain": {
+      "main": [
+        [
+          {
+            "node": "Execute a SQL query",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Execute a SQL query": {
+      "main": [
+        []
+      ]
+    },
+    "DEBUG": {
+      "main": [
+        []
+      ]
+    },
+    "HARD RESULT LIMIT [DEV ONLY]": {
+      "main": [
+        [
+          {
+            "node": "Basic LLM Chain",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "1b362e68-cfd2-40da-b84b-1c5d3e1f107e",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "6111e667fb260e03f3f61db7495ce953c5edf27cc92b44562178587f6683c693"
+  },
+  "id": "pr0pQLJW1tlX2k5t",
+  "tags": []
+}

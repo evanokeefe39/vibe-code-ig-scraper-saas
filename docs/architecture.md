@@ -15,12 +15,6 @@
 
 The platform supports various data processing services depending on the extraction use case. For location data (current focus):
 
-**Geocoding Service Flow**:
-1. Scraper extracts location strings (e.g., "4 rue de la Convention, 75015 Paris").
-2. n8n workflow sends location to Mapbox Geocoding API.
-3. API returns coordinates with confidence score.
-4. Coordinates stored in Supabase with location metadata.
-
 **Extensible Processing**:
 - The system is designed to support additional processing services (e.g., entity extraction, sentiment analysis, data validation) based on user requirements.
 - Processing modules can be added as n8n nodes or agent tools.
