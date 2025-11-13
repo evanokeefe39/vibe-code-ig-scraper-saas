@@ -1,0 +1,272 @@
+{
+  "name": "social platform data extraction and enrichment",
+  "nodes": [
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={\n  \"n8n_execution_id\": {{ $execution.id }}\n}",
+        "options": {
+          "responseCode": 200
+        }
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.4,
+      "position": [
+        -400,
+        -176
+      ],
+      "id": "4fa19171-261c-4c6a-b496-47aebd076d20",
+      "name": "Respond with execution id"
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "value": "BHStAFv319m8yu2k",
+          "mode": "list",
+          "cachedResultUrl": "/workflow/BHStAFv319m8yu2k",
+          "cachedResultName": "extraction prompt enhancer"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "run_id": "={{ $json.run_id }}"
+          },
+          "matchingColumns": [
+            "run_id"
+          ],
+          "schema": [
+            {
+              "id": "run_id",
+              "displayName": "run_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": true
+        },
+        "options": {
+          "waitForSubWorkflow": true
+        }
+      },
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.3,
+      "position": [
+        48,
+        -176
+      ],
+      "id": "fb7460db-7186-491d-9781-ded956a18c47",
+      "name": "Call 'extraction prompt enhancer'",
+      "alwaysOutputData": false
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "value": "pr0pQLJW1tlX2k5t",
+          "mode": "list",
+          "cachedResultUrl": "/workflow/pr0pQLJW1tlX2k5t",
+          "cachedResultName": "llm extraction & enrichment"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "run_id": "={{ $json.run_id }}"
+          },
+          "matchingColumns": [
+            "run_id"
+          ],
+          "schema": [
+            {
+              "id": "run_id",
+              "displayName": "run_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": true,
+          "convertFieldsToString": true
+        },
+        "options": {
+          "waitForSubWorkflow": true
+        }
+      },
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.3,
+      "position": [
+        272,
+        -176
+      ],
+      "id": "7ed16a1b-5466-4b4f-8b7b-ed96d1dc45bc",
+      "name": "Call 'llm extraction & enrichment'"
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "value": "A8PW0bVN4ROONR7p",
+          "mode": "list",
+          "cachedResultUrl": "/workflow/A8PW0bVN4ROONR7p",
+          "cachedResultName": "social platform scraping"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {},
+          "matchingColumns": [],
+          "schema": [],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": true
+        },
+        "options": {
+          "waitForSubWorkflow": true
+        }
+      },
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.3,
+      "position": [
+        -176,
+        -176
+      ],
+      "id": "da537d5f-28b2-40ac-9b0c-2912bb14dd66",
+      "name": "Call 'social scraping'",
+      "alwaysOutputData": false
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "multi-source-scrape",
+        "authentication": "basicAuth",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "002c27bc-dca0-4718-9783-22dc658c1195",
+      "name": "Webhook - run",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [
+        -624,
+        -176
+      ],
+      "webhookId": "multi-source-scrape",
+      "credentials": {
+        "httpBasicAuth": {
+          "id": "z9ySVpOBCzgBnKbM",
+          "name": "Basic Auth Scraper"
+        }
+      }
+    }
+  ],
+  "pinData": {
+    "Webhook - run": [
+      {
+        "json": {
+          "headers": {
+            "host": "n8n:5678",
+            "user-agent": "python-requests/2.32.5",
+            "accept-encoding": "gzip, deflate, zstd",
+            "accept": "*/*",
+            "connection": "keep-alive",
+            "content-length": "633",
+            "content-type": "application/json",
+            "authorization": "Basic YWRtaW5AdmliZXNjcmFwZXIuY29tOnZpYmVzY3JhcGVyMTIz"
+          },
+          "params": {},
+          "query": {},
+          "body": {
+            "run_id": 66,
+            "customer_id": 1,
+            "sources": [
+              {
+                "platform": "instagram",
+                "sourceType": "instagram-profile",
+                "config": {
+                  "directUrls": [
+                    "https://www.instagram.com/_lavieparisienne__/"
+                  ],
+                  "resultsType": "posts",
+                  "resultsLimit": 5,
+                  "oldestPostDate": "",
+                  "relativeDateFilter": "30 days",
+                  "feedType": "posts"
+                },
+                "directUrls": [
+                  "https://www.instagram.com/_lavieparisienne__/"
+                ]
+              }
+            ],
+            "auto_infer_columns": true,
+            "custom_columns": [],
+            "enable_extraction": true,
+            "extraction_prompt": "Extract location information, business mentions, contact details, and other relevant data from social media posts. Adapt to the specific platform and content type."
+          },
+          "webhookUrl": "http://localhost:5678/webhook/multi-source-scrape",
+          "executionMode": "production"
+        }
+      }
+    ]
+  },
+  "connections": {
+    "Respond with execution id": {
+      "main": [
+        [
+          {
+            "node": "Call 'social scraping'",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Call 'extraction prompt enhancer'": {
+      "main": [
+        [
+          {
+            "node": "Call 'llm extraction & enrichment'",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Call 'social scraping'": {
+      "main": [
+        [
+          {
+            "node": "Call 'extraction prompt enhancer'",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook - run": {
+      "main": [
+        [
+          {
+            "node": "Respond with execution id",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "e0972e25-c4f1-4436-a410-b6a4e40c5f2f",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "6111e667fb260e03f3f61db7495ce953c5edf27cc92b44562178587f6683c693"
+  },
+  "id": "XKmvY7OoI2VLpAem",
+  "tags": []
+}

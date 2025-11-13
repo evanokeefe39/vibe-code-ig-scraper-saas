@@ -1,0 +1,222 @@
+{
+  "name": "extraction prompt enhancer",
+  "nodes": [
+    {
+      "parameters": {
+        "workflowInputs": {
+          "values": [
+            {
+              "name": "run_id",
+              "type": "any"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        -672,
+        16
+      ],
+      "id": "0b010323-4074-4bcd-8ee9-17bc1e631b86",
+      "name": "When Executed by Another Workflow"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.extraction_prompt }}",
+        "messages": {
+          "messageValues": [
+            {
+              "message": "///▙▖▙▖▞▞▙▂▂▂▂▂▂▂▂▂▂▂▂▂▂▂▂▂▂▂▂▂▂\n▛///▞ PRECISION·PROMPT·ENHANCER·FOR·DATA·EXTRACTION ::\n//▞▞〔Purpose · Rules · Input · Method · Output〕\nP:: convert.non.technical.user.extraction.requests.into.Enhanced.Extraction.Prompts.for.data.extraction.from.text ∙ enforce.schema.rigidity.and.JSON.output ∙ PRIMO.header.first.in.all.children\n\nR:: apply.KERNEL.across.all.sections ∙ one.goal.per.prompt ∙ tag.literal.vs.inferential.rules ∙ mandatory.JSON.array.output.only ∙ recursive.depth.limit.2\n\nI:: meta.prompt.or.user.extraction.request.for.restructuring.into.Enhanced.Extraction.Prompt.with.schema.fields.rules.examples.confidence.and.format\n\nM:: analyze.input.request → extract.schema.fields → assign.literal.or.inferential.tags → create.rules.examples.schema.example → prepend.PRIMO.header.as.absolute.first → if.meta→ embed.Recursive.Enforcement.for.children\n\nO:: output: Enhanced.Extraction.Prompt.with.PRIMO.header.first.md ∙ compliant.structure ∙ JSON.schema.locked.to.defined.fields ∙ versioned.as.v2.4\n\n:: ∎\n\n\n## Context (Input)\n\nYou receive a meta-prompt or a non-technical user's request to extract specific data fields from text, such as place names, addresses, or vibes from café descriptions. The input requires conversion into a fully structured \"Enhanced Extraction Prompt\" that another AI model will use for precise data extraction, ensuring literal-first extraction, no field invention, and strict JSON array output.\n\n\n## Task (Function)\n\nApply KERNEL to streamline the meta-prompt:\n\nK — Simplify: One clear goal — convert user extraction requests into structured prompts defining fixed schemas, rules, examples, and JSON output formats.\n\nE — Verify: Measurable success — the output Enhanced Extraction Prompt includes exactly the requested fields, tagged rules ([Literal] or [Inferential]), examples showing literal vs inferential application, confidence scores (0–1), and enforces array-of-objects JSON with no extras.\n\nR — Reproducible: Use deterministic language for rules and examples (e.g., prefer \"extract exactly as written\" over vague cues); avoid temporal terms like \"recent examples.\"\n\nN — Narrow scope: Focus solely on creating data extraction prompts for text inputs; do not handle other tasks like summarization or translation.\n\nE — Explicit constraints: Do not allow new field invention, echoing source text, or non-JSON outputs; always use null for missing fields and [] for empty extractions.\n\nL — Logical order: Context → Task → Constraints → Format → (Recursive Enforcement).\n\nRestructure the meta-prompt into the Enhanced Extraction Prompt structure: Header, Persona, Core Directive, Extraction Rules per field, Confidence Rule, Output Format, Schema Example, and closing reminder.\n\nFor each user-requested field, tag it [Literal] or [Inferential], provide precise instructions, and include 1–2 short examples (good vs bad).\n\n\n## Constraints (Parameters)\n\nPRIMO header must be the absolute first element in every output prompt — no text, titles, or metadata above it.\n\nPrepend the PRIMO header to all children prompts.\n\nLimit rules to 1–2 per field; enforce [Literal] default, infer only with unmistakable clues.\n\nConfidence: Always include 0–1; default 0.3 for uncertainty, not 0.0.\n\nOutput: Strict JSON array only — no fences, labels, or commentary; null for missing, [] for no matches.\n\nSection lines ≤15; no prose outside sections.\n\nModel-agnostic: Avoid tool-specific terms; deterministic across runs.\n\nDo not invent fields: Only use user-requested keys (e.g., no extras like \"source\").\n\n\n## Format (Output)\n\nReturn one markdown document containing:\n\n- The PRIMO header block — always first.\n- Ordered sections as per input meta-prompt structure:\n  - # [Dataset/Domain] Extraction Prompt VERSION: 2.4\n  - Persona\n  - Core Directive\n  - Extraction Rules (one sub-section per field)\n  - Confidence Rule\n  - Output Format\n  - Schema Example (JSON array)\n  - Closing reminder from Additional Reinforcement.\n\nEnd with :: ∎.\n\n\n## Recursive Enforcement\n\nIf this is a meta-prompt, all child prompts must:\n\n- Begin with their own PRIMO header (header-first absolute priority).\n- Reproduce the full KERNEL explanation block in their Task section, including all six components (K, E, R, N, E, L).\n- Maintain section order: Context → Task → Constraints → Format → (Recursive Enforcement if needed).\n- Apply the same Constraints and Format as parent.\n- Limit recursion to depth 2 total (this is depth 0; max depth 2).\n- Reference version v2.4 in PRIMO header.\n- Ensure output is deterministic and model-agnostic.\n- Even at max depth, include a full PRIMO header at the top; close every child with :: ∎.\n\n:: ∎\n"
+            }
+          ]
+        },
+        "batching": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.7,
+      "position": [
+        -224,
+        16
+      ],
+      "id": "6a9d9940-5a61-4749-8986-8a60565f3511",
+      "name": "Basic LLM Chain"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "UPDATE public.core_run\nSET enhanced_prompt = $$ {{ $json.text }} $$\nWHERE id = {{ $('When Executed by Another Workflow').item.json.run_id }};\n",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        128,
+        16
+      ],
+      "id": "ff54f446-235a-4b9c-a42f-dc33c78eb012",
+      "name": "Execute a SQL query",
+      "credentials": {
+        "postgres": {
+          "id": "rxwJrBrYs2fAJdzT",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "model": "x-ai/grok-code-fast-1",
+        "options": {
+          "temperature": 0.1
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenRouter",
+      "typeVersion": 1,
+      "position": [
+        -160,
+        240
+      ],
+      "id": "5c29dc59-087a-460b-97a5-53577da4e954",
+      "name": "GROK CODE FAST 1 [PAID]",
+      "credentials": {
+        "openRouterApi": {
+          "id": "u1JijGESjYNmQKSl",
+          "name": "OpenRouter account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "select",
+        "schema": {
+          "__rl": true,
+          "mode": "list",
+          "value": "public"
+        },
+        "table": {
+          "__rl": true,
+          "value": "core_run",
+          "mode": "list",
+          "cachedResultName": "core_run"
+        },
+        "limit": 1,
+        "where": {
+          "values": [
+            {
+              "column": "id",
+              "value": "={{ $json.run_id }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        -448,
+        16
+      ],
+      "id": "73dab9f2-2e07-4264-a3ff-5081026930ae",
+      "name": "Select rows from a table",
+      "credentials": {
+        "postgres": {
+          "id": "rxwJrBrYs2fAJdzT",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "mode": "raw",
+        "jsonOutput": "={\n  \"run_id\": {{ $('When Executed by Another Workflow').item.json.run_id }}\n}\n",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        336,
+        16
+      ],
+      "id": "b6736d03-7fc5-4746-8a46-cdeab38a7b65",
+      "name": "return run_id"
+    }
+  ],
+  "pinData": {
+    "When Executed by Another Workflow": [
+      {
+        "json": {
+          "run_id": 51
+        }
+      }
+    ]
+  },
+  "connections": {
+    "When Executed by Another Workflow": {
+      "main": [
+        [
+          {
+            "node": "Select rows from a table",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Basic LLM Chain": {
+      "main": [
+        [
+          {
+            "node": "Execute a SQL query",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "GROK CODE FAST 1 [PAID]": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Basic LLM Chain",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Select rows from a table": {
+      "main": [
+        [
+          {
+            "node": "Basic LLM Chain",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Execute a SQL query": {
+      "main": [
+        [
+          {
+            "node": "return run_id",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "a9c53835-878b-49b3-9f77-927e691d256a",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "6111e667fb260e03f3f61db7495ce953c5edf27cc92b44562178587f6683c693"
+  },
+  "id": "BHStAFv319m8yu2k",
+  "tags": []
+}

@@ -1,0 +1,17 @@
+{
+  "user_id": 1,
+  "tier": "premium",
+  "days_since": 14,
+  "max_results": 50,
+  "extraction_prompt": "Extract location information, business mentions, and contact details from social media posts.",
+  "profiles": [
+    {
+      "url": "https://www.instagram.com/parisfoodguide_/",
+      "type": "instagram"
+    },
+    {
+      "url": "https://www.instagram.com/ellevousguide/",
+      "type": "instagram"
+    }
+  ]
+}

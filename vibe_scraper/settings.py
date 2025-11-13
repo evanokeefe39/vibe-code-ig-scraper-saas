@@ -13,6 +13,10 @@ https://docs.djangoproject.com/en/5.2/ref/settings/
 import os
 from pathlib import Path
 import dj_database_url
+from dotenv import load_dotenv
+
+# Load environment variables from .env file
+load_dotenv()
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -42,6 +46,7 @@ INSTALLED_APPS = [
     "rest_framework",
     "users",
     "core",
+    "dynamic_formsets",
 ]
 
 MIDDLEWARE = [
@@ -66,6 +71,7 @@ TEMPLATES = [
                 "django.template.context_processors.request",
                 "django.contrib.auth.context_processors.auth",
                 "django.contrib.messages.context_processors.messages",
+                "django.template.context_processors.static",
             ],
         },
     },
@@ -119,7 +125,12 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.2/howto/static-files/
 
-STATIC_URL = "static/"
+STATIC_URL = "/static/"
+STATIC_ROOT = BASE_DIR / "staticfiles"
+STATICFILES_DIRS = [
+    BASE_DIR / "core/static",
+    BASE_DIR / "static",  # Add root static directory
+]
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
@@ -129,8 +140,21 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 # Custom user model
 AUTH_USER_MODEL = 'core.User'
 
-# N8N webhook URL
-N8N_WEBHOOK_URL = os.getenv('N8N_WEBHOOK_URL', 'http://n8n:5678/webhook/scrape')
+# N8N base URL
+N8N_BASE_URL = os.getenv('N8N_BASE_URL', 'http://n8n:5678')
+
+# N8N webscrape URL
+N8N_WEBSCRAPE_URL = N8N_BASE_URL + '/webhook/scrape'
+
+# N8N multi-source scraping URL (use production endpoint, not test)
+N8N_MULTI_SOURCE_URL = N8N_BASE_URL + '/webhook/multi-source-scrape'
+
+# N8N basic auth credentials
+N8N_BASIC_AUTH_USER = os.getenv('N8N_BASIC_AUTH_USER', 'admin@vibescraper.com')
+N8N_BASIC_AUTH_PASSWORD = os.getenv('N8N_BASIC_AUTH_PASSWORD', 'vibescraper123')
+
+# N8N API key for REST API authentication
+N8N_API_KEY = os.getenv('N8N_API_KEY')
 
 # Logging
 LOGGING = {

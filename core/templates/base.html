@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+{% load static %}
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    {% csrf_token %}
+    <title>{% block title %}Vibe Scraper SaaS{% endblock %}</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- jQuery for django-dynamic-formsets -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <!-- HTMX for dynamic interactions -->
+    <script src="https://unpkg.com/htmx.org@1.9.10"></script>
+    <!-- Alpine.js for reactive components -->
+    <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    <!-- AG-Grid for advanced table functionality -->
+    <script src="https://cdn.jsdelivr.net/npm/ag-grid-community@34.3.1/dist/ag-grid-community.min.js"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: {
+                            50: '#f0f9ff',
+                            100: '#e0f2fe',
+                            500: '#3b82f6',
+                            600: '#2563eb',
+                            700: '#1d4ed8',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{% static 'css/main.css' %}">
+</head>
+<body class="bg-gray-50 min-h-screen">
+    <!-- Navigation -->
+    <nav class="bg-white shadow-sm border-b border-gray-200">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-16">
+                <div class="flex items-center">
+                    <a href="{% url 'home' %}" class="text-xl font-bold text-gray-900">
+                        Vibe Scraper
+                    </a>
+                </div>
+                 <div class="flex items-center space-x-8">
+                     <a href="{% url 'home' %}" class="text-gray-700 hover:text-gray-900 px-3 py-2 text-sm font-medium">
+                         Home
+                     </a>
+                     <a href="{% url 'run_list' %}" class="text-gray-700 hover:text-gray-900 px-3 py-2 text-sm font-medium">
+                         Runs
+                     </a>
+                     <a href="{% url 'list_list' %}" class="text-gray-700 hover:text-gray-900 px-3 py-2 text-sm font-medium">
+                         Lists
+                     </a>
+                     <a href="{% url 'run_create' %}" class="bg-primary-600 hover:bg-primary-700 text-white px-4 py-2 rounded-md text-sm font-medium">
+                         Create Run
+                     </a>
+                 </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main>
+        {% block content %}{% endblock %}
+    </main>
+
+    <!-- Footer -->
+    {% block footer %}
+    <footer class="bg-white border-t border-gray-200 mt-16">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+            <div class="text-center text-gray-500 text-sm">
+                <p>&copy; 2024 Vibe Scraper SaaS. Extract insights from social media.</p>
+            </div>
+        </div>
+    </footer>
+    {% endblock %}
+
+
+    <script>
+        // Global JavaScript utilities
+        window.VibeScraper = {
+            // Utility functions will go here
+        };
+    </script>
+    {% block extra_js %}{% endblock %}
+</body>
+</html>
