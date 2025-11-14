@@ -3,6 +3,7 @@
 {% block title %}Home - Vibe Scraper SaaS{% endblock %}
 
 {% block content %}
+{% if not user.is_authenticated %}
 <div class="max-w-4xl mx-auto px-4 py-16">
     <!-- Hero Section -->
     <div class="text-center mb-16 bg-gradient-to-br from-primary-50 to-white rounded-2xl p-8 md:p-12">
@@ -68,4 +69,10 @@
         </a>
     </div>
 </div>
+{% else %}
+<!-- Authenticated users should be redirected to dashboard -->
+<div class="max-w-4xl mx-auto px-4 py-16 text-center">
+    <p>Redirecting to dashboard...</p>
+</div>
+{% endif %}
 {% endblock %}

@@ -19,7 +19,7 @@ from django.contrib import admin
 from django.urls import path
 from django.conf import settings
 from django.conf.urls.static import static
-from core.utility_views import home, test_geocode
+from core.views.utility_views import home, pricing
 from core.views.run_views import run_create, run_list, run_detail, run_by_n8n, run_status_api, empty_source_form, platform_config
 from core.views.list_views import list_list, list_detail, list_create, list_column_create, list_row_create, update_cell, delete_row, add_blank_row, update_column, delete_column, delete_list, table_save, validate_column_type_change, delete_selected_rows, add_column_ag_grid
 from core.views.export_views import export_list_csv, export_list_json, export_run_csv, export_run_json, export_run_scraped_json
@@ -28,6 +28,7 @@ from core.views.auth_views import login_view, logout_view, dashboard_view, supab
 urlpatterns = [
     path("admin/", admin.site.urls),
     path("", home, name="home"),
+    path("pricing/", pricing, name="pricing"),
     
     # Authentication URLs
     path("auth/login/", login_view, name="login"),
@@ -36,7 +37,7 @@ urlpatterns = [
     path("auth/callback/", supabase_auth_callback, name="supabase_auth_callback"),
     path("auth/config/", get_oauth_config, name="oauth_config"),
     path("auth/refresh/", refresh_token, name="refresh_token"),
-    path("test-geocode/", test_geocode, name="test_geocode"),
+
     path("runs/", run_list, name="run_list"),
 path("runs/create/", run_create, name="run_create"),
     path("runs/create/empty-form/", empty_source_form, name="empty_source_form"),
