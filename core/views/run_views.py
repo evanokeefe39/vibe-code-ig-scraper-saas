@@ -2,11 +2,13 @@ import json
 from django.shortcuts import render, redirect, get_object_or_404
 from django.http import HttpResponse, JsonResponse
 from django.contrib import messages
+from django.contrib.auth.decorators import login_required
 from ..models import Run
 from ..forms import RunForm, SourceFormSet
 from ..services.n8n_service import get_n8n_execution_status, build_source_config, trigger_run
 
 
+@login_required
 def run_create(request):
     if request.method == 'POST':
         source_formset = SourceFormSet(request.POST, prefix='form')
@@ -64,7 +66,7 @@ def run_create(request):
         if source_formset.is_valid() and form.is_valid():
             # Create run with processed sources
             run = form.save(commit=False)
-            run.user_id = 1  # Dummy user_id for development
+            run.user_id = request.user.id
             # Helper function to serialize any date objects
             def serialize_dates(obj):
                 if hasattr(obj, 'strftime'):
@@ -134,9 +136,10 @@ def platform_config(request, platform_type):
     return render(request, template_name, {'form': form})
 
 
+@login_required
 def run_list(request):
-    # For now, filter by dummy user_id=1
-    runs = Run.objects.filter(user_id=1).order_by('-created_at')
+    # Filter by authenticated user
+    runs = Run.objects.filter(user_id=request.user.id).order_by('-created_at')
 
     # Add execution status to each run
     runs_with_status = []
@@ -150,8 +153,9 @@ def run_list(request):
     return render(request, 'core/run_list.html', {'runs_with_status': runs_with_status})
 
 
+@login_required
 def run_detail(request, pk):
-    run = get_object_or_404(Run, pk=pk)
+    run = get_object_or_404(Run, pk=pk, user_id=request.user.id)
     execution_info = get_n8n_execution_status(run.n8n_execution_id)
     execution_data_json = json.dumps(execution_info['data'])
 
