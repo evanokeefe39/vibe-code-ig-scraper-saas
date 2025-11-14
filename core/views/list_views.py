@@ -3,6 +3,7 @@ import logging
 from django.shortcuts import render, redirect, get_object_or_404
 from django.http import HttpResponse, JsonResponse
 from django.contrib import messages
+from django.contrib.auth.decorators import login_required
 from django.views.decorators.http import require_http_methods
 from django.template.loader import render_to_string
 from ..models import User, UserList, ListColumn, ListRow
@@ -10,15 +11,15 @@ from ..models import User, UserList, ListColumn, ListRow
 logger = logging.getLogger(__name__)
 
 
+@login_required
 def list_list(request):
-    # Dummy user for now
-    user_id = 1
-    lists = UserList.objects.filter(user_id=user_id).order_by('-created_at')
+    lists = UserList.objects.filter(user=request.user).order_by('-created_at')
     return render(request, 'core/list_list.html', {'lists': lists})
 
 
+@login_required
 def list_detail(request, pk):
-    list_obj = get_object_or_404(UserList, pk=pk, user__id=1)  # Dummy user
+    list_obj = get_object_or_404(UserList, pk=pk, user=request.user)
     columns = list_obj.columns.all().order_by('order')
     rows = list_obj.rows.all()
 
@@ -85,21 +86,16 @@ def list_detail(request, pk):
         })
 
 
+@login_required
 def list_create(request):
     if request.method == 'POST':
         name = request.POST.get('name')
         description = request.POST.get('description', '')
 
         if name:
-            # Get or create the dummy user
-            user, created = User.objects.get_or_create(
-                id=1,
-                defaults={'username': 'dev', 'email': 'dev@example.com'}
-            )
-
-            # Create the list
+            # Create the list for the authenticated user
             user_list = UserList.objects.create(
-                user=user,
+                user=request.user,
                 name=name,
                 description=description
             )
@@ -127,8 +123,9 @@ def list_create(request):
     return render(request, 'core/list_create.html')
 
 
+@login_required
 def list_column_create(request, pk):
-    list_obj = get_object_or_404(UserList, pk=pk, user__id=1)
+    list_obj = get_object_or_404(UserList, pk=pk, user=request.user)
     if request.method == 'POST':
         name = request.POST.get('name')
         column_type = request.POST.get('column_type')
@@ -201,8 +198,9 @@ def list_column_create(request, pk):
         return JsonResponse({'success': False})
 
 
+@login_required
 def list_row_create(request, pk):
-    list_obj = get_object_or_404(UserList, pk=pk, user__id=1)
+    list_obj = get_object_or_404(UserList, pk=pk, user=request.user)
     columns = list_obj.columns.all().order_by('order')
 
     if request.method == 'POST':

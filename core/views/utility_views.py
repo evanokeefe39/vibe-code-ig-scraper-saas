@@ -1,13 +1,13 @@
 from django.shortcuts import render
 from django.http import HttpResponse
-from ..utils import geocode_location
 
 
 def home(request):
+    if request.user.is_authenticated:
+        from django.shortcuts import redirect
+        return redirect('dashboard')
     return render(request, 'home.html')
 
 
-def test_geocode(request):
-    address = request.GET.get('address', 'New York')
-    lat, lng = geocode_location(address)
-    return HttpResponse(f"Address: {address}<br>Lat: {lat}<br>Lng: {lng}")
+def pricing(request):
+    return render(request, 'pricing.html')

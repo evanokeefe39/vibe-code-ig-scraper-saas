@@ -1,0 +1,120 @@
+{% extends "base.html" %}
+
+{% block title %}Authentication Callback - Vibe Scraper SaaS{% endblock %}
+
+{% block content %}
+<div class="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
+    <div class="max-w-md w-full space-y-8">
+        <div>
+            <div class="mx-auto h-12 w-12 flex items-center justify-center rounded-full bg-primary-100">
+                <svg class="animate-spin h-8 w-8 text-primary-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+            </div>
+            <h2 class="mt-6 text-center text-3xl font-extrabold text-gray-900">
+                Completing sign in...
+            </h2>
+            <p class="mt-2 text-center text-sm text-gray-600">
+                Please wait while we authenticate your account.
+            </p>
+        </div>
+        
+        <div id="error-message" class="hidden bg-red-50 border border-red-200 rounded-md p-4">
+            <div class="flex">
+                <div class="flex-shrink-0">
+                    <svg class="h-5 w-5 text-red-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd" />
+                    </svg>
+                </div>
+                <div class="ml-3">
+                    <h3 class="text-sm font-medium text-red-800">Authentication failed</h3>
+                    <div class="mt-2 text-sm text-red-700">
+                        <p id="error-text">An error occurred during authentication.</p>
+                    </div>
+                    <div class="mt-4">
+                        <a href="/auth/login/" class="text-sm font-medium text-red-600 hover:text-red-500">
+                            Try again
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Handle OAuth callback from URL hash
+function handleCallback() {
+    const params = new URLSearchParams(window.location.hash.substring(1));
+    const accessToken = params.get('access_token');
+    const refreshToken = params.get('refresh_token');
+    const error = params.get('error');
+    const errorDescription = params.get('error_description');
+    
+    if (error) {
+        showError(errorDescription || 'Authentication failed');
+        return;
+    }
+    
+    if (accessToken) {
+        // Send tokens to backend
+        fetch('/auth/callback/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': getCookie('csrftoken')
+            },
+            body: JSON.stringify({
+                access_token: accessToken,
+                refresh_token: refreshToken
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                window.location.href = data.redirect_url;
+            } else {
+                showError('Authentication failed');
+            }
+        })
+        .catch(error => {
+            console.error('Callback error:', error);
+            showError('Authentication error');
+        });
+    } else {
+        showError('No authentication token found');
+    }
+}
+
+function showError(message) {
+    document.getElementById('error-text').textContent = message;
+    document.getElementById('error-message').classList.remove('hidden');
+    // Hide the loading spinner
+    document.querySelector('.animate-spin').parentElement.parentElement.classList.add('hidden');
+}
+
+function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+
+// Handle callback when page loads
+if (window.location.hash) {
+    handleCallback();
+} else {
+    // No hash parameters, check if we should redirect to login
+    window.location.href = '/auth/login/';
+}
+</script>
+{% endblock %}

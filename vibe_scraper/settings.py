@@ -12,7 +12,10 @@ https://docs.djangoproject.com/en/5.2/ref/settings/
 
 import os
 from pathlib import Path
-import dj_database_url
+try:
+    import dj_database_url
+except ImportError:
+    dj_database_url = None
 from dotenv import load_dotenv
 
 # Load environment variables from .env file
@@ -87,7 +90,10 @@ DATABASES = {
     'default': dj_database_url.config(
         default=f'sqlite:///{BASE_DIR / "db.sqlite3"}',
         conn_max_age=600,
-    )
+    ) if dj_database_url else {
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': BASE_DIR / "db.sqlite3",
+    }
 }
 
 
@@ -139,6 +145,23 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 # Custom user model
 AUTH_USER_MODEL = 'core.User'
+
+# Custom login URL for authentication
+LOGIN_URL = '/auth/login/'
+LOGIN_REDIRECT_URL = '/auth/dashboard/'
+LOGOUT_REDIRECT_URL = '/auth/login/'
+
+# Authentication backends
+AUTHENTICATION_BACKENDS = [
+    'core.auth_backends.SupabaseAuthBackend',
+    'django.contrib.auth.backends.ModelBackend',  # Fallback for admin
+]
+
+# Supabase configuration
+SUPABASE_URL = os.getenv('SUPABASE_URL')
+SUPABASE_ANON_KEY = os.getenv('SUPABASE_API_KEY')  # Using SUPABASE_API_KEY from .env
+SUPABASE_SERVICE_ROLE_KEY = os.getenv('SUPABASE_SERVICE_ROLE_KEY')
+SUPABASE_DIRECT_CONNECTION = os.getenv('SUPABASE_DIRECT_CONNECTION')
 
 # N8N base URL
 N8N_BASE_URL = os.getenv('N8N_BASE_URL', 'http://n8n:5678')
