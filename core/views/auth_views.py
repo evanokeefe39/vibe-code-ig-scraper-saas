@@ -1,34 +1,93 @@
-"""
-Authentication views for Supabase integration
-Handles OAuth login, logout, and user session management
-"""
-
-import json
+import os
 import logging
-from django.shortcuts import redirect, render
-from django.contrib.auth import login, logout
-from django.contrib.auth.decorators import login_required
+import json
 from django.http import JsonResponse, HttpResponseBadRequest
-from django.conf import settings
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_http_methods
+from django.shortcuts import render
 from supabase import create_client
-import os
 
 logger = logging.getLogger(__name__)
 
 # Create Supabase client
-supabase = create_client(
-    os.getenv('SUPABASE_URL'),
-    os.getenv('SUPABASE_ANON_KEY')  # Use SUPABASE_ANON_KEY from .env
-)
+supabase_url = os.getenv('SUPABASE_URL')
+supabase_key = os.getenv('SUPABASE_ANON_KEY')  # Use SUPABASE_ANON_KEY from .env
 
+print(f"DEBUG: Supabase URL: {supabase_url}")
+print(f"DEBUG: Supabase Key: {supabase_key}")
+
+if supabase_url and supabase_key:
+    supabase = create_client(supabase_url, supabase_key)
+else:
+    print("ERROR: Missing Supabase environment variables")
+    supabase = None
 
 def login_view(request):
     """
     Display login page with OAuth options
     """
     return render(request, 'auth/login.html')
+
+
+def logout_view(request):
+    """
+    Handle user logout
+    """
+    from django.contrib.auth import logout
+    logout(request)
+    from django.shortcuts import redirect
+    return redirect('login')
+
+
+def dashboard_view(request):
+    """
+    Display user dashboard after authentication
+    """
+    return render(request, 'auth/dashboard.html')
+
+
+def get_oauth_config(request):
+    """
+    Return OAuth configuration for frontend
+    """
+    if not supabase_url:
+        return JsonResponse({'error': 'Supabase not configured'}, status=500)
+    
+    config = {
+        'supabaseUrl': supabase_url,
+        'supabaseKey': supabase_key,
+    }
+    return JsonResponse(config)
+
+
+def refresh_token(request):
+    """
+    Refresh Supabase authentication token
+    """
+    if request.method == 'POST':
+        try:
+            data = json.loads(request.body)
+            refresh_token = data.get('refresh_token')
+            
+            if not refresh_token:
+                return JsonResponse({'error': 'Missing refresh token'}, status=400)
+            
+            # Use Supabase to refresh the token
+            new_session = supabase.auth.refresh_session(refresh_token)
+            
+            if new_session.session:
+                return JsonResponse({
+                    'access_token': new_session.session.access_token,
+                    'refresh_token': new_session.session.refresh_token,
+                })
+            else:
+                return JsonResponse({'error': 'Failed to refresh token'}, status=400)
+                
+        except Exception as e:
+            logger.error(f"Token refresh error: {str(e)}")
+            return JsonResponse({'error': 'Token refresh failed'}, status=500)
+    
+    return JsonResponse({'error': 'Method not allowed'}, status=405)
 
 
 @csrf_exempt
@@ -50,30 +109,33 @@ def supabase_auth_callback(request):
         else:
             # Handle GET request from OAuth redirect
             # Check URL hash for tokens (Supabase puts tokens in hash)
-            if request.META.get('HTTP_REFERER') and 'access_token' in request.META['HTTP_REFERER']:
-                # Parse from referer if available
-                from urllib.parse import urlparse, parse_qs
-                referer = request.META['HTTP_REFERER']
-                parsed = urlparse(referer)
-                if parsed.fragment:
-                    from urllib.parse import parse_qs
-                    fragment_params = parse_qs(parsed.fragment)
-                    access_token = fragment_params.get('access_token', [None])[0]
-                    refresh_token = fragment_params.get('refresh_token', [None])[0]
+            from urllib.parse import urlparse, parse_qs
             
-            # If no token in referer, check if this is a direct callback with hash
-            # This will be handled by JavaScript in the template
+            # Get full URL from request
+            full_url = request.build_absolute_uri()
+            parsed = urlparse(full_url)
+            
+            print(f"DEBUG: Full URL: {full_url}")
+            print(f"DEBUG: Parsed URL: {parsed}")
+            print(f"DEBUG: Fragment: {parsed.fragment}")
+            
+            if parsed.fragment:
+                fragment_params = parse_qs(parsed.fragment)
+                access_token = fragment_params.get('access_token', [None])[0]
+                refresh_token = fragment_params.get('refresh_token', [None])[0]
+                print(f"DEBUG: Access token: {access_token[:20] if access_token else 'None'}")
+                print(f"DEBUG: Refresh token: {refresh_token[:20] if refresh_token else 'None'}")
         
         if not access_token:
-            # For GET requests without tokens, render the callback page that will handle the hash
-            if request.method == 'GET':
-                return render(request, 'auth/callback.html')
-            return HttpResponseBadRequest("Missing access token")
+            # For GET requests without access token, return the callback page
+            # The JavaScript will handle the token extraction from URL hash
+            return render(request, 'auth/callback.html')
         
         # Verify token with Supabase
         user_data = supabase.auth.get_user(access_token)
         
         if not user_data.user:
+            logger.warning(f"Invalid Supabase token: {access_token[:10]}...")
             return HttpResponseBadRequest("Invalid token")
         
         # Authenticate with Django backend
@@ -81,6 +143,7 @@ def supabase_auth_callback(request):
         user = authenticate(request, token=access_token)
         
         if user:
+            from django.contrib.auth import login
             login(request, user)
             
             # Store tokens in session for future API calls
@@ -94,112 +157,11 @@ def supabase_auth_callback(request):
                 })
             else:
                 # For GET requests, redirect to dashboard
+                from django.shortcuts import redirect
                 return redirect('dashboard')
         else:
             return HttpResponseBadRequest("Authentication failed")
             
     except Exception as e:
-        logger.error(f"Auth callback error: {str(e)}")
+        logger.error(f"Supabase authentication error: {str(e)}")
         return HttpResponseBadRequest("Authentication error")
-
-
-@login_required
-def logout_view(request):
-    """
-    Log out user from both Django and Supabase
-    """
-    try:
-        # Sign out from Supabase if we have a token
-        access_token = request.session.get('supabase_access_token')
-        if access_token:
-            supabase.auth.sign_out(access_token)
-        
-        # Log out from Django
-        logout(request)
-        
-        return redirect('login')
-        
-    except Exception as e:
-        logger.error(f"Logout error: {str(e)}")
-        # Still logout from Django even if Supabase fails
-        logout(request)
-        return redirect('login')
-
-
-@login_required
-def dashboard_view(request):
-    """
-    User dashboard after successful login
-    """
-    from core.models import Run, UserList
-    
-    # Get user statistics
-    run_count = Run.objects.filter(user_id=request.user.id).count()
-    list_count = UserList.objects.filter(user=request.user).count()
-    recent_runs = Run.objects.filter(user_id=request.user.id).order_by('-created_at')[:5]
-    
-    context = {
-        'run_count': run_count,
-        'list_count': list_count,
-        'recent_runs': recent_runs,
-        'api_credits': 100  # TODO: Implement API credit system
-    }
-    
-    return render(request, 'auth/dashboard.html', context)
-
-
-def get_oauth_config(request):
-    """
-    Return OAuth configuration for frontend
-    """
-    config = {
-        'supabaseUrl': os.getenv('SUPABASE_URL'),
-        'supabaseAnonKey': os.getenv('SUPABASE_ANON_KEY'),  # Use SUPABASE_ANON_KEY from .env
-        'providers': {
-            'google': {
-                'name': 'Google',
-                'icon': 'google-color',
-                'enabled': True
-            },
-            'apple': {
-                'name': 'Apple',
-                'icon': 'apple-black',
-                'enabled': True
-            }
-        }
-    }
-    
-    return JsonResponse(config)
-
-
-@csrf_exempt
-@require_http_methods(["POST"])
-def refresh_token(request):
-    """
-    Refresh Supabase JWT token
-    """
-    try:
-        data = json.loads(request.body)
-        refresh_token = data.get('refresh_token')
-        
-        if not refresh_token:
-            return HttpResponseBadRequest("Missing refresh token")
-        
-        # Refresh token with Supabase
-        session = supabase.auth.refresh_session(refresh_token)
-        
-        if session.session:
-            # Update session tokens
-            request.session['supabase_access_token'] = session.session.access_token
-            request.session['supabase_refresh_token'] = session.session.refresh_token
-            
-            return JsonResponse({
-                'success': True,
-                'access_token': session.session.access_token
-            })
-        else:
-            return HttpResponseBadRequest("Token refresh failed")
-            
-    except Exception as e:
-        logger.error(f"Token refresh error: {str(e)}")
-        return HttpResponseBadRequest("Token refresh error")

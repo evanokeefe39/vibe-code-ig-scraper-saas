@@ -101,7 +101,7 @@ let supabase;
 fetch('/auth/config/')
     .then(response => response.json())
     .then(config => {
-        supabase = window.supabase.createClient(config.supabaseUrl, config.supabaseAnonKey);
+        supabase = window.supabase.createClient(config.supabaseUrl, config.supabaseKey);
     })
     .catch(error => {
         console.error('Failed to load Supabase config:', error);
