@@ -13,7 +13,7 @@ class SocialProfile(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
 
 class Run(models.Model):
-    user_id = models.BigIntegerField(null=True)
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
     n8n_execution_id = models.BigIntegerField(blank=True, null=True, db_index=True)
     input = models.JSONField(null=True)  # Scraping parameters (URLs, extraction specs, etc.)
     extraction_prompt = models.TextField(blank=True, default="Extract location information, business mentions, contact details, and other relevant data from social media posts. Adapt to the specific platform and content type.", help_text="Custom prompt for AI extraction")
