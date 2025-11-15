@@ -3,7 +3,7 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.http import HttpResponse, JsonResponse
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
-from ..models import Run
+from ..models import Run, UserList, ListColumn, ListRow
 from ..forms import RunForm, SourceFormSet
 from ..services.n8n_service import get_n8n_execution_status, build_source_config, trigger_run
 
@@ -274,3 +274,380 @@ def run_status_api(request, pk):
         'data': execution_info['data'],
         'run_data': run_data
     })
+
+
+def parse_extracted_data(extracted_json):
+    """Parse extracted data from various formats into a list of entities"""
+    if not extracted_json:
+        return []
+    
+    # Handle different data structures
+    if isinstance(extracted_json, str):
+        try:
+            extracted_data = json.loads(extracted_json)
+        except json.JSONDecodeError:
+            return []
+    else:
+        extracted_data = extracted_json
+    
+    # Extract entities from different possible structures
+    entities = []
+    
+    if isinstance(extracted_data, dict):
+        # Check for common result keys
+        for result_key in ['result', 'results', 'output', 'data']:
+            if result_key in extracted_data:
+                result_data = extracted_data[result_key]
+                if isinstance(result_data, list):
+                    entities = result_data
+                    break
+                elif isinstance(result_data, dict) and 'results' in result_data:
+                    entities = result_data['results']
+                    break
+                elif isinstance(result_data, dict) and 'result' in result_data:
+                    entities = result_data['result']
+                    break
+        
+        # If no standard structure found, treat the dict itself as an entity
+        if not entities:
+            entities = [extracted_data]
+    elif isinstance(extracted_data, list):
+        entities = extracted_data
+    
+    return entities
+
+
+def detect_column_type(sample_values):
+    """Detect the most appropriate column type from sample values"""
+    if not sample_values:
+        return 'text'
+    
+    # Filter out None/empty values
+    non_null_values = [v for v in sample_values if v is not None and v != '']
+    
+    if not non_null_values:
+        return 'text'
+    
+    # Check for boolean values
+    if all(str(v).lower() in ['true', 'false', '1', '0', 'yes', 'no'] for v in non_null_values):
+        return 'boolean'
+    
+    # Check for numeric values
+    numeric_count = 0
+    for v in non_null_values:
+        try:
+            float(str(v))
+            numeric_count += 1
+        except (ValueError, TypeError):
+            pass
+    
+    if numeric_count / len(non_null_values) > 0.8:  # 80% numeric
+        return 'number'
+    
+    # Check for URLs
+    url_count = 0
+    for v in non_null_values:
+        if isinstance(v, str) and ('http://' in v or 'https://' in v):
+            url_count += 1
+    
+    if url_count / len(non_null_values) > 0.5:  # 50% URLs
+        return 'url'
+    
+    # Check for dates
+    date_count = 0
+    for v in non_null_values:
+        if is_date_string(str(v)):
+            date_count += 1
+    
+    if date_count / len(non_null_values) > 0.5:  # 50% dates
+        return 'date'
+    
+    # Check for JSON/objects
+    object_count = 0
+    for v in non_null_values:
+        if isinstance(v, (dict, list)):
+            object_count += 1
+    
+    if object_count / len(non_null_values) > 0.3:  # 30% objects
+        return 'json'
+    
+    # Default to text
+    return 'text'
+
+
+def is_date_string(value):
+    """Check if a string looks like a date"""
+    from datetime import datetime
+    date_formats = [
+        '%Y-%m-%d',
+        '%m/%d/%Y',
+        '%d/%m/%Y',
+        '%Y-%m-%d %H:%M:%S',
+        '%Y-%m-%dT%H:%M:%S',
+        '%Y-%m-%dT%H:%M:%SZ',
+        '%b %d, %Y',
+        '%d %b %Y'
+    ]
+    
+    for fmt in date_formats:
+        try:
+            datetime.strptime(value, fmt)
+            return True
+        except ValueError:
+            continue
+    return False
+
+
+def is_type_compatible(detected_type, existing_type):
+    """Check if detected type is compatible with existing column type"""
+    compatibility_map = {
+        'text': ['text', 'url', 'json'],
+        'number': ['number', 'text'],
+        'date': ['date', 'text'],
+        'boolean': ['boolean', 'text'],
+        'url': ['url', 'text'],
+        'json': ['json', 'text']
+    }
+    
+    return existing_type in compatibility_map.get(detected_type, ['text'])
+
+
+def convert_value_to_column_type(value, column_type):
+    """Convert a value to the appropriate type for the column"""
+    if value is None or value == '':
+        return None
+    
+    try:
+        if column_type == 'number':
+            return float(value)
+        elif column_type == 'boolean':
+            if isinstance(value, bool):
+                return value
+            return str(value).lower() in ['true', '1', 'yes', 'on']
+        elif column_type == 'date':
+            from datetime import datetime
+            if isinstance(value, str):
+                # Try to parse common date formats
+                for fmt in ['%Y-%m-%d', '%m/%d/%Y', '%d/%m/%Y', '%Y-%m-%d %H:%M:%S']:
+                    try:
+                        return datetime.strptime(value, fmt).date().isoformat()
+                    except ValueError:
+                        continue
+            return str(value)  # Fallback
+        elif column_type == 'url':
+            if isinstance(value, str) and not value.startswith(('http://', 'https://')):
+                return f'https://{value}'
+            return str(value)
+        else:
+            # text, json - keep as is or convert to string
+            return value if isinstance(value, (str, int, float, bool, dict, list)) else str(value)
+    except (ValueError, TypeError):
+        # Fallback to string representation
+        return str(value)
+
+
+def analyze_import_impact(run, target_list):
+    """Analyze what will happen when importing extracted data to a list"""
+    extracted_entities = parse_extracted_data(run.extracted)
+    existing_columns = {col.name: col for col in target_list.columns.all()}
+    existing_rows_count = target_list.rows.count()
+    
+    # Analyze extracted fields
+    extracted_fields = set()
+    field_samples = {}
+    
+    for entity in extracted_entities:
+        for field, value in entity.items():
+            extracted_fields.add(field)
+            if field not in field_samples:
+                field_samples[field] = []
+            if len(field_samples[field]) < 5:  # Keep up to 5 samples
+                field_samples[field].append(value)
+    
+    # Categorize changes
+    new_columns = []
+    existing_columns_match = []
+    conflicts = []
+    
+    for field in extracted_fields:
+        if field in existing_columns:
+            # Check for type compatibility
+            detected_type = detect_column_type(field_samples[field])
+            existing_col = existing_columns[field]
+            if is_type_compatible(detected_type, existing_col.column_type):
+                existing_columns_match.append(field)
+            else:
+                conflicts.append({
+                    'field': field,
+                    'existing_type': existing_col.column_type,
+                    'detected_type': detected_type,
+                    'sample_values': field_samples[field][:3]
+                })
+        else:
+            new_columns.append({
+                'name': field,
+                'type': detect_column_type(field_samples[field]),
+                'sample_values': field_samples[field][:3]
+            })
+    
+    return {
+        'new_rows_count': len(extracted_entities),
+        'existing_rows_count': existing_rows_count,
+        'new_columns': new_columns,
+        'existing_columns_match': existing_columns_match,
+        'conflicts': conflicts,
+        'is_empty_list': existing_rows_count == 0,
+        'extracted_fields_count': len(extracted_fields)
+    }
+
+
+@login_required
+def analyze_import_to_list(request, run_pk, list_pk):
+    """Analyze what will happen when importing run data to a list"""
+    run = get_object_or_404(Run, pk=run_pk, user_id=request.user.id)
+    
+    # Handle "new list" case
+    if list_pk == 'new':
+        return JsonResponse({
+            'success': True,
+            'analysis': {
+                'is_new_list': True,
+                'new_rows_count': len(parse_extracted_data(run.extracted)),
+                'new_columns': get_columns_from_extracted_data(run.extracted),
+                'existing_columns_match': [],
+                'conflicts': [],
+                'is_empty_list': True,
+                'extracted_fields_count': len(get_columns_from_extracted_data(run.extracted))
+            }
+        })
+    
+    target_list = get_object_or_404(UserList, pk=list_pk, user=request.user)
+    analysis = analyze_import_impact(run, target_list)
+    
+    return JsonResponse({
+        'success': True,
+        'analysis': analysis
+    })
+
+
+def get_columns_from_extracted_data(extracted_json):
+    """Extract column definitions from extracted data"""
+    entities = parse_extracted_data(extracted_json)
+    if not entities:
+        return []
+    
+    # Analyze all fields across entities
+    field_samples = {}
+    for entity in entities:
+        for field, value in entity.items():
+            if field not in field_samples:
+                field_samples[field] = []
+            if len(field_samples[field]) < 5:
+                field_samples[field].append(value)
+    
+    columns = []
+    for field, samples in field_samples.items():
+        columns.append({
+            'name': field,
+            'type': detect_column_type(samples),
+            'sample_values': samples[:3]
+        })
+    
+    return columns
+
+
+@login_required
+def add_extracted_to_list(request, run_pk, list_pk):
+    """Add extracted data from a run to a list"""
+    if request.method != 'POST':
+        return JsonResponse({'success': False, 'error': 'POST required'})
+    
+    run = get_object_or_404(Run, pk=run_pk, user_id=request.user.id)
+    
+    # Handle new list creation
+    if list_pk == 'new':
+        list_name = request.POST.get('list_name', '').strip()
+        if not list_name:
+            return JsonResponse({'success': False, 'error': 'List name is required'})
+        
+        target_list = UserList.objects.create(
+            user=request.user,
+            name=list_name,
+            description=f"Created from run #{run.pk}"
+        )
+        
+        # Create columns from extracted data
+        columns = get_columns_from_extracted_data(run.extracted)
+        for i, col_data in enumerate(columns):
+            ListColumn.objects.create(
+                user_list=target_list,
+                name=col_data['name'],
+                column_type=col_data['type'],
+                order=i
+            )
+    else:
+        target_list = get_object_or_404(UserList, pk=list_pk, user=request.user)
+    
+    try:
+        result = import_extracted_to_list(run, target_list, request.user)
+        return JsonResponse({
+            'success': True,
+            'result': result,
+            'list_url': f"/lists/{target_list.pk}/"
+        })
+    except Exception as e:
+        import logging
+        logger = logging.getLogger(__name__)
+        logger.error(f"Error importing to list: {e}")
+        return JsonResponse({
+            'success': False,
+            'error': str(e)
+        })
+
+
+def import_extracted_to_list(run, target_list, user):
+    """Import extracted data with column creation and conflict handling"""
+    analysis = analyze_import_impact(run, target_list)
+    
+    # Create new columns if needed (only for existing lists)
+    if not analysis.get('is_new_list', False):
+        for col_data in analysis['new_columns']:
+            ListColumn.objects.create(
+                user_list=target_list,
+                name=col_data['name'],
+                column_type=col_data['type'],
+                order=target_list.columns.count()
+            )
+    
+    # Refresh columns after creating new ones
+    columns = {col.name: col for col in target_list.columns.all()}
+    
+    # Import data
+    extracted_entities = parse_extracted_data(run.extracted)
+    imported_count = 0
+    
+    for entity in extracted_entities:
+        row_data = {}
+        for field, value in entity.items():
+            if field in columns:
+                column = columns[field]
+                try:
+                    row_data[field] = convert_value_to_column_type(value, column.column_type)
+                except ValueError as e:
+                    # Handle type conversion errors
+                    import logging
+                    logger = logging.getLogger(__name__)
+                    logger.warning(f"Type conversion error for field {field}: {e}")
+                    row_data[field] = str(value)  # Fallback to string
+        
+        ListRow.objects.create(
+            user_list=target_list,
+            data=row_data
+        )
+        imported_count += 1
+    
+    return {
+        'imported_rows': imported_count,
+        'new_columns': len(analysis['new_columns']),
+        'conflicts_resolved': len(analysis['conflicts'])
+    }
