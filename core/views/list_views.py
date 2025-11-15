@@ -300,7 +300,7 @@ def list_row_create(request, pk):
 
 def update_cell(request, pk):
     if request.method == 'POST':
-        list_obj = get_object_or_404(UserList, pk=pk, user__id=1)
+        list_obj = get_object_or_404(UserList, pk=pk, user=request.user)
         row_id = request.POST.get('row_id')
         column = request.POST.get('column')
         value = request.POST.get('value')
@@ -334,7 +334,7 @@ def update_cell(request, pk):
 
 def delete_row(request, pk):
     if request.method == 'POST':
-        list_obj = get_object_or_404(UserList, pk=pk, user__id=1)
+        list_obj = get_object_or_404(UserList, pk=pk, user=request.user)
         row_id = request.POST.get('row_id')
 
         try:
@@ -351,7 +351,7 @@ def delete_row(request, pk):
 
 def add_blank_row(request, pk):
     """Add a blank row to the table via HTMX"""
-    list_obj = get_object_or_404(UserList, pk=pk, user__id=1)
+    list_obj = get_object_or_404(UserList, pk=pk, user=request.user)
     columns = list_obj.columns.all().order_by('order')
 
     if request.method == 'POST':
@@ -414,7 +414,7 @@ def add_blank_row(request, pk):
 def table_save(request, pk):
     """Batch save table data from HTMX/Alpine.js table editor"""
     try:
-        list_obj = get_object_or_404(UserList, pk=pk, user__id=1)
+        list_obj = get_object_or_404(UserList, pk=pk, user=request.user)
         data = json.loads(request.POST.get('data', '{}'))
 
         import logging
@@ -503,7 +503,7 @@ def table_save(request, pk):
 
 def update_column(request, pk, column_id):
     if request.method == 'POST':
-        list_obj = get_object_or_404(UserList, pk=pk, user__id=1)
+        list_obj = get_object_or_404(UserList, pk=pk, user=request.user)
         column = get_object_or_404(ListColumn, pk=column_id, user_list=list_obj)
 
         # Update name
@@ -549,7 +549,7 @@ def update_column(request, pk, column_id):
 @require_http_methods(["POST"])
 def validate_column_type_change(request, pk, column_id):
     """Validate if column type change is safe"""
-    list_obj = get_object_or_404(UserList, pk=pk, user__id=1)
+    list_obj = get_object_or_404(UserList, pk=pk, user=request.user)
     column = get_object_or_404(ListColumn, pk=column_id, user_list=list_obj)
     new_type = request.POST.get('column_type')
     
@@ -657,7 +657,7 @@ def validate_type_compatibility(data, current_type, new_type):
 
 def delete_column(request, pk, column_id):
     if request.method == 'POST':
-        list_obj = get_object_or_404(UserList, pk=pk, user__id=1)
+        list_obj = get_object_or_404(UserList, pk=pk, user=request.user)
         column = get_object_or_404(ListColumn, pk=column_id, user_list=list_obj)
 
         # Check if this is the last column
@@ -672,7 +672,7 @@ def delete_column(request, pk, column_id):
 
 def delete_list(request, pk):
     if request.method == 'POST':
-        list_obj = get_object_or_404(UserList, pk=pk, user__id=1)
+        list_obj = get_object_or_404(UserList, pk=pk, user=request.user)
         
         # For form submission, redirect after deletion
         if not request.headers.get('X-Requested-With') == 'XMLHttpRequest':
@@ -698,7 +698,7 @@ def delete_list(request, pk):
 def delete_selected_rows(request, pk):
     """Delete multiple rows selected in AG-Grid"""
     try:
-        list_obj = get_object_or_404(UserList, pk=pk, user__id=1)
+        list_obj = get_object_or_404(UserList, pk=pk, user=request.user)
         data = json.loads(request.body)
         row_ids = data.get('ids', [])
         
@@ -728,7 +728,7 @@ def delete_selected_rows(request, pk):
 def add_column_ag_grid(request, pk):
     """Add new column for AG-Grid table"""
     try:
-        list_obj = get_object_or_404(UserList, pk=pk, user__id=1)
+        list_obj = get_object_or_404(UserList, pk=pk, user=request.user)
         data = json.loads(request.body)
         
         name = data.get('name', '').strip()

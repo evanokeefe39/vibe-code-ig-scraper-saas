@@ -6,7 +6,7 @@ from ..models import Run, UserList, ListColumn, ListRow
 
 
 def export_list_csv(request, pk):
-    list_obj = get_object_or_404(UserList, pk=pk, user__id=1)
+    list_obj = get_object_or_404(UserList, pk=pk, user=request.user)
     columns = list_obj.columns.all().order_by('order')
     rows = list_obj.rows.all()
 
@@ -32,7 +32,7 @@ def export_list_csv(request, pk):
 
 
 def export_list_json(request, pk):
-    list_obj = get_object_or_404(UserList, pk=pk, user__id=1)
+    list_obj = get_object_or_404(UserList, pk=pk, user=request.user)
     columns = list_obj.columns.all().order_by('order')
     rows = list_obj.rows.all()
 
