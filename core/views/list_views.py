@@ -13,7 +13,7 @@ logger = logging.getLogger(__name__)
 
 @login_required
 def list_list(request):
-    lists = UserList.objects.filter(user=request.user).order_by('-created_at')
+    lists = UserList.objects.filter(user=request.user).prefetch_related('columns').order_by('-created_at')
     return render(request, 'core/list_list.html', {'lists': lists})
 
 
@@ -91,13 +91,15 @@ def list_create(request):
     if request.method == 'POST':
         name = request.POST.get('name')
         description = request.POST.get('description', '')
+        icon = request.POST.get('icon', '📋')
 
         if name:
             # Create the list for the authenticated user
             user_list = UserList.objects.create(
                 user=request.user,
                 name=name,
-                description=description
+                description=description,
+                icon=icon
             )
 
             # Create default columns
@@ -761,4 +763,28 @@ def add_column_ag_grid(request, pk):
         return JsonResponse({'success': False, 'error': 'Invalid JSON data'})
     except Exception as e:
         logger.error(f"Error adding column: {e}")
+        return JsonResponse({'success': False, 'error': 'Server error'})
+
+
+@require_http_methods(["POST"])
+def update_list_icon(request, pk):
+    """Update list icon via AJAX"""
+    try:
+        list_obj = get_object_or_404(UserList, pk=pk, user=request.user)
+        data = json.loads(request.body)
+        icon = data.get('icon', '').strip()
+        
+        if not icon:
+            return JsonResponse({'success': False, 'error': 'Icon is required'})
+        
+        # Update icon
+        list_obj.icon = icon
+        list_obj.save(update_fields=['icon'])
+        
+        return JsonResponse({'success': True})
+        
+    except json.JSONDecodeError:
+        return JsonResponse({'success': False, 'error': 'Invalid JSON data'})
+    except Exception as e:
+        logger.error(f"Error updating list icon: {e}")
         return JsonResponse({'success': False, 'error': 'Server error'})

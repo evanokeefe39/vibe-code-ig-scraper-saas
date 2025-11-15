@@ -31,6 +31,7 @@ class UserList(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     name = models.CharField(max_length=255)
     description = models.TextField(blank=True)
+    icon = models.CharField(max_length=50, blank=True, help_text="Emoji or icon for the list")
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
