@@ -43,7 +43,7 @@
                     <div class="ml-5 w-0 flex-1">
                         <dl>
                             <dt class="text-sm font-medium text-gray-500 truncate">Total Runs</dt>
-                            <dd class="text-lg font-medium text-gray-900">{{ run_count|default:0 }}</dd>
+                            <dd class="text-lg font-medium text-gray-900">{{ run_count}}</dd>
                         </dl>
                     </div>
                 </div>
@@ -79,7 +79,7 @@
                     <div class="ml-5 w-0 flex-1">
                         <dl>
                             <dt class="text-sm font-medium text-gray-500 truncate">API Credits</dt>
-                            <dd class="text-lg font-medium text-gray-900">{{ api_credits|default:100 }}</dd>
+                            <dd class="text-lg font-medium text-gray-900">{{user.api_credits}}</dd>
                         </dl>
                     </div>
                 </div>

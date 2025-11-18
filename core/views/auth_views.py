@@ -37,12 +37,12 @@ def dashboard_view(request):
     """
     if request.user.is_authenticated:
         try:
-            from core.models import UserList, Run
+            from core.models import UserList, Run, User
             
             # Get actual counts for UserList (uses proper ForeignKey)
             list_count = UserList.objects.filter(user=request.user).count()
             
-# Get runs for current user - Run model now uses proper ForeignKey
+            # Get runs for current user - Run model now uses proper ForeignKey
             run_count = Run.objects.filter(user=request.user).count()
             
             # Get recent runs for current user
@@ -52,7 +52,7 @@ def dashboard_view(request):
                 'list_count': list_count,
                 'run_count': run_count,
                 'recent_runs': recent_runs,
-                'api_credits': getattr(request.user, 'api_credits', 100)
+                'api_credits': request.user.api_credits
             }
             
             return render(request, 'auth/dashboard.html', context)
@@ -60,10 +60,10 @@ def dashboard_view(request):
             logger.error(f"Error in dashboard view: {e}")
             # Return empty context on error
             return render(request, 'auth/dashboard.html', {
-                'list_count': 0,
-                'run_count': 0,
+                'list_count': -1,
+                'run_count': -1,
                 'recent_runs': [],
-                'api_credits': 100
+                'api_credits': -1
             })
     else:
         return redirect('login')

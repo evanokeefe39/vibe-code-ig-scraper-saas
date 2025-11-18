@@ -171,41 +171,6 @@ async function signInWithApple() {
     }
 }
 
-// // Handle OAuth callback
-// if (window.location.hash) {
-//     const params = new URLSearchParams(window.location.hash.substring(1));
-//     const accessToken = params.get('access_token');
-//     const refreshToken = params.get('refresh_token');
-    
-//     if (accessToken) {
-//         showLoading();
-        
-//         fetch('/auth/callback/', {
-//             method: 'POST',
-//             headers: {
-//                 'Content-Type': 'application/json',
-//                 'X-CSRFToken': getCookie('csrftoken')
-//             },
-//             body: JSON.stringify({
-//                 access_token: accessToken,
-//                 refresh_token: refreshToken
-//             })
-//         })
-//         .then(response => response.json())
-//         .then(data => {
-//             if (data.success) {
-//                 window.location.href = data.redirect_url;
-//             } else {
-//                 showError('Authentication failed');
-//             }
-//         })
-//         .catch(error => {
-//             console.error('Callback error:', error);
-//             showError('Authentication error');
-//         });
-//     }
-// }
-
 function getCookie(name) {
     let cookieValue = null;
     if (document.cookie && document.cookie !== '') {
