@@ -5,6 +5,7 @@ class User(AbstractUser):
     # Extend for Supabase integration later
     supabase_id = models.CharField(max_length=255, blank=True, null=True)
     subscription_tier = models.CharField(max_length=50, default='free')
+    api_credits = models.IntegerField(default=0) 
 
 class SocialProfile(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)

@@ -44,6 +44,19 @@
 </div>
 
 <script>
+
+
+
+
+
+
+
+
+
+
+
+
+
 // Handle OAuth callback from URL hash
 function handleCallback() {
     const params = new URLSearchParams(window.location.hash.substring(1));
@@ -59,7 +72,7 @@ function handleCallback() {
     
     if (accessToken) {
         // Send tokens to backend
-        fetch('/auth/callback/', {
+        fetch('/auth/callback/complete', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',

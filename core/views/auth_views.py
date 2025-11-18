@@ -16,10 +16,13 @@ def login_view(request):
         return redirect('dashboard')
     
     # For development, create a simple login form or redirect to Supabase
-    supabase_url = getattr(settings, 'SUPABASE_URL', 'https://your-project.supabase.co')
+    supabase_url = getattr(settings, 'SUPABASE_URL')
     return render(request, 'auth/login.html', {
         'supabase_url': supabase_url
     })
+
+def callback_page(request):
+    return render(request, "auth/callback.html")
 
 def logout_view(request):
     """
@@ -65,13 +68,102 @@ def dashboard_view(request):
     else:
         return redirect('login')
 
+from django.views.decorators.csrf import csrf_exempt
+
+@csrf_exempt
 def supabase_auth_callback(request):
     """
     Handle Supabase authentication callback
     """
-    # This would handle the OAuth callback from Supabase
-    # For now, just redirect to dashboard
-    return redirect('dashboard')
+    if request.method == 'POST':
+        try:
+            import json
+            data = json.loads(request.body)
+            access_token = data.get('access_token')
+            refresh_token = data.get('refresh_token')
+            
+            if not access_token:
+                return JsonResponse({'success': False, 'error': 'No access token provided'})
+            
+            # Use custom authentication backend to verify token and create/update user
+            from core.auth_backends import SupabaseAuthBackend
+            backend = SupabaseAuthBackend()
+            user = backend.authenticate(request, token=access_token)
+            
+            if user:
+                # Log in user
+                login(request, user, backend='core.auth_backends.SupabaseAuthBackend')
+                
+                # Store refresh token in session for later use
+                if refresh_token:
+                    request.session['supabase_refresh_token'] = refresh_token
+                
+                return JsonResponse({'success': True, 'redirect_url': '/auth/dashboard/'})
+            else:
+                return JsonResponse({'success': False, 'error': 'Invalid token'})
+                
+        except json.JSONDecodeError:
+            return JsonResponse({'success': False, 'error': 'Invalid JSON'})
+        except Exception as e:
+            logger.error(f"Supabase auth callback error: {str(e)}")
+            return JsonResponse({'success': False, 'error': 'Authentication failed'})
+    
+    # Handle GET request (OAuth redirect with hash)
+    elif request.method == 'GET':
+        # This handles the redirect from OAuth provider with tokens in URL hash
+        return render(request, 'auth/callback.html')
+    
+    return JsonResponse({'success': False, 'error': 'Invalid request method'})
+
+
+def refresh_token(request):
+    """
+    Refresh authentication token
+    """
+    if request.method == 'POST':
+        try:
+            import json
+            data = json.loads(request.body)
+            refresh_token = data.get('refresh_token')
+            
+            if not refresh_token:
+                # Try to get from session
+                refresh_token = request.session.get('supabase_refresh_token')
+            
+            if not refresh_token:
+                return JsonResponse({'success': False, 'error': 'No refresh token provided'})
+            
+            # Use auth backend to refresh token
+            from core.auth_backends import SupabaseAuthBackend
+            backend = SupabaseAuthBackend()
+            session = backend.refresh_token(refresh_token)
+            
+            if session and session.access_token:
+                # Get user with new token
+                user = backend.authenticate(request, token=session.access_token)
+                if user:
+                    login(request, user, backend='core.auth_backends.SupabaseAuthBackend')
+                    
+                    # Update session with new refresh token
+                    if session.refresh_token:
+                        request.session['supabase_refresh_token'] = session.refresh_token
+                    
+                    return JsonResponse({
+                        'success': True, 
+                        'access_token': session.access_token,
+                        'refresh_token': session.refresh_token
+                    })
+            
+            return JsonResponse({'success': False, 'error': 'Failed to refresh token'})
+            
+        except json.JSONDecodeError:
+            return JsonResponse({'success': False, 'error': 'Invalid JSON'})
+        except Exception as e:
+            logger.error(f"Token refresh error: {str(e)}")
+            return JsonResponse({'success': False, 'error': 'Token refresh failed'})
+    
+    return JsonResponse({'success': False, 'error': 'Invalid request method'})
+
 
 def get_oauth_config(request):
     """
@@ -82,10 +174,3 @@ def get_oauth_config(request):
         'supabaseKey': getattr(settings, 'SUPABASE_ANON_KEY', ''),
     }
     return JsonResponse(config)
-
-def refresh_token(request):
-    """
-    Refresh authentication token
-    """
-    # This would handle token refresh logic
-    return JsonResponse({'status': 'success'})

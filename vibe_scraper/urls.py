@@ -23,7 +23,7 @@ from core.views.utility_views import home, pricing
 from core.views.run_views import run_create, run_list, run_detail, run_by_n8n, run_status_api, empty_source_form, platform_config, analyze_import_to_list, add_extracted_to_list
 from core.views.list_views import list_list, list_detail, list_create, list_column_create, list_row_create, update_cell, delete_row, add_blank_row, update_column, delete_column, delete_list, table_save, validate_column_type_change, delete_selected_rows, add_column_ag_grid, update_list_icon
 from core.views.export_views import export_list_csv, export_list_json, export_run_csv, export_run_json, export_run_scraped_json
-from core.views.auth_views import login_view, logout_view, dashboard_view, supabase_auth_callback, get_oauth_config, refresh_token
+from core.views.auth_views import login_view,callback_page, logout_view, dashboard_view, supabase_auth_callback, get_oauth_config, refresh_token
 
 urlpatterns = [
     path("admin/", admin.site.urls),
@@ -34,12 +34,13 @@ urlpatterns = [
     path("auth/login/", login_view, name="login"),
     path("auth/logout/", logout_view, name="logout"),
     path("auth/dashboard/", dashboard_view, name="dashboard"),
-    path("auth/callback/", supabase_auth_callback, name="supabase_auth_callback"),
+    path("auth/callback/", callback_page, name="callback_page"),
+    path("auth/callback/complete", supabase_auth_callback, name="supabase_auth_callback"),
     path("auth/config/", get_oauth_config, name="oauth_config"),
     path("auth/refresh/", refresh_token, name="refresh_token"),
 
     path("runs/", run_list, name="run_list"),
-path("runs/create/", run_create, name="run_create"),
+    path("runs/create/", run_create, name="run_create"),
     path("runs/create/empty-form/", empty_source_form, name="empty_source_form"),
     path("runs/create/platform-config/<str:platform_type>/", platform_config, name="platform_config"),
     path("runs/<int:pk>/", run_detail, name="run_detail"),
