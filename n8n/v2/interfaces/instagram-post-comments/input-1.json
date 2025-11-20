@@ -1,0 +1,13 @@
+{
+  "addParentData": false,
+  "directUrls": [
+    "https://www.instagram.com/p/DRDA6PhAi8y/"
+  ],
+  "enhanceUserSearchWithFacebookPage": false,
+  "isUserReelFeedURL": false,
+  "isUserTaggedFeedURL": false,
+  "onlyPostsNewerThan": "4 days",
+  "resultsLimit": 5,
+  "resultsType": "comments",
+  "searchType": "hashtag"
+}

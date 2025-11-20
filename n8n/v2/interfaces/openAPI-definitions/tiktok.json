@@ -1,10 +1,10 @@
 {
   "openapi": "3.0.1",
   "info": {
-    "title": "Instagram Scraper",
-    "description": "Scrape and download Instagram posts, profiles, places, hashtags, photos, and comments. Get data from Instagram using one or more Instagram URLs or search queries. Export scraped data, run the scraper via API, schedule and monitor runs or integrate with other tools.",
+    "title": "TikTok Data Extractor",
+    "description": "Extract data about videos, users, and channels based on hashtags or scrape full user profiles including posts, total likes, name, nickname, numbers of comments, shares, followers, following, and more.",
     "version": "0.0",
-    "x-build-id": "45BDZt2ps4H7n9H1T"
+    "x-build-id": "SmOJnJwSPZkJ05qBc"
   },
   "servers": [
     {
@@ -12,9 +12,9 @@
     }
   ],
   "paths": {
-    "/acts/apify~instagram-scraper/run-sync-get-dataset-items": {
+    "/acts/clockworks~free-tiktok-scraper/run-sync-get-dataset-items": {
       "post": {
-        "operationId": "run-sync-get-dataset-items-apify-instagram-scraper",
+        "operationId": "run-sync-get-dataset-items-clockworks-free-tiktok-scraper",
         "x-openai-isConsequential": false,
         "summary": "Executes an Actor, waits for its completion, and returns Actor's dataset items in response.",
         "tags": [
@@ -48,9 +48,9 @@
         }
       }
     },
-    "/acts/apify~instagram-scraper/runs": {
+    "/acts/clockworks~free-tiktok-scraper/runs": {
       "post": {
-        "operationId": "runs-sync-apify-instagram-scraper",
+        "operationId": "runs-sync-clockworks-free-tiktok-scraper",
         "x-openai-isConsequential": false,
         "summary": "Executes an Actor and returns information about the initiated run in response.",
         "tags": [
@@ -91,9 +91,9 @@
         }
       }
     },
-    "/acts/apify~instagram-scraper/run-sync": {
+    "/acts/clockworks~free-tiktok-scraper/run-sync": {
       "post": {
-        "operationId": "run-sync-apify-instagram-scraper",
+        "operationId": "run-sync-clockworks-free-tiktok-scraper",
         "x-openai-isConsequential": false,
         "summary": "Executes an Actor, waits for completion, and returns the OUTPUT from Key-value store in response.",
         "tags": [
@@ -133,83 +133,142 @@
       "inputSchema": {
         "type": "object",
         "properties": {
-          "directUrls": {
-            "title": "Instagram URLs you want to scrape",
-            "uniqueItems": true,
+          "hashtags": {
+            "title": "#️⃣ Videos with this hashtag",
             "type": "array",
-            "description": "Add one or more Instagram URLs to scrape. The field is optional, but you need to either use this field or search query below.",
+            "description": "Just add one or more TikTok hashtags and the scraper will collect data about videos containing this hashtag: likes, users, followers and more. <br> You can enter the hashtags one by one, or use the <strong>Bulk edit</strong> section to add a prepared list.",
             "items": {
               "type": "string"
             }
           },
-          "resultsType": {
-            "title": "What do you want to scrape from each page?",
+          "resultsPerPage": {
+            "title": "💯 Number of videos per hashtag, profile or search",
+            "minimum": 1,
+            "maximum": 1000000,
+            "type": "integer",
+            "description": "Add the number of tiktoks you want to scrape per hashtag, profile, or search query. This field is applicable to <strong>#️⃣ Hashtags</strong>, <strong>😎 Profiles</strong>, and <strong>🔍 Search</strong>.",
+            "default": 1
+          },
+          "profiles": {
+            "title": "Usernames",
+            "type": "array",
+            "description": "Add one or multiple TikTok usernames you want to scrape. You can enter the usernames one by one, or use the <strong>Bulk edit</strong> section to add a prepared list.",
+            "items": {
+              "type": "string"
+            }
+          },
+          "profileScrapeSections": {
+            "title": "Profile sections to scrape",
+            "minItems": 1,
+            "uniqueItems": true,
+            "type": "array",
+            "description": "If a profile has reposted videos, you can scrape them by selecting 'Reposts'",
+            "items": {
+              "type": "string",
+              "enum": [
+                "videos",
+                "reposts"
+              ],
+              "enumTitles": [
+                "Videos",
+                "Reposts"
+              ]
+            },
+            "default": [
+              "videos"
+            ]
+          },
+          "profileSorting": {
+            "title": "Profile video sorting",
             "enum": [
-              "posts",
-              "comments",
-              "details",
-              "mentions",
-              "stories"
+              "latest",
+              "popular",
+              "oldest"
             ],
             "type": "string",
-            "description": "You can choose to get posts, comments or details from Instagram URLs. Comments can only be scraped from post URLs.",
-            "default": "posts"
+            "description": "Select Latest to scrape the most recent videos first, Oldest - the oldest videos first, Popular - the most popular videos first. Date filters only work with Latest and Oldest. Only supported for Videos section",
+            "default": "latest"
           },
-          "resultsLimit": {
-            "title": "Max results per URL",
-            "minimum": 1,
-            "type": "integer",
-            "description": "How many posts or comments (max 50 comments per post) you want to scrape from each Instagram URL. If you set this to 1, you will get a single post from each page."
-          },
-          "onlyPostsNewerThan": {
-            "title": "Newer than",
+          "oldestPostDateUnified": {
+            "title": "Scrape profile videos published after [date]",
             "pattern": "^(\\d{4})-(0[1-9]|1[0-2])-(0[1-9]|[12]\\d|3[01])(T[0-2]\\d:[0-5]\\d(:[0-5]\\d)?(\\.\\d+)?Z?)?$|^(\\d+)\\s*(minute|hour|day|week|month|year)s?$",
             "type": "string",
-            "description": "Limit how far back to the history the scraper should go. The date should be in YYYY-MM-DD or full ISO absolute format or in relative format e.g. 1 days, 2 months, 3 years. All time values are taken in UTC timezone"
+            "description": "Optional filter. Only videos uploaded after or on this date will be scraped. Alternatively, specify how old the scraped videos should be in days. Putting <code>1</code> will get you only today's posts, <code>2</code> - yesterday's and today's, and so on."
           },
-          "isUserTaggedFeedURL": {
-            "title": "Tagged posts",
-            "type": "boolean",
-            "description": "Get the tagged posts for each profile"
-          },
-          "isUserReelFeedURL": {
-            "title": "Reels posts",
-            "type": "boolean",
-            "description": "Get the reels posts for each profile"
-          },
-          "search": {
-            "title": "Search query",
+          "newestPostDate": {
+            "title": "Scrape profile videos published before [date]",
             "type": "string",
-            "description": "Provide a search query which will be used to search Instagram for profiles, hashtags or places."
+            "description": "Optional filter. Only videos uploaded before or on this date will be scraped."
           },
-          "searchType": {
-            "title": "Search type",
+          "excludePinnedPosts": {
+            "title": "Exclude pinned posts",
+            "type": "boolean",
+            "description": "Tick to exclude pinned posts from profiles. Pinned posts are usually the first videos on a profile's page.",
+            "default": false
+          },
+          "searchQueries": {
+            "title": "Search queries",
+            "type": "array",
+            "description": "Your keyword will apply to both videos <strong>and</strong> profiles. Use the <strong>Search sorting</strong> field below to specify whether you want your search to apply to top content, videos or users. <br> As for your query's format, you can use any query that works on TikTok.",
+            "items": {
+              "type": "string"
+            }
+          },
+          "searchSection": {
+            "title": "Search sorting",
             "enum": [
-              "user",
-              "hashtag",
-              "place"
+              "",
+              "/video",
+              "/user"
             ],
             "type": "string",
-            "description": "What type of pages to search for (you can look for hashtags, profiles or places).",
-            "default": "hashtag"
+            "description": "By default, this scraper will sort the search results by whatever shows up in the <strong>Top</strong> section of TikTok search. <br> But you can narrow it down: if you want to apply your search query to just videos, use <strong>Video</strong>, just profiles - <strong>Profile</strong>.",
+            "default": ""
           },
-          "searchLimit": {
-            "title": "Search results limit",
+          "maxProfilesPerQuery": {
+            "title": "Number of profiles per query",
             "minimum": 1,
-            "maximum": 250,
             "type": "integer",
-            "description": "How many search results (hashtags, users or places) should be returned."
+            "description": "Only applies to profile searches. In this case ignore the <strong> 💯 Number of videos </strong> section and choose the number of profiles you want to scrape here.",
+            "default": 10
           },
-          "enhanceUserSearchWithFacebookPage": {
-            "title": "Enhance user search (top 10) with Facebook page & email if available (higher credit usage)",
-            "type": "boolean",
-            "description": "For each user from the top 10, the scraper extracts their Facebook page that sometimes contains their business email. Please keep in mind that you are forbidden to collect personal data in certain jurisdictions. Please see <a href=\"https://blog.apify.com/is-web-scraping-legal/#think-twice-before-scraping-personal-data\">this article</a> for more details."
+          "postURLs": {
+            "title": "Direct URLs for scraping specific tiktoks",
+            "type": "array",
+            "description": "Add the URLs of tiktok videos you want to scrape. You can paste video URLs one by one, or use the <strong>Bulk edit</strong> section to add a prepared list.",
+            "items": {
+              "type": "string"
+            }
           },
-          "addParentData": {
-            "title": "Add metadata",
+          "shouldDownloadVideos": {
+            "title": "Include videos",
             "type": "boolean",
-            "description": "Only for feed items - add data source to results, i.e. for profile posts metadata is profile, for tag posts metadata is hashtag",
+            "description": "Tick to download TikTok videos. Note that this will increase time and costs needed to extract the data.",
             "default": false
+          },
+          "shouldDownloadCovers": {
+            "title": "Include thumbnails",
+            "type": "boolean",
+            "description": "Tick to download TikTok video cover images (thumbnails). Note that this will increase time and costs needed to extract the data.",
+            "default": false
+          },
+          "shouldDownloadSubtitles": {
+            "title": "Include subtitles",
+            "type": "boolean",
+            "description": "Tick to download TikTok video subtitles (only when present on the video). Note that this will increase time and costs needed to extract the data.",
+            "default": false
+          },
+          "shouldDownloadSlideshowImages": {
+            "title": "Download slideshow images",
+            "type": "boolean",
+            "description": "Tick to download TikTok slideshow images. Note that this will increase costs and time required for scraping.",
+            "default": false
+          },
+          "videoKvStoreIdOrName": {
+            "title": "✍️ Name your storage for videos",
+            "pattern": "^[a-zA-Z0-9-]+$",
+            "type": "string",
+            "description": "Name (or ID) of the Key Value Store where the videos and other media like thumbnails will be stored. Omit to store in the default one. Using this option will provide a named Key-Value store can help bypass data retention and store the content forever until the store is manually deleted.<br><br>The Key-Value store's name can consist of a versatile combination of uppercase letters, lowercase letters, digits, or hyphens, all without any spaces."
           }
         }
       },

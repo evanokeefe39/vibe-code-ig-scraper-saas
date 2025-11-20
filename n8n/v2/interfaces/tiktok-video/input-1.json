@@ -1,0 +1,18 @@
+{
+  "excludePinnedPosts": true,
+  "maxProfilesPerQuery": 3,
+  "oldestPostDateUnified": "7 days",
+  "postURLs": [
+    "https://www.tiktok.com/@sabrina_ramonov/video/7574083838410820894?lang=en"
+  ],
+  "profileScrapeSections": [
+    "videos"
+  ],
+  "profileSorting": "latest",
+  "resultsPerPage": 5,
+  "searchSection": "/user",
+  "shouldDownloadCovers": true,
+  "shouldDownloadSlideshowImages": false,
+  "shouldDownloadSubtitles": true,
+  "shouldDownloadVideos": false
+}

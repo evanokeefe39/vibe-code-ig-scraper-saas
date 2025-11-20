@@ -1,0 +1,20 @@
+{
+  "excludePinnedPosts": true,
+  "maxProfilesPerQuery": 1,
+  "oldestPostDateUnified": "7 days",
+  "profileScrapeSections": [
+    "videos"
+  ],
+  "profileSorting": "latest",
+  "resultsPerPage": 1,
+  "searchQueries": [
+    "ai",
+    "prompt engineering",
+    "rag"
+  ],
+  "searchSection": "/video",
+  "shouldDownloadCovers": true,
+  "shouldDownloadSlideshowImages": false,
+  "shouldDownloadSubtitles": true,
+  "shouldDownloadVideos": false
+}

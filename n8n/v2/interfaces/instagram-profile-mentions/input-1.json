@@ -1,0 +1,13 @@
+{
+  "addParentData": false,
+  "directUrls": [
+    "https://www.instagram.com/sabrina_ramonov"
+  ],
+  "enhanceUserSearchWithFacebookPage": false,
+  "isUserReelFeedURL": false,
+  "isUserTaggedFeedURL": false,
+  "onlyPostsNewerThan": "1 month",
+  "resultsLimit": 5,
+  "resultsType": "mentions",
+  "searchType": "hashtag"
+}

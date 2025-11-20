@@ -82,3 +82,215 @@ class ListRow(models.Model):
 
     class Meta:
         ordering = ['-created_at']
+
+
+class YouTubeVideo(models.Model):
+    id = models.BigAutoField(primary_key=True)
+    video_id = models.CharField(max_length=20, unique=True)
+    url = models.URLField(unique=True)
+    title = models.CharField(max_length=500)
+    translated_title = models.CharField(max_length=500, blank=True, null=True)
+    description = models.TextField(blank=True)
+    thumbnail_url = models.URLField(blank=True)
+    view_count = models.BigIntegerField(default=0)
+    like_count = models.BigIntegerField(default=0)
+    comment_count = models.BigIntegerField(default=0)
+    published_at = models.DateTimeField()
+    duration_seconds = models.PositiveIntegerField()
+    channel_id = models.CharField(max_length=50, blank=True)
+    channel_name = models.CharField(max_length=255, blank=True)
+    channel_username = models.CharField(max_length=100, blank=True)
+    channel_url = models.URLField(blank=True)
+    subscriber_count = models.BigIntegerField(default=0)
+    text_content = models.TextField(blank=True)
+    hashtags = models.JSONField(default=list, blank=True)
+    tags = models.JSONField(default=list, blank=True)
+    language = models.CharField(max_length=10, blank=True)
+    category = models.CharField(max_length=100, blank=True)
+    is_monetized = models.BooleanField(default=False)
+    comments_disabled = models.BooleanField(default=False)
+    is_members_only = models.BooleanField(default=False)
+    source_type = models.CharField(max_length=20)
+    subtitles = models.JSONField(default=list, blank=True, help_text="Subtitles data from YouTube video output as array of subtitle objects")
+    extraction_date = models.DateTimeField(null=True, blank=True)
+    last_updated = models.DateTimeField(auto_now=True)
+    expires_at = models.DateTimeField(null=True, blank=True)
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    run = models.ForeignKey(Run, on_delete=models.SET_NULL, null=True, blank=True)
+
+    class Meta:
+        ordering = ['-published_at']
+        indexes = [
+            models.Index(fields=['video_id'], name='core_youtub_video_i_d63169_idx'),
+            models.Index(fields=['channel_id'], name='core_youtub_channel_5cd540_idx'),
+            models.Index(fields=['published_at'], name='core_youtub_publish_29223f_idx'),
+        ]
+
+
+class TikTokVideo(models.Model):
+    # Primary identifier
+    tiktok_id = models.CharField(max_length=50, primary_key=True, help_text="TikTok video ID")
+
+    # Basic video info
+    text = models.TextField(blank=True, help_text="Video caption/description")
+    text_language = models.CharField(max_length=10, blank=True, help_text="Language code (e.g., 'en')")
+    create_time = models.BigIntegerField(help_text="Unix timestamp")
+    create_time_iso = models.DateTimeField(help_text="ISO datetime")
+    location_created = models.CharField(max_length=100, blank=True)
+    is_ad = models.BooleanField(default=False)
+
+    # Author fields (flattened from authorMeta)
+    author_id = models.CharField(max_length=50, blank=True)
+    author_name = models.CharField(max_length=255, blank=True)
+    author_profile_url = models.URLField(blank=True)
+    author_nickname = models.CharField(max_length=255, blank=True)
+    author_verified = models.BooleanField(default=False)
+    author_signature = models.TextField(blank=True)
+    author_bio_link = models.URLField(blank=True)
+    author_avatar_url = models.URLField(blank=True)
+    author_private_account = models.BooleanField(default=False)
+    author_following = models.BigIntegerField(default=0)
+    author_friends = models.BigIntegerField(default=0)
+    author_fans = models.BigIntegerField(default=0)
+    author_heart = models.BigIntegerField(default=0)
+    author_video_count = models.BigIntegerField(default=0)
+    author_digg = models.BigIntegerField(default=0)
+
+    # Music fields (flattened from musicMeta)
+    music_name = models.CharField(max_length=255, blank=True)
+    music_author = models.CharField(max_length=255, blank=True)
+    music_original = models.BooleanField(default=False)
+    music_play_url = models.URLField(blank=True)
+    music_cover_url = models.URLField(blank=True)
+    music_id = models.CharField(max_length=50, blank=True)
+
+    # Video technical fields
+    web_video_url = models.URLField(blank=True)
+    video_height = models.PositiveIntegerField(null=True)
+    video_width = models.PositiveIntegerField(null=True)
+    video_duration = models.PositiveIntegerField(null=True)
+    video_cover_url = models.URLField(blank=True)
+    video_definition = models.CharField(max_length=20, blank=True)
+    video_format = models.CharField(max_length=10, blank=True)
+
+    # Engagement metrics
+    digg_count = models.BigIntegerField(default=0)
+    share_count = models.BigIntegerField(default=0)
+    play_count = models.BigIntegerField(default=0)
+    collect_count = models.BigIntegerField(default=0)
+    comment_count = models.BigIntegerField(default=0)
+
+    # Content metadata (JSON)
+    mentions = models.JSONField(default=list, blank=True)
+    detailed_mentions = models.JSONField(default=list, blank=True)
+    hashtags = models.JSONField(default=list, blank=True)
+    effect_stickers = models.JSONField(default=list, blank=True)
+
+    # Status flags
+    is_slideshow = models.BooleanField(default=False)
+    is_pinned = models.BooleanField(default=False)
+    is_sponsored = models.BooleanField(default=False)
+
+    # Full nested data preservation
+    author_meta = models.JSONField(null=True, blank=True, help_text="Complete authorMeta object")
+    music_meta = models.JSONField(null=True, blank=True, help_text="Complete musicMeta object")
+    video_meta = models.JSONField(null=True, blank=True, help_text="Complete videoMeta object")
+    subtitle_links = models.JSONField(default=list, blank=True, help_text="Array of subtitle link objects")
+
+    # Relations and timestamps
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    run = models.ForeignKey(Run, on_delete=models.SET_NULL, null=True, blank=True)
+    extraction_date = models.DateTimeField(null=True, blank=True)
+    last_updated = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ['-create_time_iso']
+        indexes = [
+            models.Index(fields=['tiktok_id'], name='core_tiktok_video_id_idx'),
+            models.Index(fields=['author_id'], name='core_tiktok_author_id_idx'),
+            models.Index(fields=['create_time_iso'], name='core_tiktok_create_time_idx'),
+            models.Index(fields=['user', 'create_time_iso'], name='core_tiktok_user_time_idx'),
+        ]
+
+
+class InstagramPost(models.Model):
+    instagram_id = models.CharField(max_length=50)  # e.g., "3769483828839349442"
+    type = models.CharField(max_length=20)  # "Image", "Video", "Sidecar"
+    short_code = models.CharField(max_length=20)  # e.g., "DRP5ZIcjHzC"
+    caption = models.TextField(blank=True)
+    hashtags = models.JSONField(default=list)  # Array of strings
+    mentions = models.JSONField(default=list)  # Array of strings (usernames)
+    url = models.URLField()
+    comments_count = models.IntegerField(default=0)
+    first_comment = models.TextField(blank=True)
+    dimensions_height = models.IntegerField()
+    dimensions_width = models.IntegerField()
+    display_url = models.URLField()
+    images = models.JSONField(default=list)  # Array of URLs (for carousels)
+    likes_count = models.IntegerField(default=0)
+    timestamp = models.DateTimeField()
+    owner_full_name = models.CharField(max_length=255, blank=True)
+    owner_username = models.CharField(max_length=255)
+    owner_id = models.CharField(max_length=50)
+    product_type = models.CharField(max_length=50)  # "feed", "clips", "carousel_container"
+    is_sponsored = models.BooleanField(default=False)
+    music_info = models.JSONField(blank=True, null=True)  # Complex object with audio details
+    video_url = models.URLField(blank=True, null=True)
+    video_view_count = models.IntegerField(blank=True, null=True)
+    video_play_count = models.IntegerField(blank=True, null=True)
+    video_duration = models.FloatField(blank=True, null=True)
+    input_url = models.URLField()  # The search/input URL that led to this post
+    child_posts = models.JSONField(default=list)  # Array of child post objects (for carousels)
+    tagged_users = models.JSONField(default=list)  # Array of user objects (detailed tagged users)
+    is_pinned = models.BooleanField(default=False)
+    is_comments_disabled = models.BooleanField(default=False)
+    alt = models.TextField(blank=True, null=True)
+    audio_url = models.URLField(blank=True, null=True)
+    ig_play_count = models.IntegerField(blank=True, null=True)
+    fb_like_count = models.IntegerField(blank=True, null=True)
+    fb_play_count = models.IntegerField(blank=True, null=True)
+    reshare_count = models.IntegerField(blank=True, null=True)
+
+    # Relationships and timestamps (matching TikTokVideo/YouTubeVideo)
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    run = models.ForeignKey(Run, on_delete=models.SET_NULL, null=True, blank=True)
+    extraction_date = models.DateTimeField(null=True, blank=True)
+    last_updated = models.DateTimeField(auto_now=True)
+    expires_at = models.DateTimeField(null=True, blank=True)
+
+
+class InstagramComment(models.Model):
+    instagram_id = models.CharField(max_length=50)  # e.g., "17887810914262291"
+    text = models.TextField()
+    owner_username = models.CharField(max_length=255)
+    owner_profile_pic_url = models.URLField()
+    timestamp = models.DateTimeField()
+    replies_count = models.IntegerField(default=0)
+    likes_count = models.IntegerField(default=0)
+    owner = models.JSONField()  # Detailed user object: {id, is_verified, profile_pic_url, username, full_name, etc.}
+    post_url = models.URLField()  # URL of the parent post
+    comment_url = models.URLField()  # Direct URL to this comment
+    replies = models.JSONField(default=list)  # Array of reply comment objects (nested)
+
+    # Relationships and timestamps (matching TikTokVideo/YouTubeVideo)
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    run = models.ForeignKey(Run, on_delete=models.SET_NULL, null=True, blank=True)
+    extraction_date = models.DateTimeField(null=True, blank=True)
+    last_updated = models.DateTimeField(auto_now=True)
+    expires_at = models.DateTimeField(null=True, blank=True)
+
+
+class InstagramMention(models.Model):
+    post_id = models.CharField(max_length=50)  # Reference to post ID (not a foreign key)
+    username = models.CharField(max_length=255)  # Mentioned username
+    mentioned_user_id = models.CharField(max_length=50, blank=True)  # If available from tagged_users
+    full_name = models.CharField(max_length=255, blank=True)
+    is_verified = models.BooleanField(default=False)
+    profile_pic_url = models.URLField(blank=True)
+
+    # Relationships and timestamps (matching TikTokVideo/YouTubeVideo)
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    run = models.ForeignKey(Run, on_delete=models.SET_NULL, null=True, blank=True)
+    extraction_date = models.DateTimeField(null=True, blank=True)
+    last_updated = models.DateTimeField(auto_now=True)
+    expires_at = models.DateTimeField(null=True, blank=True)

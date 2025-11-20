@@ -1,0 +1,18 @@
+{
+  "excludePinnedPosts": true,
+  "maxProfilesPerQuery": 3,
+  "oldestPostDateUnified": "7 days",
+  "profileScrapeSections": [
+    "videos"
+  ],
+  "profileSorting": "latest",
+  "profiles": [
+    "@sabrina_ramonov"
+  ],
+  "resultsPerPage": 5,
+  "shouldDownloadCovers": true,
+  "shouldDownloadSlideshowImages": false,
+  "shouldDownloadSubtitles": true,
+  "shouldDownloadVideos": false,
+  "searchSection": ""
+}
