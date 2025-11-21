@@ -284,4 +284,118 @@ class YouTubeVideo(models.Model):
         ]
 
 
+# models.py
+from django.db import models
 
+
+class SourceOutputMapping(models.Model):
+    """
+    Pure reference data — one row per known source + output combination.
+    This is your canonical registry of all scrapers.
+    """
+    platform = models.TextField(db_index=True)      # youtube, instagram, tiktok
+    source_type = models.TextField(db_index=True)   # channel, profile, ads
+    output_type = models.TextField(db_index=True)   # videos, posts, media
+
+    display_name = models.TextField(
+        help_text="Human name shown in UI, e.g. 'Instagram Profile Posts'"
+    )
+
+    # Mapping of pretty paths → real extraction info
+    # Example:
+    # {
+    #   "@instagram-profile.posts.caption": {
+    #     "friendly_name": "Post caption",
+    #     "json_path": "$[*].caption",
+    #     "type": "text",
+    #     "popular": true
+    #   }
+    # }
+    field_mappings = models.JSONField(
+        default=dict,
+        help_text="Pretty path → {friendly_name, json_path, type, popular}"
+    )
+
+    is_active = models.BooleanField(default=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        unique_together = ("platform", "source_type", "output_type")
+        db_table = "source_output_mapping"
+        verbose_name = "Source Output Mapping"
+
+    def __str__(self):
+        return f"{self.display_name} ({self.platform}/{self.source_type}/{self.output_type})"
+
+
+class DataLandingZone(models.Model):
+    """
+    Raw scraped data — one row per scraped object (post, video, etc.)
+    Stores the exact payload returned by the scraper (flat array or object).
+    """
+    id = models.BigAutoField(primary_key=True)
+
+    user = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        related_name="landing_zone_entries",
+        db_index=True,
+    )
+
+    # Your existing Run model
+    run = models.ForeignKey(
+        "core.Run",
+        on_delete=models.CASCADE,
+        related_name="landing_zone_entries",
+        db_index=True,
+    )
+
+    # Which source/output schema this data belongs to
+    source_mapping = models.ForeignKey(
+        SourceOutputMapping,
+        on_delete=models.PROTECT,
+        related_name="landing_zone_entries",
+        db_index=True,
+    )
+
+    # Extracted business keys (optional but recommended)
+    object_id = models.TextField(blank=True, null=True, db_index=True)
+    object_created_at = models.DateTimeField(blank=True, null=True, db_index=True)
+
+    # Optional metadata
+    extracted_at = models.DateTimeField(auto_now_add=True, db_index=True)
+    expires_on = models.DateTimeField(blank=True, null=True)
+    source_url = models.TextField(blank=True, null=True)
+
+    # Raw payload — stored exactly as received (e.g. flat array of Instagram posts)
+    data = models.JSONField()
+
+    class Meta:
+        db_table = "data_landing_zone"
+        indexes = [
+            models.Index(fields=["run"], name="idx_lz_run"),
+            models.Index(fields=["user", "source_mapping", "object_created_at"],
+                        name="idx_lz_user_source_date"),
+            models.Index(fields=["source_mapping", "object_id"], name="idx_lz_object"),
+        ]
+
+    def __str__(self):
+        return f"{self.run} — {self.object_id or 'bulk'}"
+
+    # Convenience properties
+    @property
+    def platform(self):
+        return self.source_mapping.platform
+
+    @property
+    def source_type(self):
+        return self.source_mapping.source_type
+
+    @property
+    def output_type(self):
+        return self.source_mapping.output_type
+
+    @property
+    def field_mappings(self):
+        return self.source_mapping.field_mappings
