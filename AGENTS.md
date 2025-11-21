@@ -1,4 +1,5 @@
 # Project Rules
+- Use poetry run to run commands as we are using poetry package manager / virtual environment
 - Don't make any changes to @n8n/workflows/*
 - Refer to below locaitons for important documents about the project
 - When making Django code changes, restart the Docker container in detached mode (-d) (volumes are mounted for live updates)

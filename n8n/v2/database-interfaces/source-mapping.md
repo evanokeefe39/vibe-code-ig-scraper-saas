@@ -1,5 +1,5 @@
 Table,Covers these source_types
-core_youtubevideo,"youtube-video, youtube-hashtag, youtube-playlist, youtube-search"
-core_tiktokvideo,"tiktok-video, tiktok-hashtag, tiktok-profile, tiktok-search"
-core_instagrampost,"instagram-post, instagram-hashtag, instagram-profile-posts, instagram-profile-reels, instagram-profile-mentions"
-core_instagramcomment,instagram-post-comments
+data_youtube_videos,"youtube-video, youtube-hashtag, youtube-playlist, youtube-search"
+data_tiktok_videos,"tiktok-video, tiktok-hashtag, tiktok-profile, tiktok-search"
+data_instagram_posts,"instagram-post, instagram-hashtag, instagram-profile-posts, instagram-profile-reels, instagram-profile-mentions"
+data_instagram_comments,instagram-post-comments
