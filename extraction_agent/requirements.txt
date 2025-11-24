@@ -1,0 +1,12 @@
+fastapi
+uvicorn[standard]
+pydantic
+pydantic-ai
+openai
+python-dotenv
+# optional but recommended for better logging in prod
+structlog
+
+# ↓↓↓ UNCOMMENT these two lines when you upgrade to Redis (future-proofing) ↓↓↓
+# redis==5.0.8
+# pickle5==0.0.12  # not needed with Python 3.12, but safe to keep

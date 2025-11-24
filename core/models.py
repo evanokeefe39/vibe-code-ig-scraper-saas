@@ -424,3 +424,56 @@ class DataLandingZone(models.Model):
     @property
     def output_type(self):
         return self.source_mapping.output_type.output_type
+
+
+class DataTransit(models.Model):
+    """
+    EAV storage for normalized run data.
+    All string fields use TextField per requirements.
+    """
+    id = models.BigAutoField(primary_key=True)
+
+    # References the User model defined in this same file
+    user = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        related_name="transit_entries",
+        db_index=True,
+    )
+
+    run = models.ForeignKey(
+        "core.Run",
+        on_delete=models.CASCADE,
+        related_name="transit_entries",
+        db_index=True,
+    )
+
+    # Changed to TextField as requested
+    entity_id = models.TextField(db_index=True)
+
+    # Changed to TextField as requested
+    attribute = models.TextField(db_index=True)
+
+    # The value is always text in EAV
+    value = models.TextField(blank=True, null=True)
+
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        db_table = "data_transit"
+        indexes = [
+            # Postgres allows B-Tree indexes on TEXT columns. 
+            # These are crucial for EAV performance.
+            models.Index(fields=["run", "entity_id"], name="idx_transit_run_entity"),
+            models.Index(fields=["run", "attribute"], name="idx_transit_run_attr"),
+        ]
+        
+        constraints = [
+            models.UniqueConstraint(
+                fields=['run', 'entity_id', 'attribute'], 
+                name='unique_transit_entry'
+            )
+        ]
+
+    def __str__(self):
+        return f"{self.entity_id} — {self.attribute}"
