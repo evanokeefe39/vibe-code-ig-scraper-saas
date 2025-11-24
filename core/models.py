@@ -288,25 +288,23 @@ class YouTubeVideo(models.Model):
 from django.db import models
 
 
-class SourceOutputMapping(models.Model):
+class OutputType(models.Model):
     """
-    Pure reference data — one row per known source + output combination.
-    This is your canonical registry of all scrapers.
+    Defines output types and their field mappings.
+    Shared across multiple source types that produce the same output format.
     """
-    platform = models.TextField(db_index=True)      # youtube, instagram, tiktok
-    source_type = models.TextField(db_index=True)   # channel, profile, ads
-    output_type = models.TextField(db_index=True)   # videos, posts, media
+    output_type = models.TextField(unique=True, db_index=True)  # videos, posts, comments, etc.
 
     display_name = models.TextField(
-        help_text="Human name shown in UI, e.g. 'Instagram Profile Posts'"
+        help_text="Human name shown in UI, e.g. 'Video Data'"
     )
 
     # Mapping of pretty paths → real extraction info
     # Example:
     # {
-    #   "@instagram-profile.posts.caption": {
-    #     "friendly_name": "Post caption",
-    #     "json_path": "$[*].caption",
+    #   "@video.title": {
+    #     "friendly_name": "Video title",
+    #     "json_path": "$[*].title",
     #     "type": "text",
     #     "popular": true
     #   }
@@ -321,12 +319,43 @@ class SourceOutputMapping(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
+        db_table = "core_output_types"
+        verbose_name = "Output Type"
+
+    def __str__(self):
+        return f"{self.display_name} ({self.output_type})"
+
+
+class SourceOutputMapping(models.Model):
+    """
+    Pure reference data — one row per known source + output combination.
+    This is your canonical registry of all scrapers.
+    """
+    platform = models.TextField(db_index=True)      # youtube, instagram, tiktok
+    source_type = models.TextField(db_index=True)   # channel, profile, ads
+
+    # Reference to the output type definition
+    output_type = models.ForeignKey(
+        OutputType,
+        on_delete=models.PROTECT,
+        related_name='source_mappings'
+    )
+
+    display_name = models.TextField(
+        help_text="Human name shown in UI, e.g. 'Instagram Profile Posts'"
+    )
+
+    is_active = models.BooleanField(default=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
         unique_together = ("platform", "source_type", "output_type")
-        db_table = "source_output_mapping"
+        db_table = "core_source_output_mapping"
         verbose_name = "Source Output Mapping"
 
     def __str__(self):
-        return f"{self.display_name} ({self.platform}/{self.source_type}/{self.output_type})"
+        return f"{self.display_name} ({self.platform}/{self.source_type}/{self.output_type.output_type})"
 
 
 class DataLandingZone(models.Model):
@@ -394,8 +423,4 @@ class DataLandingZone(models.Model):
 
     @property
     def output_type(self):
-        return self.source_mapping.output_type
-
-    @property
-    def field_mappings(self):
-        return self.source_mapping.field_mappings
+        return self.source_mapping.output_type.output_type
