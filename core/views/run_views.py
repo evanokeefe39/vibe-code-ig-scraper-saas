@@ -3,9 +3,12 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.http import HttpResponse, JsonResponse
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
-from ..models import Run, UserList, ListColumn, ListRow, DataLandingZone, DataTransit
+from ..models import Run, UserList, ListColumn, ListRow, DataLandingZone, DataTransit, SourceOutputMapping
 from ..forms import RunForm, SourceFormSet
 from ..services.n8n_service import get_n8n_execution_status, build_source_config, trigger_run
+
+
+
 
 
 @login_required
@@ -669,17 +672,24 @@ def api_run_landing_zone(request, run_pk):
             user=request.user
         ).select_related('source_mapping').order_by('extracted_at')
         
-        # Group by source_type
+        # Group by source_type (using database values)
         grouped_data = {}
         for entry in entries:
-            source_type = entry.source_mapping.source_type
-            if source_type not in grouped_data:
-                grouped_data[source_type] = []
-            grouped_data[source_type].append(entry.data)
+            db_source_type = entry.source_mapping.source_type
+            if db_source_type not in grouped_data:
+                grouped_data[db_source_type] = []
+            grouped_data[db_source_type].append(entry.data)
+        
+        # Create display-friendly data for frontend
+        display_data = {}
+        for db_source_type, data in grouped_data.items():
+            # Convert database source_type to display format for tabs
+            display_source_type = db_source_type  # Keep original db value for now
+            display_data[display_source_type] = data
         
         return JsonResponse({
             'success': True,
-            'data': grouped_data,
+            'data': display_data,
             'metadata': {
                 'total_sources': len(grouped_data),
                 'total_records': sum(len(data) for data in grouped_data.values()),

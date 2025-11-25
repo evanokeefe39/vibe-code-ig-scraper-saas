@@ -29,10 +29,109 @@
 - Future: Agentic orchestration with LangChain; MCP client/server integration
 
 # Database Environment Guidelines
-- **Local Development**: Uses PostgreSQL 15 in Docker container with connection string `postgresql://vibe_user:vibe_pass@postgres:5432/vibe_scraper`
-- **Database Inspection**: Always inspect the PostgreSQL database in Docker - never use local SQLite
-- **Migration Verification**: Run `python manage.py migrate` in Docker to ensure schema matches models
-- **Table Naming**: Django creates tables as `appname_modelname` (e.g., `Location` model → `core_location` table)
+
+## Connection Contexts
+This project uses **dual database access patterns** depending on execution context:
+
+### 1. Docker Internal Network (Django Application)
+- **Context**: When Django runs inside Docker container
+- **Connection String**: `postgresql://postgres:postgres@db:5432/postgres`
+- **Host**: `db` (Docker service name linking to local Supabase)
+- **Usage**: Django application, n8n workflows, extraction-agent
+
+### 2. Docker Host Direct Connection (Agent Development)
+- **Context**: When agents run from Docker host (your laptop)
+- **Connection String**: `postgresql://postgres:postgres@127.0.0.1:5432/postgres`
+- **Host**: `127.0.0.1` (localhost - local Supabase instance)
+- **Usage**: Agent database queries, development scripts, migrations
+- **Source**: From `npx supabase start` → Database URL value
+
+## Database Access Commands
+
+### For Agents (Docker Host)
+```bash
+# Test connection
+poetry run python test_universal_db_connection.py --context host
+
+# Quick database queries (RECOMMENDED FOR AGENTS)
+poetry run python query_db.py --list-tables
+poetry run python query_db.py "SELECT COUNT(*) FROM core_user"
+poetry run python query_db.py --describe-table core_user
+
+# Direct database query (for complex queries)
+poetry run python -c "
+import psycopg2
+conn = psycopg2.connect('postgresql://postgres:postgres@127.0.0.1:5432/postgres')
+# Your query logic here
+"
+
+# Run migrations from host
+poetry run python manage.py migrate
+```
+
+### For Docker Services
+```bash
+# Django inside container uses 'db' hostname automatically
+# No manual connection string needed for Django operations
+```
+
+## Recommended Agent Database Access Pattern
+
+### Simple Queries (Use query_db.py)
+```bash
+# List all tables
+poetry run python query_db.py --list-tables
+
+# Quick count queries
+poetry run python query_db.py "SELECT COUNT(*) FROM core_userlist"
+
+# Table structure
+poetry run python query_db.py --describe-table core_run
+```
+
+### Complex Queries (Use Python script)
+```python
+import psycopg2
+
+conn = psycopg2.connect('postgresql://postgres:postgres@127.0.0.1:5432/postgres')
+cursor = conn.cursor()
+
+# Your complex query here
+cursor.execute("""
+    SELECT ul.name, COUNT(r.id) as run_count 
+    FROM core_userlist ul 
+    LEFT JOIN core_run r ON ul.id = r.userlist_id 
+    GROUP BY ul.id, ul.name 
+    ORDER BY run_count DESC;
+""")
+
+results = cursor.fetchall()
+for row in results:
+    print(f"List: {row[0]}, Runs: {row[1]}")
+
+cursor.close()
+conn.close()
+```
+
+## Universal Connection Utility
+Use `test_universal_db_connection.py` for connection testing:
+- `--context host`: Test from Docker host (agents)
+- `--context docker`: Test from Docker container
+- `--test-all`: Test all connection methods
+
+## Database Inspection Guidelines
+- **Always use PostgreSQL** - never use local SQLite
+- **For agents**: Use direct connection `postgresql://postgres:postgres@127.0.0.1:5432/postgres`
+- **For Django**: Uses container network automatically
+- **Migration Verification**: Run `poetry run python manage.py migrate` from host
+- **Table Naming**: Django creates tables as `appname_modelname` (e.g., `core_user` table)
+
+## Current Database Status
+- **PostgreSQL Version**: 17.6 (Local Supabase from `npx supabase start`)
+- **Database Size**: 15 MB
+- **Total Tables**: 23 (including Django tables)
+- **Schemas**: public, auth, storage, realtime, etc.
+- **Supabase Instance**: Local development instance
 
 # N8N Workflow URLS
 - Production (Always Running): http://localhost:5678/webhook/scrape

@@ -14,8 +14,11 @@ SOURCE_TYPE_CHOICES = [
         ('youtube-video', '🎬 YouTube Video'),
     ]),
     ('Instagram', [
-        ('instagram-profile', '📷 Instagram Profile'),
+        ('instagram-profile-posts', '📷 Instagram Profile Posts'),
+        ('instagram-profile-reels', '🎬 Instagram Profile Reels'),
+        ('instagram-profile-mentions', '👤 Instagram Profile Mentions'),
         ('instagram-post', '📸 Instagram Post'),
+        ('instagram-post-comments', '💬 Instagram Post Comments'),
         ('instagram-hashtag', '#️⃣ Instagram Hashtag'),
     ]),
     ('TikTok', [
@@ -544,10 +547,10 @@ class RunForm(forms.ModelForm):
             source_type = source.get('sourceType')
             config = source.get('config', {})
             
-            # Validate source type
+# Validate source type
             valid_source_types = [
                 'youtube-search', 'youtube-channel', 'youtube-playlist', 'youtube-hashtag', 'youtube-video',
-                'instagram-profile', 'instagram-post', 'instagram-hashtag', 'instagram-search',
+                'instagram-profile-posts', 'instagram-profile-reels', 'instagram-profile-mentions', 'instagram-post', 'instagram-post-comments', 'instagram-hashtag',
                 'tiktok-profile', 'tiktok-hashtag', 'tiktok-search', 'tiktok-video'
             ]
             
@@ -565,13 +568,9 @@ class RunForm(forms.ModelForm):
                         raise forms.ValidationError(f"{source_type} source must have URLs.")
                         
             elif source_type.startswith('instagram-'):
-                if source_type == 'instagram-search':
-                    if not config.get('searchQueries'):
-                        raise forms.ValidationError("Instagram Search source must have search queries.")
-                else:
-                    # Instagram profile, post, hashtag need directUrls
-                    if not config.get('directUrls'):
-                        raise forms.ValidationError(f"{source_type} source must have URLs.")
+                # All Instagram source types (except search, which we removed) need directUrls
+                if not config.get('directUrls'):
+                    raise forms.ValidationError(f"{source_type} source must have URLs.")
                         
             elif source_type.startswith('tiktok-'):
                 if source_type == 'tiktok-profile':
