@@ -124,15 +124,48 @@
     <div class="mt-8 bg-white rounded-lg shadow-md p-6">
         <h2 class="text-xl font-semibold text-gray-900 mb-4">Extracted Data</h2>
         <div class="space-y-4">
-            {% if run.extracted %}
-             <div class="bg-green-50 border border-green-200 rounded-lg p-4">
-                 <div class="flex justify-between items-start">
-                     <div class="flex">
-                         <div class="flex-shrink-0">
-                             <svg class="h-5 w-5 text-green-400" fill="currentColor" viewBox="0 0 20 20">
-                                 <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
-                             </svg>
-                         </div>
+             <div id="extracted-data-section" class="bg-green-50 border border-green-200 rounded-lg p-4" style="display: none;">
+                 <div class="flex justify-between items-center">
+                     <div>
+                         <h3 class="text-sm font-medium text-green-800">Extracted Data Available</h3>
+                         <p class="text-sm text-green-700 mt-1">AI-processed entities ready for export</p>
+                     </div>
+                      <button id="extracted-toggle" class="text-green-700 hover:text-green-900 p-1 rounded" onclick="toggleExtractedData()">
+                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7"/>
+                         </svg>
+                     </button>
+                 </div>
+                   <div id="extracted-data" class="mt-4 bg-gray-50 rounded-lg p-4">
+                       <h3 class="text-sm font-medium text-gray-900 mb-3">Processed Entities</h3>
+                       <div class="mb-3 flex space-x-4">
+                           <label class="flex items-center">
+                               <input type="checkbox" id="wrap-text" onchange="toggleWrapText()" class="mr-2">
+                               Wrap Text
+                           </label>
+                           <label class="flex items-center">
+                               <input type="checkbox" id="truncate-text" onchange="toggleTruncateText()" checked class="mr-2">
+                               Truncate Long Text
+                           </label>
+                       </div>
+
+                       <div id="extracted-table-container" class="overflow-x-auto max-h-96">
+                          <table id="extracted-table" class="min-w-full divide-y divide-gray-200">
+                              <thead class="bg-gray-100 sticky top-0">
+                                  <tr id="table-headers"></tr>
+                              </thead>
+                              <tbody id="table-body" class="bg-white divide-y divide-gray-200"></tbody>
+                          </table>
+                          <div id="no-data-message" class="text-center py-8 text-gray-500 hidden">
+                              No entities to display
+                          </div>
+                          <div id="extracted-loading" class="text-center py-8">
+                              <div class="inline-block animate-spin rounded-full h-6 w-6 border-b-2 border-green-600"></div>
+                              <p class="mt-2 text-gray-600">Loading extracted data...</p>
+                          </div>
+                      </div>
+                   </div>
+             </div>
                          <div class="ml-3">
                              <h3 class="text-sm font-medium text-green-800">Extracted Data Available</h3>
                               <div class="mt-2 flex space-x-2">
@@ -231,31 +264,38 @@
                 </div>
              {% endif %}
 
-              {% if run.scraped %}
-               <div class="border-t pt-4">
-                   <div class="bg-white rounded-lg shadow-md p-6">
+               <div id="scraped-data-section" class="border-t pt-4" style="display: none;">
+                <div class="bg-white rounded-lg shadow-md p-6">
                        <div class="flex justify-between items-center mb-4">
-                           <h3 class="text-xl font-semibold text-gray-900">Raw Scraped Posts</h3>
+                           <h3 class="text-xl font-semibold text-gray-900">Raw Scraped Data</h3>
                            <div class="flex space-x-2">
                                <button id="scraped-toggle" class="p-2 rounded-md hover:bg-gray-100 text-gray-600 hover:text-gray-900 transition-colors" onclick="toggleScrapedData()" title="Toggle visibility">
                                    <svg id="scraped-toggle-icon" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7"/>
                                    </svg>
                                </button>
-                               <a href="{% url 'export_run_scraped_json' run.pk %}"
-                                  class="p-2 rounded-md hover:bg-gray-100 text-gray-600 hover:text-gray-900 transition-colors" title="Export JSON">
-                                   <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
-                                   </svg>
-                               </a>
                            </div>
                        </div>
-                       <div id="scraped-data" class="bg-gray-50 rounded-lg p-4 max-h-96 overflow-y-auto">
-                           {% include "core/json_editor.html" with json_data=run_scraped_json %}
+                       
+                       <!-- Tab navigation for different source types -->
+                       <div id="source-tabs" class="border-b border-gray-200 mb-4">
+                           <nav class="-mb-px flex space-x-8" aria-label="Tabs">
+                               <!-- Tabs will be dynamically inserted here -->
+                           </nav>
+                       </div>
+                       
+                       <!-- Loading state -->
+                       <div id="scraped-loading" class="text-center py-8">
+                           <div class="inline-block animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600"></div>
+                           <p class="mt-2 text-gray-600">Loading scraped data...</p>
+                       </div>
+                       
+                       <!-- Tab content containers -->
+                       <div id="scraped-data" class="bg-gray-50 rounded-lg p-4 max-h-96 overflow-y-auto" style="display: none;">
+                           <!-- JSON viewer will be inserted here -->
                        </div>
                    </div>
-               </div>
-              {% endif %}
+                </div>
         </div>
     </div>
 </div>
@@ -408,12 +448,16 @@ function rerunWithModifiedPrompt() {
 }
 
 function renderExtractedTable(extractedData) {
-    
-
+    // Handle new API response format
     let entities = [];
-
-    // Handle different data structures
-    if (extractedData.result && Array.isArray(extractedData.result)) {
+    
+    if (extractedData.entities && Array.isArray(extractedData.entities)) {
+        // New format: {entities: [{entity_id, attributes: {...}}]}
+        entities = extractedData.entities.map(entity => ({
+            ...entity.attributes,
+            entity_id: entity.entity_id
+        }));
+    } else if (extractedData.result && Array.isArray(extractedData.result)) {
         entities = extractedData.result;
     } else if (extractedData.results && Array.isArray(extractedData.results)) {
         entities = extractedData.results;
@@ -423,8 +467,6 @@ function renderExtractedTable(extractedData) {
         entities = extractedData.output.results;
     } else if (extractedData.output && extractedData.output.result && Array.isArray(extractedData.output.result)) {
         entities = extractedData.output.result;
-    } else {
-        
     }
 
     
@@ -788,15 +830,119 @@ function renderYoutubeConfig(source) {
 }
 
 // Format table output
-{% if run.extracted %}
-try {
-    const extractedData = {{ run_extracted_json|safe }};
-    renderExtractedTable(extractedData);
-} catch (e) {
-    
-    document.getElementById('extracted-table-container').innerHTML = '<p class="text-red-600">Error loading data</p>';
+// Load extracted data from API
+loadExtractedData();
+
+async function loadExtractedData() {
+    try {
+        const response = await fetch(`/api/runs/{{ run.pk }}/transit-data/`);
+        const result = await response.json();
+        
+        if (result.success) {
+            document.getElementById('extracted-loading').style.display = 'none';
+            document.getElementById('extracted-data-section').style.display = 'block';
+            
+            if (result.data.entities.length > 0) {
+                renderExtractedTable(result.data);
+            } else {
+                document.getElementById('extracted-table-container').style.display = 'none';
+                document.getElementById('no-data-message').style.display = 'block';
+            }
+        } else {
+            document.getElementById('extracted-loading').innerHTML = '<p class="text-red-600">Error loading extracted data</p>';
+        }
+    } catch (error) {
+        console.error('Error loading extracted data:', error);
+        document.getElementById('extracted-loading').innerHTML = '<p class="text-red-600">Failed to load extracted data</p>';
+    }
 }
-{% endif %}
+
+// Load scraped data from API
+loadScrapedData();
+
+async function loadScrapedData() {
+    try {
+        const response = await fetch(`/api/runs/{{ run.pk }}/landing-zone/`);
+        const result = await response.json();
+        
+        if (result.success) {
+            document.getElementById('scraped-loading').style.display = 'none';
+            document.getElementById('scraped-data-section').style.display = 'block';
+            
+            if (Object.keys(result.data).length > 0) {
+                renderScrapedDataTabs(result.data);
+            } else {
+                document.getElementById('scraped-data').innerHTML = '<p class="text-gray-500 text-center py-8">No scraped data available</p>';
+                document.getElementById('scraped-data').style.display = 'block';
+            }
+        } else {
+            document.getElementById('scraped-loading').innerHTML = '<p class="text-red-600">Error loading scraped data</p>';
+        }
+    } catch (error) {
+        console.error('Error loading scraped data:', error);
+        document.getElementById('scraped-loading').innerHTML = '<p class="text-red-600">Failed to load scraped data</p>';
+    }
+}
+
+function renderScrapedDataTabs(scrapedData) {
+    const sourceTabs = document.getElementById('source-tabs').querySelector('nav');
+    const scrapedDataContainer = document.getElementById('scraped-data');
+    
+    // Create tabs
+    const sourceTypes = Object.keys(scrapedData);
+    sourceTypes.forEach((sourceType, index) => {
+        const tab = document.createElement('button');
+        tab.className = `whitespace-nowrap py-2 px-1 border-b-2 font-medium text-sm ${
+            index === 0 ? 'border-primary-500 text-primary-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+        }`;
+        tab.textContent = sourceType.replace('-', ' ').replace(/\b\w/g, l => l.toUpperCase());
+        tab.onclick = () => switchScrapedTab(sourceType, tab);
+        sourceTabs.appendChild(tab);
+    });
+    
+    // Show first tab by default
+    if (sourceTypes.length > 0) {
+        showScrapedDataForSource(sourceTypes[0], scrapedData[sourceTypes[0]]);
+    }
+}
+
+function switchScrapedTab(sourceType, selectedTab) {
+    // Update tab styling
+    const tabs = document.querySelectorAll('#source-tabs button');
+    tabs.forEach(tab => {
+        tab.className = 'whitespace-nowrap py-2 px-1 border-b-2 font-medium text-sm border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300';
+    });
+    selectedTab.className = 'whitespace-nowrap py-2 px-1 border-b-2 font-medium text-sm border-primary-500 text-primary-600';
+    
+    // Load data for selected source
+    fetch(`/api/runs/{{ run.pk }}/landing-zone/`)
+        .then(response => response.json())
+        .then(result => {
+            if (result.success) {
+                showScrapedDataForSource(sourceType, result.data[sourceType]);
+            }
+        });
+}
+
+function showScrapedDataForSource(sourceType, data) {
+    const scrapedDataContainer = document.getElementById('scraped-data');
+    
+    if (data && data.length > 0) {
+        // Create JSON viewer content
+        const jsonString = JSON.stringify(data, null, 2);
+        scrapedDataContainer.innerHTML = `<pre class="text-xs text-gray-800 overflow-x-auto"><code>${escapeHtml(jsonString)}</code></pre>`;
+    } else {
+        scrapedDataContainer.innerHTML = '<p class="text-gray-500 text-center py-8">No data available for this source</p>';
+    }
+    
+    scrapedDataContainer.style.display = 'block';
+}
+
+function escapeHtml(text) {
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+}
 
 
 

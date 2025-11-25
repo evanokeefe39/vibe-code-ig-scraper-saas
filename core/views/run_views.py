@@ -3,7 +3,7 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.http import HttpResponse, JsonResponse
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
-from ..models import Run, UserList, ListColumn, ListRow
+from ..models import Run, UserList, ListColumn, ListRow, DataLandingZone, DataTransit
 from ..forms import RunForm, SourceFormSet
 from ..services.n8n_service import get_n8n_execution_status, build_source_config, trigger_run
 
@@ -651,3 +651,96 @@ def import_extracted_to_list(run, target_list, user):
         'new_columns': len(analysis['new_columns']),
         'conflicts_resolved': len(analysis['conflicts'])
     }
+
+
+@login_required
+@login_required
+def api_run_landing_zone(request, run_pk):
+    """
+    API endpoint to return raw scraped data from DataLandingZone
+    Grouped by source type for frontend tabbed display
+    """
+    run = get_object_or_404(Run, pk=run_pk, user_id=request.user.id)
+    
+    try:
+        # Get landing zone entries with source mappings
+        entries = DataLandingZone.objects.filter(
+            run=run,
+            user=request.user
+        ).select_related('source_mapping').order_by('extracted_at')
+        
+        # Group by source_type
+        grouped_data = {}
+        for entry in entries:
+            source_type = entry.source_mapping.source_type
+            if source_type not in grouped_data:
+                grouped_data[source_type] = []
+            grouped_data[source_type].append(entry.data)
+        
+        return JsonResponse({
+            'success': True,
+            'data': grouped_data,
+            'metadata': {
+                'total_sources': len(grouped_data),
+                'total_records': sum(len(data) for data in grouped_data.values()),
+                'source_types': list(grouped_data.keys()),
+                'run_id': run_pk
+            }
+        })
+        
+    except Exception as e:
+        import logging
+        logger = logging.getLogger(__name__)
+        logger.error(f"Error in api_run_landing_zone: {e}")
+        return JsonResponse({
+            'success': False,
+            'error': 'Failed to load landing zone data'
+        }, status=500)
+
+
+@login_required
+def api_run_transit_data(request, run_pk):
+    """
+    API endpoint to return normalized EAV data from DataTransit
+    Transforms EAV format to entity-attribute structure
+    """
+    run = get_object_or_404(Run, pk=run_pk, user_id=request.user.id)
+    
+    try:
+        # Get all transit entries for the run
+        entries = DataTransit.objects.filter(
+            run=run
+        ).order_by('entity_id', 'attribute')
+        
+        # Get unique attributes for metadata
+        unique_attributes = DataTransit.objects.filter(
+            run=run
+        ).values_list('attribute', flat=True).distinct()
+        
+        # Pivot EAV to entity structure
+        entities = {}
+        for entry in entries:
+            if entry.entity_id not in entities:
+                entities[entry.entity_id] = {'entity_id': entry.entity_id, 'attributes': {}}
+            entities[entry.entity_id]['attributes'][entry.attribute] = entry.value
+        
+        return JsonResponse({
+            'success': True,
+            'data': {
+                'entities': list(entities.values())
+            },
+            'metadata': {
+                'total_entities': len(entities),
+                'unique_attributes': list(unique_attributes),
+                'run_id': run_pk
+            }
+        })
+        
+    except Exception as e:
+        import logging
+        logger = logging.getLogger(__name__)
+        logger.error(f"Error in api_run_transit_data: {e}")
+        return JsonResponse({
+            'success': False,
+            'error': 'Failed to load transit data'
+        }, status=500)
