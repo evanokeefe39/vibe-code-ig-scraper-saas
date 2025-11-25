@@ -39,5 +39,5 @@ EXPOSE 8000
 HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
     CMD ["python", "-c", "import requests; requests.get('http://localhost:8000/', timeout=2)"]
 
-# Start the server (4 workers is perfect for CPU-bound LLM calls)
-CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000", "--workers", "4"]
+# Start the server (4 workers is perfect for CPU-bound LLM calls but doesn't work with in mempory sessions dict, can use 4 once redis implemented)
+CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000", "--workers", "1"] 

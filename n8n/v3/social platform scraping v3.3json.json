@@ -1,0 +1,1124 @@
+{
+  "name": "social platform scraping v3",
+  "nodes": [
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $('Split Out').item.json['body.sources'].platform }}",
+                    "rightValue": "youtube",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "id": "5fcf6e07-8ef6-45cd-82ef-14c399d7dc88"
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "934d106a-72e1-44b6-a053-da30c44938d6",
+                    "leftValue": "={{ $('Split Out').item.json['body.sources'].platform }}",
+                    "rightValue": "tiktok",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "0c4181e0-4432-4814-a156-5b0e23790fd2",
+                    "leftValue": "={{ $('Split Out').item.json['body.sources'].platform }}",
+                    "rightValue": "instagram",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.2,
+      "position": [
+        1488,
+        464
+      ],
+      "id": "188d5103-e749-4ff7-bfb2-561d103991fb",
+      "name": "Switch"
+    },
+    {
+      "parameters": {
+        "operation": "Run actor and get dataset",
+        "actorId": {
+          "__rl": true,
+          "value": "h7sDV53CddomktSi5",
+          "mode": "list",
+          "cachedResultName": "YouTube Scraper (streamers/youtube-scraper)",
+          "cachedResultUrl": "https://console.apify.com/actors/h7sDV53CddomktSi5/input"
+        },
+        "customBody": "={{ $json.body.sources.config }}"
+      },
+      "type": "@apify/n8n-nodes-apify.apify",
+      "typeVersion": 1,
+      "position": [
+        1712,
+        288
+      ],
+      "id": "dea77f1f-70e9-4111-af6c-49bca4ab7086",
+      "name": "youtube scrape",
+      "credentials": {
+        "apifyApi": {
+          "id": "v1Y6vV29HfHex7ER",
+          "name": "Apify account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "Run actor and get dataset",
+        "actorId": {
+          "__rl": true,
+          "value": "OtzYfK1ndEGdwWFKQ",
+          "mode": "list",
+          "cachedResultName": "TikTok Data Extractor (clockworks/free-tiktok-scraper)",
+          "cachedResultUrl": "https://console.apify.com/actors/OtzYfK1ndEGdwWFKQ/input"
+        },
+        "customBody": "={{ $json.sources.config }}",
+        "timeout": {}
+      },
+      "type": "@apify/n8n-nodes-apify.apify",
+      "typeVersion": 1,
+      "position": [
+        1712,
+        480
+      ],
+      "id": "0f9ad1e6-175f-42ec-b273-d9103f641d63",
+      "name": "tiktok scrape",
+      "credentials": {
+        "apifyApi": {
+          "id": "v1Y6vV29HfHex7ER",
+          "name": "Apify account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "Run actor and get dataset",
+        "actorId": {
+          "__rl": true,
+          "value": "shu8hvrXbJbY3Eb9W",
+          "mode": "list",
+          "cachedResultName": "Instagram Scraper (apify/instagram-scraper)",
+          "cachedResultUrl": "https://console.apify.com/actors/shu8hvrXbJbY3Eb9W/input"
+        },
+        "customBody": "={{ $json.body.sources.config }}",
+        "timeout": {}
+      },
+      "type": "@apify/n8n-nodes-apify.apify",
+      "typeVersion": 1,
+      "position": [
+        1712,
+        672
+      ],
+      "id": "0eda09aa-cf7b-4f54-b8ed-08b2d9287787",
+      "name": "instagram scrape",
+      "credentials": {
+        "apifyApi": {
+          "id": "v1Y6vV29HfHex7ER",
+          "name": "Apify account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "numberInputs": 3
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        1936,
+        464
+      ],
+      "id": "b13de5c3-0f72-4ccd-84d7-6e9984f5eed6",
+      "name": "Merge"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "d5c13dea-2281-44b6-aa6a-0528f737de05",
+              "name": "run_id",
+              "value": "={{ $('Switch').item.json.body.run_id }}",
+              "type": "number"
+            },
+            {
+              "id": "9f615dec-695c-470a-88d6-d8efc4fc0396",
+              "name": "user_id",
+              "value": "={{ $('Switch').item.json.body.customer_id }}",
+              "type": "number"
+            },
+            {
+              "id": "5707830b-d466-4a02-ac67-5f8e00f8eab9",
+              "name": "source_mapping_id",
+              "value": "={{ $('Switch').item.json.source_output_mapping_id }}",
+              "type": "string"
+            },
+            {
+              "id": "ed82cc63-3f97-42c7-a6aa-f4025967a006",
+              "name": "extracted_at",
+              "value": "={{ $('Edit Fields4').item.json.extracted_at }}",
+              "type": "string"
+            },
+            {
+              "id": "db14814d-9ad7-4f3a-a93b-231c4df250d6",
+              "name": "data",
+              "value": "={{ $json }}",
+              "type": "object"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        2160,
+        480
+      ],
+      "id": "cad183d7-cfff-4d17-9984-6ba1e5305fe6",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {
+        "inputSource": "passthrough"
+      },
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        144,
+        480
+      ],
+      "id": "5c7e5b37-df0f-444d-8c5b-460862c1ca92",
+      "name": "When Executed by Another Workflow"
+    },
+    {
+      "parameters": {
+        "fieldToSplitOut": "body.sources",
+        "include": "allOtherFields",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitOut",
+      "typeVersion": 1,
+      "position": [
+        816,
+        480
+      ],
+      "id": "fe9ce1e9-b231-4f96-b1df-bde4af7b1f32",
+      "name": "Split Out"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "ecf281c7-c2ef-433b-8801-a6cf5b6e2cd5",
+              "name": "body",
+              "value": "={{ $('Split Out').item.json.body }}",
+              "type": "object"
+            },
+            {
+              "id": "81479810-31fc-4c72-a870-90ccbf64d5fd",
+              "name": "body.sources",
+              "value": "={{ $('Split Out').item.json['body.sources'] }}",
+              "type": "object"
+            },
+            {
+              "id": "f1335a1a-7a44-4d8f-b282-c973c33f22de",
+              "name": "source_output_mapping_id",
+              "value": "={{ $json.id }}",
+              "type": "string"
+            },
+            {
+              "id": "72dc4ce7-5cbc-47f8-99a1-3c6c1511c7ad",
+              "name": "extracted_at",
+              "value": "={{ $now }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1264,
+        480
+      ],
+      "id": "20bce743-8d7b-4028-84ac-8ba70ecb95f0",
+      "name": "Edit Fields4"
+    },
+    {
+      "parameters": {
+        "schema": {
+          "__rl": true,
+          "mode": "list",
+          "value": "public"
+        },
+        "table": {
+          "__rl": true,
+          "value": "data_landing_zone",
+          "mode": "list",
+          "cachedResultName": "data_landing_zone"
+        },
+        "columns": {
+          "mappingMode": "autoMapInputData",
+          "value": {},
+          "matchingColumns": [
+            "id"
+          ],
+          "schema": [
+            {
+              "id": "id",
+              "displayName": "id",
+              "required": false,
+              "defaultMatch": true,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "object_id",
+              "displayName": "object_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "object_created_at",
+              "displayName": "object_created_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "dateTime",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "extracted_at",
+              "displayName": "extracted_at",
+              "required": true,
+              "defaultMatch": false,
+              "display": true,
+              "type": "dateTime",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "expires_on",
+              "displayName": "expires_on",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "dateTime",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "source_url",
+              "displayName": "source_url",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "data",
+              "displayName": "data",
+              "required": true,
+              "defaultMatch": false,
+              "display": true,
+              "type": "object",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "run_id",
+              "displayName": "run_id",
+              "required": true,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "user_id",
+              "displayName": "user_id",
+              "required": true,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "source_mapping_id",
+              "displayName": "source_mapping_id",
+              "required": true,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        2384,
+        480
+      ],
+      "id": "3bbb7a35-f8a0-4a39-8966-724a4a1b9c79",
+      "name": "Insert Into Landing Zone",
+      "credentials": {
+        "postgres": {
+          "id": "Ute9sgemGgf4zL3D",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        144,
+        64
+      ],
+      "id": "6ead6458-b6db-421f-ac04-84413dae4db6",
+      "name": "When clicking ‘Execute workflow’"
+    },
+    {
+      "parameters": {
+        "operation": "deleteTable",
+        "schema": {
+          "__rl": true,
+          "mode": "list",
+          "value": "public"
+        },
+        "table": {
+          "__rl": true,
+          "value": "data_landing_zone",
+          "mode": "list",
+          "cachedResultName": "data_landing_zone"
+        },
+        "deleteCommand": "delete",
+        "where": {
+          "values": [
+            {
+              "column": "run_id",
+              "value": "={{ $json.body.run_id }}"
+            },
+            {
+              "column": "user_id",
+              "value": "={{ $json.body.customer_id }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        368,
+        64
+      ],
+      "id": "3d7fc72f-cf94-4516-8ff4-4034315e62a4",
+      "name": "[DEV TOOL] Clear run landing zone  data",
+      "credentials": {
+        "postgres": {
+          "id": "Ute9sgemGgf4zL3D",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://extraction-agent:8000/sessions",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"user_id\":{{ $json.body.customer_id }},\n  \"run_id\": {{ $json.body.run_id }},\n  \"requirements\": \"{{ $json.body.extraction_prompt }}\"\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        368,
+        480
+      ],
+      "id": "5cf52303-670f-4f19-b200-064d6beb3ad1",
+      "name": "Create Agent Session"
+    },
+    {
+      "parameters": {
+        "operation": "select",
+        "schema": {
+          "__rl": true,
+          "value": "public",
+          "mode": "list",
+          "cachedResultName": "public"
+        },
+        "table": {
+          "__rl": true,
+          "value": "core_source_output_mapping",
+          "mode": "list",
+          "cachedResultName": "core_source_output_mapping"
+        },
+        "where": {
+          "values": [
+            {
+              "column": "platform",
+              "value": "={{ $json['body.sources'].platform }}"
+            },
+            {
+              "column": "source_type",
+              "value": "={{ $json['body.sources'].sourceType }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        1040,
+        480
+      ],
+      "id": "ed5d5986-228f-4271-b2a8-cd2b6cc1c985",
+      "name": "Get Schema ID for Event Type",
+      "credentials": {
+        "postgres": {
+          "id": "Ute9sgemGgf4zL3D",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "33163b6b-48d6-4fd8-b871-63d7578832da",
+              "name": "body",
+              "value": "={{ $('When Executed by Another Workflow').item.json.body }}",
+              "type": "object"
+            },
+            {
+              "id": "9f0845ef-af87-4892-8068-5e84e34d2a09",
+              "name": "session_id",
+              "value": "={{ $json.session_id }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        592,
+        480
+      ],
+      "id": "98eab6db-1267-49c1-aba0-c499148ccf62",
+      "name": "Edit Fields1"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=http://extraction-agent:8000/sessions/extract",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "=session_id",
+              "value": "={{ $json.session_id }}"
+            },
+            {
+              "name": "user_id",
+              "value": "={{ $json.user_id }}"
+            },
+            {
+              "name": "run_id",
+              "value": "={{ $json.run_id }}"
+            },
+            {
+              "name": "text",
+              "value": "={{ JSON.stringify($json.data) }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        2832,
+        480
+      ],
+      "id": "87ba5576-4f49-428b-a4d9-d615c13e7374",
+      "name": "Agent Data Extraction"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "ed2db3b1-db4c-460e-85fd-ac83c2684650",
+              "name": "session_id",
+              "value": "={{ $('Create Agent Session').item.json.session_id }}",
+              "type": "string"
+            }
+          ]
+        },
+        "includeOtherFields": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        2608,
+        480
+      ],
+      "id": "bed3ca14-e471-4f76-866e-77ace6afc806",
+      "name": "Edit Fields2"
+    },
+    {
+      "parameters": {
+        "operation": "deleteTable",
+        "schema": {
+          "__rl": true,
+          "mode": "list",
+          "value": "public"
+        },
+        "table": {
+          "__rl": true,
+          "value": "data_transit",
+          "mode": "list",
+          "cachedResultName": "data_transit"
+        },
+        "deleteCommand": "delete",
+        "where": {
+          "values": [
+            {
+              "column": "run_id",
+              "value": "={{ $json.body.run_id }}"
+            },
+            {
+              "column": "user_id",
+              "value": "={{ $json.body.customer_id }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        608,
+        64
+      ],
+      "id": "bafd859b-f556-4879-8c86-6389c82caf0b",
+      "name": "[DEV TOOL] Clear run transit data",
+      "credentials": {
+        "postgres": {
+          "id": "Ute9sgemGgf4zL3D",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "INSERT INTO public.data_transit (user_id, run_id, entity_id, attribute, value, created_at)\nSELECT\n    (item->>'user_id')::int,    -- Cast to Integer for ForeignKey\n    (item->>'run_id')::int,     -- Cast to Integer for ForeignKey\n    item->>'entity_id',\n    item->>'attribute',\n    item->>'value',\n    NOW()                       -- Database generates the timestamp\nFROM jsonb_array_elements($1::jsonb) AS item;",
+        "options": {
+          "queryReplacement": "={{ JSON.stringify($json.eav_rows) }}"
+        }
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        3040,
+        480
+      ],
+      "id": "cddfb4c5-03a7-4060-9a24-285964507ef6",
+      "name": "Append EAV data to Data Transit Table",
+      "credentials": {
+        "postgres": {
+          "id": "Ute9sgemGgf4zL3D",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "content": "add a step here to only load data from landing zone according to what user requested. will help cut down payload"
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        2576,
+        672
+      ],
+      "typeVersion": 1,
+      "id": "61d03e1c-ab80-4d71-a30b-8fbc78b00b6c",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "content": "IMPORTANT: WORKER NUMBER SHOULD BE 1 SO IT CAN FIND SESSIONS",
+        "height": 80,
+        "color": 3
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        2768,
+        352
+      ],
+      "typeVersion": 1,
+      "id": "12ca333e-7460-4bc5-ab9d-9e567d8147d7",
+      "name": "Sticky Note1"
+    }
+  ],
+  "pinData": {
+    "When Executed by Another Workflow": [
+      {
+        "json": {
+          "headers": {
+            "host": "n8n:5678",
+            "user-agent": "python-requests/2.32.5",
+            "accept-encoding": "gzip, deflate, zstd",
+            "accept": "*/*",
+            "connection": "keep-alive",
+            "content-length": "1306",
+            "content-type": "application/json",
+            "authorization": "Basic YWRtaW5AdmliZXNjcmFwZXIuY29tOnZpYmVzY3JhcGVyMTIz"
+          },
+          "params": {},
+          "query": {},
+          "body": {
+            "run_id": 3,
+            "customer_id": 3,
+            "sources": [
+              {
+                "platform": "youtube",
+                "sourceType": "channel",
+                "config": {
+                  "maxResults": 5,
+                  "maxResultsShorts": 0,
+                  "maxResultStreams": 0,
+                  "startUrls": [
+                    {
+                      "url": "https://www.youtube.com/@aiDotEngineer"
+                    },
+                    {
+                      "url": "https://www.youtube.com/@sabrina_ramonov"
+                    }
+                  ],
+                  "sortingOrder": "relevance",
+                  "dateFilter": "month",
+                  "videoType": "video",
+                  "lengthFilter": "between420",
+                  "qualityFilters": {
+                    "isHD": false,
+                    "hasSubtitles": false,
+                    "hasCC": false,
+                    "is3D": false,
+                    "isLive": false,
+                    "is4K": false,
+                    "is360": false,
+                    "hasLocation": false,
+                    "isHDR": false,
+                    "isVR180": false,
+                    "isBought": false
+                  },
+                  "subtitleOptions": {
+                    "language": "en",
+                    "downloadSubtitles": true,
+                    "saveSubsToKVS": false,
+                    "preferAutoGeneratedSubtitles": false,
+                    "subtitlesFormat": "plaintext"
+                  },
+                  "downloadSubtitles": true,
+                  "saveSubsToKVS": false,
+                  "subtitlesLanguage": "en",
+                  "preferAutoGeneratedSubtitles": false,
+                  "subtitlesFormat": "plaintext"
+                },
+                "startUrls": [
+                  {
+                    "url": "https://www.youtube.com/@aiDotEngineer"
+                  },
+                  {
+                    "url": "https://www.youtube.com/@sabrina_ramonov"
+                  }
+                ]
+              }
+            ],
+            "auto_infer_columns": true,
+            "custom_columns": [],
+            "enable_extraction": true,
+            "extraction_prompt": "Extract 'Pro Tips' from video transcripts / subtitles. Pro tips can be any insightful or actionable tips around how to use / configure /take of specific tools or technology, how to build profitable companies and products / services, approaches to learning etc. For each pro tip i want a field for the protip itself in a short 1-5 sentences max. I want the domain which is the broad set of topics, e.g. software development, business, education etc. I want the topic that the pro tip covers e.g. vibe coding, saas business startup, product launch, backend automation etc. etc. I want the specific tools or product that the pro tip metions e.g. claude code, python, typescript, chatgpt etc. if there no is technology mentioned then don't make one up. I want the level of the pro tip e.g. beginner, intermediate, advanced. if the source doesn't mention any level then put none I want the tone e.g. Practical / Analytical / Inspirational / Critical I want the evidence type e.g. Anecdotal / Empirical / Theoretical / Observed I want the category of pro tip"
+          },
+          "webhookUrl": "http://localhost:5678/webhook/multi-source-scrape",
+          "executionMode": "production"
+        }
+      }
+    ],
+    "When clicking ‘Execute workflow’": [
+      {
+        "json": {
+          "headers": {
+            "host": "n8n:5678",
+            "user-agent": "python-requests/2.32.5",
+            "accept-encoding": "gzip, deflate, zstd",
+            "accept": "*/*",
+            "connection": "keep-alive",
+            "content-length": "1306",
+            "content-type": "application/json",
+            "authorization": "Basic YWRtaW5AdmliZXNjcmFwZXIuY29tOnZpYmVzY3JhcGVyMTIz"
+          },
+          "params": {},
+          "query": {},
+          "body": {
+            "run_id": 3,
+            "customer_id": 3,
+            "sources": [
+              {
+                "platform": "youtube",
+                "sourceType": "channel",
+                "config": {
+                  "maxResults": 5,
+                  "maxResultsShorts": 0,
+                  "maxResultStreams": 0,
+                  "startUrls": [
+                    {
+                      "url": "https://www.youtube.com/@aiDotEngineer"
+                    },
+                    {
+                      "url": "https://www.youtube.com/@sabrina_ramonov"
+                    }
+                  ],
+                  "sortingOrder": "relevance",
+                  "dateFilter": "month",
+                  "videoType": "video",
+                  "lengthFilter": "between420",
+                  "qualityFilters": {
+                    "isHD": false,
+                    "hasSubtitles": false,
+                    "hasCC": false,
+                    "is3D": false,
+                    "isLive": false,
+                    "is4K": false,
+                    "is360": false,
+                    "hasLocation": false,
+                    "isHDR": false,
+                    "isVR180": false,
+                    "isBought": false
+                  },
+                  "subtitleOptions": {
+                    "language": "en",
+                    "downloadSubtitles": true,
+                    "saveSubsToKVS": false,
+                    "preferAutoGeneratedSubtitles": false,
+                    "subtitlesFormat": "plaintext"
+                  },
+                  "downloadSubtitles": true,
+                  "saveSubsToKVS": false,
+                  "subtitlesLanguage": "en",
+                  "preferAutoGeneratedSubtitles": false,
+                  "subtitlesFormat": "plaintext"
+                },
+                "startUrls": [
+                  {
+                    "url": "https://www.youtube.com/@aiDotEngineer"
+                  },
+                  {
+                    "url": "https://www.youtube.com/@sabrina_ramonov"
+                  }
+                ]
+              }
+            ],
+            "auto_infer_columns": true,
+            "custom_columns": [],
+            "enable_extraction": true,
+            "extraction_prompt": "Extract 'Pro Tips' from video transcripts / subtitles. Pro tips can be any insightful or actionable tips around how to use / configure /take of specific tools or technology, how to build profitable companies and products / services, approaches to learning etc. For each pro tip i want a field for the protip itself in a short 1-5 sentences max. I want the domain which is the broad set of topics, e.g. software development, business, education etc. I want the topic that the pro tip covers e.g. vibe coding, saas business startup, product launch, backend automation etc. etc. I want the specific tools or product that the pro tip metions e.g. claude code, python, typescript, chatgpt etc. if there no is technology mentioned then don't make one up. I want the level of the pro tip e.g. beginner, intermediate, advanced. if the source doesn't mention any level then put none I want the tone e.g. Practical / Analytical / Inspirational / Critical I want the evidence type e.g. Anecdotal / Empirical / Theoretical / Observed I want the category of pro tip"
+          },
+          "webhookUrl": "http://localhost:5678/webhook/multi-source-scrape",
+          "executionMode": "production"
+        }
+      }
+    ]
+  },
+  "connections": {
+    "Switch": {
+      "main": [
+        [
+          {
+            "node": "youtube scrape",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "tiktok scrape",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "instagram scrape",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "youtube scrape": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "tiktok scrape": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "instagram scrape": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 2
+          }
+        ]
+      ]
+    },
+    "Merge": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "Insert Into Landing Zone",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "When Executed by Another Workflow": {
+      "main": [
+        [
+          {
+            "node": "Create Agent Session",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Split Out": {
+      "main": [
+        [
+          {
+            "node": "Get Schema ID for Event Type",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields4": {
+      "main": [
+        [
+          {
+            "node": "Switch",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "When clicking ‘Execute workflow’": {
+      "main": [
+        [
+          {
+            "node": "[DEV TOOL] Clear run landing zone  data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create Agent Session": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Schema ID for Event Type": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields4",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Insert Into Landing Zone": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields1": {
+      "main": [
+        [
+          {
+            "node": "Split Out",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields2": {
+      "main": [
+        [
+          {
+            "node": "Agent Data Extraction",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Agent Data Extraction": {
+      "main": [
+        [
+          {
+            "node": "Append EAV data to Data Transit Table",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "[DEV TOOL] Clear run landing zone  data": {
+      "main": [
+        [
+          {
+            "node": "[DEV TOOL] Clear run transit data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Append EAV data to Data Transit Table": {
+      "main": [
+        []
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "f5f44387-f17d-42ad-953e-2e317b76d9a4",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "c4fcd5cf52b2b74461c03874e480c9560027e2a352b9c45f26fc0660d4d8223c"
+  },
+  "id": "rHPGsTt4EaF9lSSh",
+  "tags": []
+}

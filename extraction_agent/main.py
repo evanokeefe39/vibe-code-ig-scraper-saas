@@ -68,16 +68,17 @@ sessions: Dict[str, Dict[str, Any]] = {}
 app = FastAPI(title="Extraction → EAV (auto entity_id)", version="4.0")
 
 class CreateSessionRequest(BaseModel):
-    user_id: str
-    run_id: str
+    user_id: int
+    run_id: int
     requirements: str
 
 class CreateSessionResponse(BaseModel):
     session_id: str
 
 class ExtractRequest(BaseModel):
-    user_id: str
-    run_id: str
+    session_id: str
+    user_id: int
+    run_id: int
     text: str
 
 # Auto-generates entity_id per extracted object (not per video)
@@ -114,13 +115,16 @@ async def create_session(p: CreateSessionRequest):
         "agent": agent
     }
     logger.info(f"Session {sid} created for: {p.user_id=} {p.run_id=} — {len(schema.output)} fields")
+
+    logger.info(f"{sessions=}")
     return CreateSessionResponse(session_id=sid)
 
-@app.post("/sessions/{session_id}/extract", dependencies=[Depends(require_key)])
-async def extract(session_id: str, p: ExtractRequest):
-    # logger.info(f"{p=}")
-    logger.info(f"retrieving session: {session_id}")
-    s = sessions.get(session_id)
+@app.post("/sessions/extract", dependencies=[Depends(require_key)])
+async def extract( p: ExtractRequest):
+    logger.info(f"{sessions=}")
+    logger.info(f"{p.session_id=} typeof: {type(p.session_id)}")
+    logger.info(f"retrieving session: {p.session_id} from sessions: {sessions}")
+    s = sessions.get(p.session_id)
     logger.info(f"session info: {s}")
 
     if not s:
