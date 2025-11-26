@@ -206,7 +206,12 @@
         <div class="bg-white rounded-lg shadow-md p-6">
             <div class="flex justify-between items-center mb-4">
                 <h3 class="text-xl font-semibold text-gray-900">Raw Scraped Data</h3>
-                <div class="flex space-x-2">
+                <div class="flex space-x-2 items-center">
+                    <a href="{% url 'export_run_json' run.pk %}?type=raw"
+                        class="inline-flex items-center px-3 py-1 text-xs font-medium text-blue-700 bg-blue-100 hover:bg-blue-200 rounded-md transition-colors">
+                        <span class="w-4 h-4 mr-1 flex items-center justify-center text-xs font-mono font-bold text-blue-800">{}</span>
+                        Export JSON
+                    </a>
                     <button id="scraped-toggle"
                         class="p-2 rounded-md hover:bg-gray-100 text-gray-600 hover:text-gray-900 transition-colors"
                         onclick="toggleScrapedData()" title="Toggle visibility">
