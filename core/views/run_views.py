@@ -8,9 +8,6 @@ from ..forms import RunForm, SourceFormSet
 from ..services.n8n_service import get_n8n_execution_status, build_source_config, trigger_run
 
 
-
-
-
 @login_required
 def run_create(request):
     if request.method == 'POST':
@@ -82,10 +79,11 @@ def run_create(request):
             
             # Serialize sources to handle any date objects
             sources = serialize_dates(sources)
-            
-            run.input = json.dumps({
-                'sources': sources
-            })
+
+            # Get the input data from form.save() and update with processed sources
+            input_data = json.loads(run.input)
+            input_data['sources'] = sources
+            run.input = json.dumps(input_data)
             run.save()
             trigger_run(run)
             messages.success(request, 'Run started successfully!')
@@ -177,6 +175,21 @@ def run_detail(request, pk):
     # Prepare data for display - handle both new multi-source and legacy formats
     run_data = {}
     
+    # NEW: Query scraped data from data_landing_zone
+    from core.models import DataLandingZone, SourceOutputMapping
+    scraped_entries = DataLandingZone.objects.filter(
+        run_id=run.pk,
+        source_mapping__platform__in=['instagram', 'youtube', 'tiktok']
+    ).order_by('-extracted_at')
+    
+    # Group by source type for frontend
+    scraped_data = {}
+    for entry in scraped_entries:
+        source_type = entry.source_mapping.source_type
+        if source_type not in scraped_data:
+            scraped_data[source_type] = []
+        scraped_data[source_type].append(entry.data)
+    
     # Handle new multi-source format
     if run.scraped and isinstance(run.scraped, dict):
         # New format: scraped data organized by platform
@@ -191,57 +204,6 @@ def run_detail(request, pk):
                         'data': item
                     })
         run_data['scraped'] = all_scraped
-    elif run.scraped:
-        # Legacy format or mixed format
-        run_data['scraped'] = run.scraped
-
-    if run.extracted:
-        run_data['extracted'] = run.extracted
-        
-        # Extract metadata if available
-        if isinstance(run.extracted, dict) and 'metadata' in run.extracted:
-            run_data['extraction_metadata'] = run.extracted['metadata']
-
-    if run.output:
-        run_data['legacy_output'] = run.output
-
-    run_data_json = json.dumps(run_data, indent=2) if run_data else 'null'
-
-    # Parse sources for display
-    sources = input_data.get('sources', [])
-    sources_by_platform = {}
-    for source in sources:
-        platform = source.get('platform', 'unknown')
-        if platform not in sources_by_platform:
-            sources_by_platform[platform] = []
-        sources_by_platform[platform].append(source)
-
-    return render(request, 'core/run_detail.html', {
-        'run': run,
-        'execution_status': execution_info['status'],
-        'execution_data': execution_info['data'],
-        'execution_data_json': execution_data_json,
-        'input_data': input_data,
-        'input_json': input_json,
-        'run_data': run_data,
-        'run_data_json': run_data_json,
-        'sources': sources,
-        'sources_by_platform': sources_by_platform,
-        'sources_json': json.dumps(sources, indent=2),
-        'run_scraped_json': json.dumps(run.scraped, indent=2) if run.scraped else None,
-        'run_extracted_json': json.dumps(run.extracted, indent=2) if run.extracted else None
-    })
-
-
-def run_by_n8n(request, n8n_execution_id):
-    run = get_object_or_404(Run, n8n_execution_id=n8n_execution_id)
-    execution_info = get_n8n_execution_status(run.n8n_execution_id)
-    execution_data_json = json.dumps(execution_info['data'])
-
-    # Prepare data for display - show both new and legacy formats
-    run_data = {}
-    if run.scraped:
-        run_data['scraped'] = run.scraped
     if run.extracted:
         run_data['extracted'] = run.extracted
     if run.output:
@@ -754,3 +716,57 @@ def api_run_transit_data(request, run_pk):
             'success': False,
             'error': 'Failed to load transit data'
         }, status=500)
+
+
+def export_run_entities_csv(request, run_pk):
+    """Export extracted entities as CSV from data_transit table"""
+    run = get_object_or_404(Run, pk=run_pk)
+    
+    # Get extracted data from data_transit table
+    from core.models import DataTransit
+    transit_entries = DataTransit.objects.filter(
+        run_id=run_pk
+    ).select_related('entity')
+    
+    # Convert to flat CSV format
+    import csv
+    from django.http import HttpResponse
+    
+    response = HttpResponse(content_type='text/csv')
+    writer = csv.writer(response)
+    
+    # Header
+    writer.writerow(['entity_id', 'attribute', 'value'])
+    
+    # Data rows
+    for entry in transit_entries:
+        entity_id = entry.entity.entity_id
+        for attr in entry.entity.attributes.all():
+            writer.writerow([entity_id, attr.attribute, attr.value])
+    
+    return response
+
+
+def export_run_entities_json(request, run_pk):
+    """Export extracted entities as JSON from data_transit table"""
+    run = get_object_or_404(Run, pk=run_pk)
+    
+    # Get extracted data from data_transit table
+    from core.models import DataTransit
+    transit_entries = DataTransit.objects.filter(
+        run_id=run.pk
+    ).select_related('entity').order_by('-created_at')
+    
+    # Convert to JSON format
+    entities = []
+    for entry in transit_entries:
+        entity_id = entry.entity.entity_id
+        attributes = {attr.attribute: attr.value for attr in entry.entity.attributes.all()}
+        
+        entities.append({
+            'entity_id': entity_id,
+            'attributes': attributes
+        })
+    
+    from django.http import JsonResponse
+    return JsonResponse({'entities': entities})

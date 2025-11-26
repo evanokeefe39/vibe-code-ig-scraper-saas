@@ -594,8 +594,8 @@ class RunForm(forms.ModelForm):
         
         # Handle extraction prompt - use default if empty
         extraction_prompt = self.cleaned_data['extraction_prompt']
-        if not extraction_prompt.strip():
-            extraction_prompt = "Extract location information, business mentions, contact details, and other relevant data from social media posts. Adapt to the specific platform and content type."
+        # if not extraction_prompt.strip():
+        #     extraction_prompt = "Extract location information, business mentions, contact details, and other relevant data from social media posts. Adapt to the specific platform and content type."
         
         instance.extraction_prompt = extraction_prompt
         instance.input = json.dumps({
@@ -603,7 +603,9 @@ class RunForm(forms.ModelForm):
             'days_since': self.cleaned_data['days_since'],
             'max_results': self.cleaned_data['max_results'],
             'auto_infer_columns': self.cleaned_data['auto_infer_columns'],
-            'custom_columns': self.cleaned_data['custom_columns']
+            'custom_columns': self.cleaned_data['custom_columns'],
+            'extraction_prompt': extraction_prompt,
+            'enable_extraction': self.cleaned_data['enable_extraction']
         })
         if commit:
             instance.save()

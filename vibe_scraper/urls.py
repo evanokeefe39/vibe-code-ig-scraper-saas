@@ -20,7 +20,7 @@ from django.urls import path
 from django.conf import settings
 from django.conf.urls.static import static
 from core.views.utility_views import home, pricing
-from core.views.run_views import run_create, run_list, run_detail, run_by_n8n, run_status_api, empty_source_form, platform_config, analyze_import_to_list, add_extracted_to_list, api_run_landing_zone, api_run_transit_data
+from core.views.run_views import run_create, run_list, run_detail, run_status_api, empty_source_form, platform_config, analyze_import_to_list, add_extracted_to_list, api_run_landing_zone, api_run_transit_data
 from core.views.list_views import list_list, list_detail, list_create, list_column_create, list_row_create, update_cell, delete_row, add_blank_row, update_column, delete_column, delete_list, table_save, validate_column_type_change, delete_selected_rows, add_column_ag_grid, update_list_icon
 from core.views.export_views import export_list_csv, export_list_json, export_run_csv, export_run_json, export_run_scraped_json
 from core.views.auth_views import login_view,callback_page, logout_view, dashboard_view, supabase_auth_callback, get_oauth_config, refresh_token
@@ -48,7 +48,6 @@ urlpatterns = [
     path("runs/<int:pk>/export/csv/", export_run_csv, name="export_run_csv"),
     path("runs/<int:pk>/export/json/", export_run_json, name="export_run_json"),
     path("runs/<int:pk>/export/scraped/json/", export_run_scraped_json, name="export_run_scraped_json"),
-    path("runs/by-n8n/<int:n8n_execution_id>/", run_by_n8n, name="run_by_n8n"),
     path("runs/<int:run_pk>/analyze-import/<str:list_pk>/", analyze_import_to_list, name="analyze_import_to_list"),
     path("runs/<int:run_pk>/add-to-list/<str:list_pk>/", add_extracted_to_list, name="add_extracted_to_list"),
 
@@ -73,6 +72,7 @@ urlpatterns = [
     path("lists/<int:pk>/add-column/", add_column_ag_grid, name="add_column_ag_grid"),
     path("lists/<int:pk>/update-icon/", update_list_icon, name="update_list_icon"),
     path("lists/<int:pk>/export/csv/", export_list_csv, name="export_list_csv"),
+
     path("lists/<int:pk>/export/json/", export_list_json, name="export_list_json"),
 ]
 
