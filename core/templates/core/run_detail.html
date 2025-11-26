@@ -5,15 +5,17 @@
 {% block footer %}{% endblock %}
 
 {% block content %}
-    {% csrf_token %}
-    <div class="max-w-6xl mx-auto px-4 py-8">
+{% csrf_token %}
+<div id="run_detail_container" class="max-w-6xl mx-auto px-4 py-8">
     <div class="mb-8">
         <nav class="flex mb-4" aria-label="Breadcrumb">
             <ol class="inline-flex items-center space-x-1 md:space-x-3">
                 <li class="inline-flex items-center">
-                     <a href="{% url 'run_list' %}" class="inline-flex items-center text-sm font-medium text-gray-700 hover:text-primary-600">
+                    <a href="{% url 'run_list' %}"
+                        class="inline-flex items-center text-sm font-medium text-gray-700 hover:text-primary-600">
                         <svg class="w-3 h-3 mr-2.5" fill="currentColor" viewBox="0 0 20 20">
-                            <path d="m19.707 9.293-2-2-7-7a1 1 0 0 0-1.414 0l-7 7-2 2A1 1 0 0 0 1 10h2v8a1 1 0 0 0 1 1h4a1 1 0 0 0 1-1v-4a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v4a1 1 0 0 0 1 1h4a1 1 0 0 0 1-1v-8h2a1 1 0 0 0 .707-1.707Z"/>
+                            <path
+                                d="m19.707 9.293-2-2-7-7a1 1 0 0 0-1.414 0l-7 7-2 2A1 1 0 0 0 1 10h2v8a1 1 0 0 0 1 1h4a1 1 0 0 0 1-1v-4a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v4a1 1 0 0 0 1 1h4a1 1 0 0 0 1-1v-8h2a1 1 0 0 0 .707-1.707Z" />
                         </svg>
                         Runs
                     </a>
@@ -21,23 +23,23 @@
                 <li>
                     <div class="flex items-center">
                         <svg class="w-3 h-3 text-gray-400 mx-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m9 5 7 7-7 7"/>
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m9 5 7 7-7 7" />
                         </svg>
                         <span class="ml-1 text-sm font-medium text-gray-500 md:ml-2">Run #{{ run.pk }}</span>
                     </div>
                 </li>
             </ol>
-         </nav>
+        </nav>
 
 
 
-          <div class="flex items-center justify-between">
-             <div>
-                  <h1 class="text-3xl font-bold text-gray-900">Run #{{ run.pk }}</h1>
-                  <p class="text-gray-600 mt-1">Created {{ run.created_at|date:"M j, Y g:i A" }}</p>
-             </div>
-               <div class="flex items-center space-x-6">
-                   <span id="status-display" class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium
+        <div class="flex items-center justify-between">
+            <div>
+                <h1 class="text-3xl font-bold text-gray-900">Run #{{ run.pk }}</h1>
+                <p class="text-gray-600 mt-1">Created {{ run.created_at|date:"M j, Y g:i A" }}</p>
+            </div>
+            <div class="flex items-center space-x-6">
+                <span id="status-display" class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium
                        {% if execution_status == 'success' %}
                            bg-green-100 text-green-800
                        {% elif execution_status == 'running' or execution_status == 'waiting' %}
@@ -47,242 +49,205 @@
                        {% else %}
                            bg-yellow-100 text-yellow-800
                        {% endif %}">
-                   {% if execution_status == 'running' %}
-                       <svg class="inline-block animate-spin mr-2 h-4 w-4 text-blue-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" aria-hidden="true">
-                           <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                           <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                       </svg>
-                   {% endif %}
-                       {% if execution_status == 'success' %}
-                           Completed
-                       {% elif execution_status == 'running' %}
-                           Running
-                       {% elif execution_status == 'waiting' %}
-                           Waiting
-                       {% elif execution_status == 'failed' or execution_status == 'error' %}
-                           Failed
-                       {% else %}
-                           {{ execution_status|title }}
-                       {% endif %}
-                   </span>
-                   {% if execution_data %}
-                   <span class="text-sm text-gray-600" id="duration-display">Calculating...</span>
-                   {% endif %}
-               </div>
-          </div>
-     </div>
+                    {% if execution_status == 'running' %}
+                    <svg class="inline-block animate-spin mr-2 h-4 w-4 text-blue-600" xmlns="http://www.w3.org/2000/svg"
+                        fill="none" viewBox="0 0 24 24" aria-hidden="true">
+                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4">
+                        </circle>
+                        <path class="opacity-75" fill="currentColor"
+                            d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z">
+                        </path>
+                    </svg>
+                    {% endif %}
+                    {% if execution_status == 'success' %}
+                    Completed
+                    {% elif execution_status == 'running' %}
+                    Running
+                    {% elif execution_status == 'waiting' %}
+                    Waiting
+                    {% elif execution_status == 'failed' or execution_status == 'error' %}
+                    Failed
+                    {% else %}
+                    {{ execution_status|title }}
+                    {% endif %}
+                </span>
+                {% if execution_data %}
+                <span class="text-sm text-gray-600" id="duration-display">Calculating...</span>
+                {% endif %}
+            </div>
+        </div>
+    </div>
 
-     <hr class="my-8 border-gray-200">
+    <hr class="my-8 border-gray-200">
 
-     <div class="grid md:grid-cols-2 gap-8">
-         <!-- Multi-Source Configuration -->
-         <div class="bg-white rounded-lg shadow-md p-6">
-             <h2 class="text-xl font-semibold text-gray-900 mb-4">Multi-Source Configuration</h2>
-              {% if run.input %}
-                  <script id="input-data" type="application/json">{{ input_json|safe }}</script>
-                  <div id="multi-source-config" class="space-y-6">
-                     <!-- Configuration will be populated by JavaScript -->
-                  </div>
-             {% else %}
-                 <p class="text-gray-500">No configuration data available.</p>
-             {% endif %}
-         </div>
+    <div class="grid md:grid-cols-2 gap-8">
+        <!-- Multi-Source Configuration -->
+        <div class="bg-white rounded-lg shadow-md p-6">
+            <h2 class="text-xl font-semibold text-gray-900 mb-4">Multi-Source Configuration</h2>
+            {% if run.input %}
+            <script id="input-data" type="application/json">{{ input_json|safe }}</script>
+            <div id="multi-source-config" class="space-y-6">
+                <!-- Configuration will be populated by JavaScript -->
+            </div>
+            {% else %}
+            <p class="text-gray-500">No configuration data available.</p>
+            {% endif %}
+        </div>
 
         <!-- Extraction Configuration -->
         <div class="bg-white rounded-lg shadow-md p-6">
             <h2 class="text-xl font-semibold text-gray-900 mb-4">Extraction Configuration</h2>
             {% if run.input %}
-                <div class="space-y-4">
-                    <div>
-                        <h3 class="text-sm font-medium text-gray-700 mb-2">Extraction Prompt</h3>
-                        <div class="space-y-3">
-                            <textarea id="extraction-prompt-textarea" rows="4" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500 text-sm" placeholder="Enter extraction prompt...">{{ run.extraction_prompt|default:"Extract location information, business mentions, and contact details from social media posts." }}</textarea>
-                            <div class="flex items-center space-x-3">
-                                <button id="rerun-button" class="hidden inline-flex items-center px-4 py-2 bg-primary-600 hover:bg-primary-700 text-white text-sm font-medium rounded-lg transition-colors duration-200" onclick="rerunWithModifiedPrompt()">
-                                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
-                                    </svg>
-                                    Rerun with Modified Prompt
-                                </button>
-                                <span id="prompt-changed-indicator" class="hidden text-sm text-orange-600">Prompt has been modified</span>
-                            </div>
+            <div class="space-y-4">
+                <div>
+                    <h3 class="text-sm font-medium text-gray-700 mb-2">Extraction Prompt</h3>
+                    <div class="space-y-3">
+                        <textarea id="extraction-prompt-textarea" rows="4"
+                            class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500 text-sm"
+                            placeholder="Enter extraction prompt...">{{ run.extraction_prompt|default:"Extract location information, business mentions, and contact details from social media posts." }}</textarea>
+                        <div class="flex items-center space-x-3">
+                            <button id="rerun-button"
+                                class="hidden inline-flex items-center px-4 py-2 bg-primary-600 hover:bg-primary-700 text-white text-sm font-medium rounded-lg transition-colors duration-200"
+                                onclick="rerunWithModifiedPrompt()">
+                                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                                </svg>
+                                Rerun with Modified Prompt
+                            </button>
+                            <span id="prompt-changed-indicator" class="hidden text-sm text-orange-600">Prompt has been
+                                modified</span>
                         </div>
                     </div>
-                    <div>
-                        
-                    </div>
                 </div>
+                <div>
+
+                </div>
+            </div>
             {% endif %}
         </div>
 
 
     </div>
 
+    <!--  Extracted Output Data -->
+    <div class="mt-8 max-w-6xl mx-auto">
+        <div class="bg-white rounded-lg shadow-md p-6">
+            <div class="flex justify-between items-center mb-4">
+                <h2 class="text-xl font-semibold text-gray-900">Extracted Data</h2>
+                <div class="flex space-x-2 items-center">
+                    <button onclick="openAddToListModal()"
+                        class="inline-flex items-center px-3 py-1 text-xs font-medium text-blue-700 bg-blue-100 hover:bg-blue-200 rounded-md transition-colors">
+                        <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+                        </svg>
+                        Add to List
+                    </button>
+                    <a href="{% url 'export_run_csv' run.pk %}"
+                        class="inline-flex items-center px-3 py-1 text-xs font-medium text-green-700 bg-green-100 hover:bg-green-200 rounded-md transition-colors">
+                        <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                        </svg>
+                        Export CSV
+                    </a>
+                    
+                    <button id="extracted-toggle"
+                        class="text-green-700 hover:text-green-900 p-2 rounded-md hover:bg-gray-100 transition-colors"
+                        onclick="toggleExtractedData()" title="Toggle extracted data visibility">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7" />
+                        </svg>
+                    </button>
+                </div>
+            </div>
+            <div class="space-y-4">
+                <div id="extracted-data-section" class="bg-green-50 border border-green-200 rounded-lg p-4"
+                    style="display: none;">
+                    <div class="mb-3 flex space-x-4">
+                        <label class="flex items-center">
+                            <input type="checkbox" id="wrap-text" onchange="toggleWrapText()" class="mr-2">
+                            Wrap Text
+                        </label>
+                        <label class="flex items-center">
+                            <input type="checkbox" id="truncate-text" onchange="toggleTruncateText()" checked
+                                class="mr-2">
+                            Truncate Long Text
+                        </label>
+                    </div>
 
+                    <div id="extracted-table-container" class="overflow-x-auto max-h-96">
+                        <table id="extracted-table" class="min-w-full divide-y divide-gray-200">
+                            <thead class="bg-gray-100 sticky top-0">
+                                <tr id="table-headers"></tr>
+                            </thead>
+                            <tbody id="table-body" class="bg-white divide-y divide-gray-200"></tbody>
+                        </table>
+                        <div id="no-data-message" class="text-center py-8 text-gray-500 hidden">
+                            No entities to display
+                        </div>
+                        <div id="extracted-loading" class="text-center py-8">
+                            <div class="inline-block animate-spin rounded-full h-6 w-6 border-b-2 border-green-600">
+                            </div>
+                            <p class="mt-2 text-gray-600">Loading extracted data...</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
 
-    <!-- Output Data -->
-    <div class="mt-8 bg-white rounded-lg shadow-md p-6">
-        <h2 class="text-xl font-semibold text-gray-900 mb-4">Extracted Data</h2>
-        <div class="space-y-4">
-             <div id="extracted-data-section" class="bg-green-50 border border-green-200 rounded-lg p-4" style="display: none;">
-                 <div class="flex justify-between items-center">
-                     <div>
-                         <h3 class="text-sm font-medium text-green-800">Extracted Data Available</h3>
-                         <p class="text-sm text-green-700 mt-1">AI-processed entities ready for export</p>
-                     </div>
-                      <button id="extracted-toggle" class="text-green-700 hover:text-green-900 p-1 rounded" onclick="toggleExtractedData()">
-                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7"/>
-                         </svg>
-                     </button>
-                 </div>
-<div id="extracted-grid-container" class="mt-4 bg-white rounded-lg shadow-md p-4">
-    <div class="flex justify-between items-center mb-4">
-        <div>
-            <h3 class="text-sm font-medium text-gray-900 mb-3">Processed Entities</h3>
-            <p class="text-sm text-gray-700 mt-1">AI-extracted entities from your social media data</p>
-        </div>
-        <!-- Controls similar to list page -->
-        <div class="flex space-x-2 mb-4">
-            <label class="flex items-center">
-                <input type="checkbox" id="wrap-text" onchange="toggleWrapText()" class="mr-2">
-                Wrap Text
-            </label>
-            <label class="flex items-center">
-                <input type="checkbox" id="truncate-text" onchange="toggleTruncateText()" checked class="mr-2">
-                Truncate Long Text
-            </label>
-        </div>
     </div>
-    
-    <!-- AG-Grid container -->
-    <div id="extracted-grid" class="ag-theme-alpine" style="height: 600px; width: 100%;"></div>
-</div>
-                       <h3 class="text-sm font-medium text-gray-900 mb-3">Processed Entities</h3>
-                       <div class="mb-3 flex space-x-4">
-                           <label class="flex items-center">
-                               <input type="checkbox" id="wrap-text" onchange="toggleWrapText()" class="mr-2">
-                               Wrap Text
-                           </label>
-                           <label class="flex items-center">
-                               <input type="checkbox" id="truncate-text" onchange="toggleTruncateText()" checked class="mr-2">
-                               Truncate Long Text
-                           </label>
-                       </div>
 
-                       <div id="extracted-table-container" class="overflow-x-auto max-h-96">
-                          <table id="extracted-table" class="min-w-full divide-y divide-gray-200">
-                              <thead class="bg-gray-100 sticky top-0">
-                                  <tr id="table-headers"></tr>
-                              </thead>
-                              <tbody id="table-body" class="bg-white divide-y divide-gray-200"></tbody>
-                          </table>
-                          <div id="no-data-message" class="text-center py-8 text-gray-500 hidden">
-                              No entities to display
-                          </div>
-                          <div id="extracted-loading" class="text-center py-8">
-                              <div class="inline-block animate-spin rounded-full h-6 w-6 border-b-2 border-green-600"></div>
-                              <p class="mt-2 text-gray-600">Loading extracted data...</p>
-                          </div>
-                      </div>
-                   </div>
-             </div>
-                         <div class="ml-3">
-                             <h3 class="text-sm font-medium text-green-800">Extracted Data Available</h3>
-                              <div class="mt-2 flex space-x-2">
-                                  <button onclick="openAddToListModal()" 
-                                          class="inline-flex items-center px-3 py-1 text-xs font-medium text-blue-700 bg-blue-100 hover:bg-blue-200 rounded-md transition-colors">
-                                      <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
-                                      </svg>
-                                      Add to List
-                                  </button>
-                                  <a href="{% url 'export_run_csv' run.pk %}"
-                                     class="inline-flex items-center px-3 py-1 text-xs font-medium text-green-700 bg-green-100 hover:bg-green-200 rounded-md transition-colors">
-                                      <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
-                                      </svg>
-                                      Export CSV
-                                  </a>
-                                  <a href="{% url 'export_run_json' run.pk %}"
-                                     class="inline-flex items-center px-3 py-1 text-xs font-medium text-green-700 bg-green-100 hover:bg-green-200 rounded-md transition-colors">
-                                      <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/>
-                                      </svg>
-                                      Export JSON
-                                  </a>
-                              </div>
-                         </div>
-                     </div>
-                     <button id="extracted-toggle" class="text-green-700 hover:text-green-900 p-1 rounded" onclick="toggleExtractedData()">
-                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7"/>
-                         </svg>
-                     </button>
-                 </div>
-                  <div id="extracted-data" class="mt-4 bg-gray-50 rounded-lg p-4">
-                      <h3 class="text-sm font-medium text-gray-900 mb-3">Processed Entities</h3>
-                      <div class="mb-3 flex space-x-4">
-                          <label class="flex items-center">
-                              <input type="checkbox" id="wrap-text" onchange="toggleWrapText()" class="mr-2">
-                              Wrap Text
-                          </label>
-                          <label class="flex items-center">
-                              <input type="checkbox" id="truncate-text" onchange="toggleTruncateText()" checked class="mr-2">
-                              Truncate Long Text
-                          </label>
-                      </div>
 
-                      <div id="extracted-table-container" class="overflow-x-auto max-h-96">
-                         <table id="extracted-table" class="min-w-full divide-y divide-gray-200">
-                             <thead class="bg-gray-100 sticky top-0">
-                                 <tr id="table-headers"></tr>
-                             </thead>
-                             <tbody id="table-body" class="bg-white divide-y divide-gray-200"></tbody>
-                         </table>
-                         <div id="no-data-message" class="text-center py-8 text-gray-500 hidden">
-                             No entities to display
-                         </div>
-                     </div>
-                 </div>
+    <!-- Scraped Output Data -->
+
+    <div id="scraped-data-section" class="mt-8 max-w-6xl mx-auto" style="display: none;">
+        <div class="bg-white rounded-lg shadow-md p-6">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-xl font-semibold text-gray-900">Raw Scraped Data</h3>
+                <div class="flex space-x-2">
+                    <button id="scraped-toggle"
+                        class="p-2 rounded-md hover:bg-gray-100 text-gray-600 hover:text-gray-900 transition-colors"
+                        onclick="toggleScrapedData()" title="Toggle visibility">
+                        <svg id="scraped-toggle-icon" class="w-5 h-5" fill="none" stroke="currentColor"
+                            viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7" />
+                        </svg>
+                    </button>
+                </div>
             </div>
 
+            <!-- Tab navigation for different source types -->
+            <div id="source-tabs" class="border-b border-gray-200 mb-4">
+                <nav class="-mb-px flex space-x-8" aria-label="Tabs">
+                    <!-- Tabs will be dynamically inserted here -->
+                </nav>
+            </div>
 
-               <div id="scraped-data-section" class="border-t pt-4" style="display: none;">
-                <div class="bg-white rounded-lg shadow-md p-6">
-                       <div class="flex justify-between items-center mb-4">
-                           <h3 class="text-xl font-semibold text-gray-900">Raw Scraped Data</h3>
-                           <div class="flex space-x-2">
-                               <button id="scraped-toggle" class="p-2 rounded-md hover:bg-gray-100 text-gray-600 hover:text-gray-900 transition-colors" onclick="toggleScrapedData()" title="Toggle visibility">
-                                   <svg id="scraped-toggle-icon" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7"/>
-                                   </svg>
-                               </button>
-                           </div>
-                       </div>
-                       
-                       <!-- Tab navigation for different source types -->
-                       <div id="source-tabs" class="border-b border-gray-200 mb-4">
-                           <nav class="-mb-px flex space-x-8" aria-label="Tabs">
-                               <!-- Tabs will be dynamically inserted here -->
-                           </nav>
-                       </div>
-                       
-                       <!-- Loading state -->
-                       <div id="scraped-loading" class="text-center py-8">
-                           <div class="inline-block animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600"></div>
-                           <p class="mt-2 text-gray-600">Loading scraped data...</p>
-                       </div>
-                       
-                       <!-- Tab content containers -->
-                       <div id="scraped-data" class="bg-gray-50 rounded-lg p-4 max-h-96 overflow-y-auto" style="display: none;">
-                           <!-- JSON viewer will be inserted here -->
-                       </div>
-                   </div>
-                </div>
+            <!-- Loading state -->
+            <div id="scraped-loading" class="text-center py-8">
+                <div class="inline-block animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600"></div>
+                <p class="mt-2 text-gray-600">Loading scraped data...</p>
+            </div>
+
+            <!-- Tab content containers -->
+            <div id="scraped-data" class="bg-gray-50 rounded-lg p-4 max-h-96 overflow-y-auto" style="display: none;">
+                <!-- JSON viewer will be inserted here -->
+            </div>
         </div>
     </div>
 </div>
+
+
+
+
+
+
+
+
+
+
 
 <!-- Add to List Modal -->
 <div id="add-to-list-modal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full hidden z-50">
@@ -292,59 +257,67 @@
                 <h3 class="text-lg font-medium text-gray-900">Add Extracted Data to List</h3>
                 <button onclick="closeAddToListModal()" class="text-gray-400 hover:text-gray-600">
                     <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12">
+                        </path>
                     </svg>
                 </button>
             </div>
-            
+
             <!-- Loading state -->
             <div id="modal-loading" class="text-center py-8">
                 <div class="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600"></div>
                 <p class="mt-2 text-gray-600">Loading your lists...</p>
             </div>
-            
+
             <!-- List selection form -->
             <div id="modal-content" class="hidden">
                 <div class="mb-4">
                     <label class="block text-sm font-medium text-gray-700 mb-2">Select List</label>
-                    <select id="list-select" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500">
+                    <select id="list-select"
+                        class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500">
                         <option value="">Choose a list...</option>
                         <option value="new">+ Create New List</option>
                     </select>
                 </div>
-                
+
                 <!-- New list form -->
                 <div id="new-list-form" class="hidden mb-4 p-4 bg-gray-50 rounded-lg">
                     <h4 class="text-sm font-medium text-gray-900 mb-3">Create New List</h4>
                     <div class="space-y-3">
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-1">List Name</label>
-                            <input type="text" id="new-list-name" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500" placeholder="Enter list name...">
+                            <input type="text" id="new-list-name"
+                                class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500"
+                                placeholder="Enter list name...">
                         </div>
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-1">Description (optional)</label>
-                            <textarea id="new-list-description" rows="2" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500" placeholder="Describe what this list contains..."></textarea>
+                            <textarea id="new-list-description" rows="2"
+                                class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500"
+                                placeholder="Describe what this list contains..."></textarea>
                         </div>
                     </div>
                 </div>
-                
+
                 <!-- Analysis results -->
                 <div id="analysis-results" class="hidden mb-4 p-4 bg-blue-50 rounded-lg">
                     <h4 class="text-sm font-medium text-gray-900 mb-2">Import Analysis</h4>
                     <div id="analysis-content"></div>
                 </div>
-                
+
                 <!-- Action buttons -->
                 <div class="flex justify-end space-x-3">
-                    <button onclick="closeAddToListModal()" class="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-md transition-colors">
+                    <button onclick="closeAddToListModal()"
+                        class="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-md transition-colors">
                         Cancel
                     </button>
-                    <button id="import-button" onclick="importToList()" disabled class="px-4 py-2 text-sm font-medium text-white bg-primary-600 hover:bg-primary-700 rounded-md transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
+                    <button id="import-button" onclick="importToList()" disabled
+                        class="px-4 py-2 text-sm font-medium text-white bg-primary-600 hover:bg-primary-700 rounded-md transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
                         Import Data
                     </button>
                 </div>
             </div>
-            
+
             <!-- Success state -->
             <div id="modal-success" class="hidden text-center py-8">
                 <div class="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-green-100 mb-4">
@@ -355,10 +328,12 @@
                 <h3 class="text-lg font-medium text-gray-900 mb-2">Import Successful!</h3>
                 <p id="success-message" class="text-sm text-gray-600 mb-4"></p>
                 <div class="flex justify-center space-x-3">
-                    <button onclick="closeAddToListModal()" class="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-md transition-colors">
+                    <button onclick="closeAddToListModal()"
+                        class="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-md transition-colors">
                         Close
                     </button>
-                    <a id="view-list-link" href="" class="px-4 py-2 text-sm font-medium text-white bg-primary-600 hover:bg-primary-700 rounded-md transition-colors">
+                    <a id="view-list-link" href=""
+                        class="px-4 py-2 text-sm font-medium text-white bg-primary-600 hover:bg-primary-700 rounded-md transition-colors">
                         View List
                     </a>
                 </div>
@@ -374,277 +349,232 @@
 
 
 <script>
-let pollingInterval;
+    let pollingInterval;
 
-function formatDuration(ms) {
-    if (ms < 1000) return 'Less than 1s';
-    const seconds = Math.floor(ms / 1000);
-    const minutes = Math.floor(seconds / 60);
-    const hours = Math.floor(minutes / 60);
-    const days = Math.floor(hours / 24);
+    function formatDuration(ms) {
+        if (ms < 1000) return 'Less than 1s';
+        const seconds = Math.floor(ms / 1000);
+        const minutes = Math.floor(seconds / 60);
+        const hours = Math.floor(minutes / 60);
+        const days = Math.floor(hours / 24);
 
-    if (days > 0) return `${days}d ${hours % 24}h ${minutes % 60}m ${seconds % 60}s`;
-    if (hours > 0) return `${hours}h ${minutes % 60}m ${seconds % 60}s`;
-    if (minutes > 0) return `${minutes}m ${seconds % 60}s`;
-    return `${seconds}s`;
-}
+        if (days > 0) return `${days}d ${hours % 24}h ${minutes % 60}m ${seconds % 60}s`;
+        if (hours > 0) return `${hours}h ${minutes % 60}m ${seconds % 60}s`;
+        if (minutes > 0) return `${minutes}m ${seconds % 60}s`;
+        return `${seconds}s`;
+    }
 
-function initializePromptEditing(originalPrompt) {
-    const textarea = document.getElementById('extraction-prompt-textarea');
-    const rerunButton = document.getElementById('rerun-button');
-    const changedIndicator = document.getElementById('prompt-changed-indicator');
+    function initializePromptEditing(originalPrompt) {
+        const textarea = document.getElementById('extraction-prompt-textarea');
+        const rerunButton = document.getElementById('rerun-button');
+        const changedIndicator = document.getElementById('prompt-changed-indicator');
 
-    textarea.value = originalPrompt;
+        textarea.value = originalPrompt;
 
-    textarea.addEventListener('input', function() {
-        const hasChanged = textarea.value.trim() !== originalPrompt.trim();
-        if (hasChanged) {
-            rerunButton.classList.remove('hidden');
-            changedIndicator.classList.remove('hidden');
-        } else {
-            rerunButton.classList.add('hidden');
-            changedIndicator.classList.add('hidden');
+        textarea.addEventListener('input', function () {
+            const hasChanged = textarea.value.trim() !== originalPrompt.trim();
+            if (hasChanged) {
+                rerunButton.classList.remove('hidden');
+                changedIndicator.classList.remove('hidden');
+            } else {
+                rerunButton.classList.add('hidden');
+                changedIndicator.classList.add('hidden');
+            }
+        });
+    }
+
+    function rerunWithModifiedPrompt() {
+        const textarea = document.getElementById('extraction-prompt-textarea');
+        const newPrompt = textarea.value.trim();
+
+        if (!newPrompt) {
+            alert('Please enter an extraction prompt.');
+            return;
         }
-    });
-}
 
-function rerunWithModifiedPrompt() {
-    const textarea = document.getElementById('extraction-prompt-textarea');
-    const newPrompt = textarea.value.trim();
+        // For now, just show an alert. In the future, this would trigger a rerun
+        alert(`Rerun functionality coming soon!\n\nNew prompt: ${newPrompt}`);
 
-    if (!newPrompt) {
-        alert('Please enter an extraction prompt.');
-        return;
+        // TODO: Implement actual rerun API call
+        // fetch(`/runs/{{ run.pk }}/rerun/`, {
+        //     method: 'POST',
+        //     headers: {
+        //         'Content-Type': 'application/json',
+        //         'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+        //     },
+        //     body: JSON.stringify({ extraction_prompt: newPrompt })
+        // })
     }
 
-    // For now, just show an alert. In the future, this would trigger a rerun
-    alert(`Rerun functionality coming soon!\n\nNew prompt: ${newPrompt}`);
+    function renderExtractedTable(extractedData) {
+        // Handle new API response format
+        let entities = [];
 
-    // TODO: Implement actual rerun API call
-    // fetch(`/runs/{{ run.pk }}/rerun/`, {
-    //     method: 'POST',
-    //     headers: {
-    //         'Content-Type': 'application/json',
-    //         'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
-    //     },
-    //     body: JSON.stringify({ extraction_prompt: newPrompt })
-    // })
-}
+        if (extractedData.entities && Array.isArray(extractedData.entities)) {
+            // New format: {entities: [{entity_id, attributes: {...}}]}
+            entities = extractedData.entities.map(entity => ({
+                ...entity.attributes,
+                entity_id: entity.entity_id
+            }));
+        } else if (extractedData.result && Array.isArray(extractedData.result)) {
+            entities = extractedData.result;
+        } else if (extractedData.results && Array.isArray(extractedData.results)) {
+            entities = extractedData.results;
+        } else if (Array.isArray(extractedData)) {
+            entities = extractedData;
+        } else if (extractedData.output && extractedData.output.results && Array.isArray(extractedData.output.results)) {
+            entities = extractedData.output.results;
+        } else if (extractedData.output && extractedData.output.result && Array.isArray(extractedData.output.result)) {
+            entities = extractedData.output.result;
+        }
 
-function renderExtractedTable(extractedData) {
-    // Handle new API response format
-    let entities = [];
-    
-    if (extractedData.entities && Array.isArray(extractedData.entities)) {
-        // New format: {entities: [{entity_id, attributes: {...}}]}
-        entities = extractedData.entities.map(entity => ({
-            ...entity.attributes,
-            entity_id: entity.entity_id
-        }));
-    } else if (extractedData.result && Array.isArray(extractedData.result)) {
-        entities = extractedData.result;
-    } else if (extractedData.results && Array.isArray(extractedData.results)) {
-        entities = extractedData.results;
-    } else if (Array.isArray(extractedData)) {
-        entities = extractedData;
-    } else if (extractedData.output && extractedData.output.results && Array.isArray(extractedData.output.results)) {
-        entities = extractedData.output.results;
-    } else if (extractedData.output && extractedData.output.result && Array.isArray(extractedData.output.result)) {
-        entities = extractedData.output.result;
-    }
 
-    
 
-    const tableHeaders = document.getElementById('table-headers');
-    const tableBody = document.getElementById('table-body');
-    const noDataMessage = document.getElementById('no-data-message');
+        const tableHeaders = document.getElementById('table-headers');
+        const tableBody = document.getElementById('table-body');
+        const noDataMessage = document.getElementById('no-data-message');
 
-    if (!entities || entities.length === 0) {
-        tableHeaders.innerHTML = '';
-        tableBody.innerHTML = '';
-        noDataMessage.classList.remove('hidden');
-        return;
-    }
+        if (!entities || entities.length === 0) {
+            tableHeaders.innerHTML = '';
+            tableBody.innerHTML = '';
+            noDataMessage.classList.remove('hidden');
+            return;
+        }
 
-    noDataMessage.classList.add('hidden');
+        noDataMessage.classList.add('hidden');
 
-    // Get column headers from first entity
-    const columns = Object.keys(entities[0]);
+        // Get column headers from first entity
+        const columns = Object.keys(entities[0]);
 
-    // Generate table headers
-    tableHeaders.innerHTML = columns.map(col => `
+        // Generate table headers
+        tableHeaders.innerHTML = columns.map(col => `
         <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
             ${col.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}
         </th>
     `).join('');
 
-    // Generate table rows
-    tableBody.innerHTML = entities.map(entity => `
+        // Generate table rows
+        tableBody.innerHTML = entities.map(entity => `
         <tr class="hover:bg-gray-50">
             ${columns.map(col => {
-                const value = entity[col];
-                let displayValue = '';
-                let cellClass = 'px-4 py-3 text-sm text-gray-900';
+            const value = entity[col];
+            let displayValue = '';
+            let cellClass = 'px-4 py-3 text-sm text-gray-900';
 
-                if (Array.isArray(value)) {
-                    displayValue = value.join(', ');
-                    cellClass += ' array-cell';
-                } else if (typeof value === 'object' && value !== null) {
-                    displayValue = JSON.stringify(value, null, 2);
-                    cellClass += ' object-cell font-mono text-xs bg-gray-50';
-                } else if (typeof value === 'number') {
-                    displayValue = value.toString();
-                    cellClass += ' text-right';
-                } else {
-                    displayValue = value || '';
-                }
+            if (Array.isArray(value)) {
+                displayValue = value.join(', ');
+                cellClass += ' array-cell';
+            } else if (typeof value === 'object' && value !== null) {
+                displayValue = JSON.stringify(value, null, 2);
+                cellClass += ' object-cell font-mono text-xs bg-gray-50';
+            } else if (typeof value === 'number') {
+                displayValue = value.toString();
+                cellClass += ' text-right';
+            } else {
+                displayValue = value || '';
+            }
 
-                return `<td class="${cellClass}" title="${typeof value === 'string' ? value : JSON.stringify(value)}">${displayValue}</td>`;
-            }).join('')}
+            return `<td class="${cellClass}" title="${typeof value === 'string' ? value : JSON.stringify(value)}">${displayValue}</td>`;
+        }).join('')}
         </tr>
     `).join('');
 
-    // Apply default truncate
-    toggleTruncateText();
-}
-
-function updateStatusAndDuration(data) {
-    if (!data) return;
-
-    // Update status
-    const statusElement = document.getElementById('status-display');
-    let statusText = data.status || 'unknown';
-    if (statusText === 'success' || statusText === 'completed' || statusText === 'finished') statusText = 'Completed';
-    else if (statusText === 'running') statusText = 'Running';
-    else if (statusText === 'waiting') statusText = 'Waiting';
-    else if (statusText === 'failed' || statusText === 'error' || statusText === 'cancelled') statusText = 'Failed';
-    else statusText = statusText ? statusText.charAt(0).toUpperCase() + statusText.slice(1) : 'Unknown';
-    statusElement.textContent = statusText;
-
-    // Update duration
-    const durationElement = document.getElementById('duration-display');
-    if (data.startedAt) {
-        const startTime = new Date(data.startedAt);
-        const endTime = data.stoppedAt ? new Date(data.stoppedAt) : new Date();
-        const durationMs = endTime - startTime;
-
-        durationElement.textContent = formatDuration(durationMs);
-    } else {
-        durationElement.textContent = 'Not started';
+        // Apply default truncate
+        toggleTruncateText();
     }
-}
 
-function pollStatus() {
-    fetch(`/runs/{{ run.pk }}/status/`)
-        .then(response => response.json())
-        .then(data => {
-            updateStatusAndDuration(data.data);
-            // Stop polling if completed, failed, or cancelled
-            if (['success', 'completed', 'finished', 'failed', 'error', 'cancelled'].includes(data.status)) {
-                clearInterval(pollingInterval);
-                // Refresh page on final statuses
-                if (['success', 'completed', 'finished', 'failed', 'error'].includes(data.status)) {
-                    setTimeout(() => window.location.reload(), 1000);
-                }
-            }
-        })
-        .catch(error => {
-            // Handle polling error silently
-        });
-        
-        // AG-Grid for extracted entities
-        document.addEventListener('DOMContentLoaded', function() {
-            const extractedGrid = new AGGridManager('extracted-grid', {
-                // Grid options similar to list page
-                pagination: true,
-                paginationPageSize: 50,
-                enableRangeSelection: true,
-                enableCharts: true,
-                // Entity-specific configuration
-                entityMode: true
-            });
-            
-            // Load extracted data
-            loadExtractedData();
-        });
+    function updateStatusAndDuration(data) {
+        if (!data) return;
 
-        function loadExtractedData() {
-            const runPk = {{ run.pk|safe }};
-            
-            fetch(`/runs/${runPk}/transit-data/`)
-                .then(response => response.json())
-                .then(data => {
-                    if (data.success && data.entities) {
-                        // Transform EAV entities to AG-Grid format
-                        const gridData = data.entities.map(entity => {
-                            const attributes = entity.attributes || {};
-                            
-                            // Flatten attributes into columns
-                            const flattenedEntity = {
-                                entity_id: entity.entity_id,
-                                ...attributes  // Spread all attributes as columns
-                            };
-                            
-                            return flattenedEntity;
-                        });
-                        
-                        extractedGrid.setGridData(gridData);
-                    } else {
-                        extractedGrid.showNoDataMessage();
-                    }
-                })
-                .catch(error => {
-                    console.error('Failed to load extracted data:', error);
-                    extractedGrid.showNoDataMessage();
-                });
+        // Update status
+        const statusElement = document.getElementById('status-display');
+        let statusText = data.status || 'unknown';
+        if (statusText === 'success' || statusText === 'completed' || statusText === 'finished') statusText = 'Completed';
+        else if (statusText === 'running') statusText = 'Running';
+        else if (statusText === 'waiting') statusText = 'Waiting';
+        else if (statusText === 'failed' || statusText === 'error' || statusText === 'cancelled') statusText = 'Failed';
+        else statusText = statusText ? statusText.charAt(0).toUpperCase() + statusText.slice(1) : 'Unknown';
+        statusElement.textContent = statusText;
+
+        // Update duration
+        const durationElement = document.getElementById('duration-display');
+        if (data.startedAt) {
+            const startTime = new Date(data.startedAt);
+            const endTime = data.stoppedAt ? new Date(data.stoppedAt) : new Date();
+            const durationMs = endTime - startTime;
+
+            durationElement.textContent = formatDuration(durationMs);
+        } else {
+            durationElement.textContent = 'Not started';
         }
-}
+    }
 
-// Initial update
-const initialData = {{ execution_data_json|safe }};
-updateStatusAndDuration(initialData);
-
-// Populate multi-source configuration data
-{% if run.input %}
-const rawInput = document.getElementById('input-data').textContent;
-
-try {
-    const inputData = JSON.parse(rawInput);
-    const configContainer = document.getElementById('multi-source-config');
-
-    // Handle both legacy and new multi-source formats
-    if (inputData.sources && Array.isArray(inputData.sources)) {
-        // New multi-source format
-        inputData.sources.forEach((source, index) => {
-            const sourceDiv = document.createElement('div');
-            sourceDiv.className = 'border rounded-lg p-4 bg-gray-50';
-            
-            // Extract platform from platform field or fallback to sourceType
-            let platform = source.platform;
-            if (!platform && source.sourceType) {
-                if (source.sourceType.startsWith('youtube-')) {
-                    platform = 'youtube';
-                } else if (source.sourceType.startsWith('instagram-')) {
-                    platform = 'instagram';
-                } else if (source.sourceType.startsWith('tiktok-')) {
-                    platform = 'tiktok';
+    function pollStatus() {
+        fetch(`/runs/{{ run.pk }}/status/`)
+            .then(response => response.json())
+            .then(data => {
+                updateStatusAndDuration(data.data);
+                // Stop polling if completed, failed, or cancelled
+                if (['success', 'completed', 'finished', 'failed', 'error', 'cancelled'].includes(data.status)) {
+                    clearInterval(pollingInterval);
+                    // Refresh page on final statuses
+                    if (['success', 'completed', 'finished', 'failed', 'error'].includes(data.status)) {
+                        setTimeout(() => window.location.reload(), 1000);
+                    }
                 }
-            }
-            
-            const platformIcon = getPlatformIcon(platform);
-            const platformName = platform ? platform.charAt(0).toUpperCase() + platform.slice(1) : 'Unknown';
-            
-            let configDetails = '';
-            
-            if (platform === 'instagram') {
-                configDetails = renderInstagramConfig(source);
-            } else if (platform === 'tiktok') {
-                configDetails = renderTiktokConfig(source);
-            } else if (platform === 'youtube') {
-                configDetails = renderYoutubeConfig(source);
-            }
-            
-            sourceDiv.innerHTML = `
+            })
+            .catch(error => {
+                // Handle polling error silently
+            });
+
+
+    }
+
+    // Initial update
+    const initialData = {{ execution_data_json|safe }};
+    updateStatusAndDuration(initialData);
+
+    // Populate multi-source configuration data
+    {% if run.input %}
+    const rawInput = document.getElementById('input-data').textContent;
+
+    try {
+        const inputData = JSON.parse(rawInput);
+        const configContainer = document.getElementById('multi-source-config');
+
+        // Handle both legacy and new multi-source formats
+        if (inputData.sources && Array.isArray(inputData.sources)) {
+            // New multi-source format
+            inputData.sources.forEach((source, index) => {
+                const sourceDiv = document.createElement('div');
+                sourceDiv.className = 'border rounded-lg p-4 bg-gray-50';
+
+                // Extract platform from platform field or fallback to sourceType
+                let platform = source.platform;
+                if (!platform && source.sourceType) {
+                    if (source.sourceType.startsWith('youtube-')) {
+                        platform = 'youtube';
+                    } else if (source.sourceType.startsWith('instagram-')) {
+                        platform = 'instagram';
+                    } else if (source.sourceType.startsWith('tiktok-')) {
+                        platform = 'tiktok';
+                    }
+                }
+
+                const platformIcon = getPlatformIcon(platform);
+                const platformName = platform ? platform.charAt(0).toUpperCase() + platform.slice(1) : 'Unknown';
+
+                let configDetails = '';
+
+                if (platform === 'instagram') {
+                    configDetails = renderInstagramConfig(source);
+                } else if (platform === 'tiktok') {
+                    configDetails = renderTiktokConfig(source);
+                } else if (platform === 'youtube') {
+                    configDetails = renderYoutubeConfig(source);
+                }
+
+                sourceDiv.innerHTML = `
                 <div class="flex items-center mb-3">
                     ${platformIcon}
                     <h3 class="text-lg font-medium text-gray-900 ml-2">${platformName}</h3>
@@ -652,14 +582,14 @@ try {
                 </div>
                 ${configDetails}
             `;
-            
-            configContainer.appendChild(sourceDiv);
-        });
-    } else {
-        // Legacy format - display for backward compatibility
-        const legacyDiv = document.createElement('div');
-        legacyDiv.className = 'border rounded-lg p-4 bg-yellow-50';
-        legacyDiv.innerHTML = `
+
+                configContainer.appendChild(sourceDiv);
+            });
+        } else {
+            // Legacy format - display for backward compatibility
+            const legacyDiv = document.createElement('div');
+            legacyDiv.className = 'border rounded-lg p-4 bg-yellow-50';
+            legacyDiv.innerHTML = `
             <h3 class="text-lg font-medium text-gray-900 mb-3">Legacy Configuration</h3>
             <div class="text-sm text-gray-700">
                 <p><strong>Profiles:</strong> ${inputData.profiles ? inputData.profiles.join(', ') : 'None'}</p>
@@ -667,36 +597,36 @@ try {
                 <p><strong>Max Results:</strong> ${inputData.max_results || 'N/A'}</p>
             </div>
         `;
-        configContainer.appendChild(legacyDiv);
-    }
+            configContainer.appendChild(legacyDiv);
+        }
 
-// Initialize extraction prompt editing
-    initializePromptEditing('{{ run.extraction_prompt|default:"Extract location information, business mentions, and contact details from social media posts."|escapejs }}');
+        // Initialize extraction prompt editing
+        initializePromptEditing('{{ run.extraction_prompt|default:"Extract location information, business mentions, and contact details from social media posts."|escapejs }}');
 
-} catch (e) {
-    const configContainer = document.getElementById('multi-source-config');
-    configContainer.innerHTML = `<div class="bg-red-50 border border-red-200 rounded-lg p-4">
+    } catch (e) {
+        const configContainer = document.getElementById('multi-source-config');
+        configContainer.innerHTML = `<div class="bg-red-50 border border-red-200 rounded-lg p-4">
         <h3 class="text-sm font-medium text-red-800">Configuration Parse Error</h3>
         <p class="text-sm text-red-700 mt-1">${e.message}</p>
     </div>`;
-}
-{% endif %}
+    }
+    {% endif %}
 
-function getPlatformIcon(platform) {
-    const icons = {
-        instagram: '<svg class="w-5 h-5 text-pink-600" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zM5.838 12a6.162 6.162 0 1 1 12.324 0 6.162 6.162 0 0 1-12.324 0zM12 16a4 4 0 1 1 0-8 4 4 0 0 1 0 8zm4.965-10.405a1.44 1.44 0 1 1 2.881.001 1.44 1.44 0 0 1-2.881-.001z"/></svg>',
-        tiktok: '<svg class="w-5 h-5 text-black" fill="currentColor" viewBox="0 0 24 24"><path d="M12.525.02c1.31-.02 2.61-.01 3.91-.02.08 1.53.63 3.09 1.75 4.17 1.12 1.11 2.7 1.62 4.24 1.79v4.03c-1.44-.05-2.89-.35-4.2-.97-.57-.26-1.1-.59-1.62-.93-.01 2.92.01 5.84-.02 8.75-.08 1.4-.54 2.79-1.35 3.94-1.31 1.92-3.58 3.17-5.91 3.21-1.43.08-2.86-.31-4.08-1.03-2.02-1.19-3.44-3.37-3.65-5.71-.02-.5-.03-1-.01-1.49.18-1.9 1.12-3.72 2.58-4.96 1.66-1.44 3.98-2.13 6.15-1.72.02 1.48-.04 2.96-.04 4.44-.99-.32-2.15-.23-3.02.37-.63.41-1.11 1.04-1.36 1.75-.21.51-.15 1.07-.14 1.61.24 1.64 1.82 3.02 3.5 2.87 1.12-.01 2.19-.66 2.77-1.61.19-.33.4-.67.41-1.06.1-1.79.06-3.57.07-5.36.01-4.03-.01-8.05.02-12.07z"/></svg>',
-        youtube: '<svg class="w-5 h-5 text-red-600" fill="currentColor" viewBox="0 0 24 24"><path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg>'
-    };
-    return icons[platform] || '<svg class="w-5 h-5 text-gray-600" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg>';
-}
+    function getPlatformIcon(platform) {
+        const icons = {
+            instagram: '<svg class="w-5 h-5 text-pink-600" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zM5.838 12a6.162 6.162 0 1 1 12.324 0 6.162 6.162 0 0 1-12.324 0zM12 16a4 4 0 1 1 0-8 4 4 0 0 1 0 8zm4.965-10.405a1.44 1.44 0 1 1 2.881.001 1.44 1.44 0 0 1-2.881-.001z"/></svg>',
+            tiktok: '<svg class="w-5 h-5 text-black" fill="currentColor" viewBox="0 0 24 24"><path d="M12.525.02c1.31-.02 2.61-.01 3.91-.02.08 1.53.63 3.09 1.75 4.17 1.12 1.11 2.7 1.62 4.24 1.79v4.03c-1.44-.05-2.89-.35-4.2-.97-.57-.26-1.1-.59-1.62-.93-.01 2.92.01 5.84-.02 8.75-.08 1.4-.54 2.79-1.35 3.94-1.31 1.92-3.58 3.17-5.91 3.21-1.43.08-2.86-.31-4.08-1.03-2.02-1.19-3.44-3.37-3.65-5.71-.02-.5-.03-1-.01-1.49.18-1.9 1.12-3.72 2.58-4.96 1.66-1.44 3.98-2.13 6.15-1.72.02 1.48-.04 2.96-.04 4.44-.99-.32-2.15-.23-3.02.37-.63.41-1.11 1.04-1.36 1.75-.21.51-.15 1.07-.14 1.61.24 1.64 1.82 3.02 3.5 2.87 1.12-.01 2.19-.66 2.77-1.61.19-.33.4-.67.41-1.06.1-1.79.06-3.57.07-5.36.01-4.03-.01-8.05.02-12.07z"/></svg>',
+            youtube: '<svg class="w-5 h-5 text-red-600" fill="currentColor" viewBox="0 0 24 24"><path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg>'
+        };
+        return icons[platform] || '<svg class="w-5 h-5 text-gray-600" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg>';
+    }
 
-function renderInstagramConfig(source) {
-    const config = source.config;
-    let details = '<div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">';
-    
-    if (config.directUrls && config.directUrls.length > 0) {
-        details += `
+    function renderInstagramConfig(source) {
+        const config = source.config;
+        let details = '<div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">';
+
+        if (config.directUrls && config.directUrls.length > 0) {
+            details += `
             <div class="md:col-span-2">
                 <span class="font-medium text-gray-600">Direct URLs:</span>
                 <div class="mt-1 bg-white rounded p-2">
@@ -704,54 +634,54 @@ function renderInstagramConfig(source) {
                 </div>
             </div>
         `;
-    }
-    
-    if (config.searchUsername) {
-        details += `
+        }
+
+        if (config.searchUsername) {
+            details += `
             <div>
                 <span class="font-medium text-gray-600">Search Username:</span>
                 <span class="text-gray-800 ml-2">${config.searchUsername}</span>
             </div>
         `;
-    }
-    
-    if (config.searchHashtag) {
-        details += `
+        }
+
+        if (config.searchHashtag) {
+            details += `
             <div>
                 <span class="font-medium text-gray-600">Search Hashtag:</span>
                 <span class="text-gray-800 ml-2">${config.searchHashtag}</span>
             </div>
         `;
-    }
-    
-    if (config.resultsLimit) {
-        details += `
+        }
+
+        if (config.resultsLimit) {
+            details += `
             <div>
                 <span class="font-medium text-gray-600">Results Limit:</span>
                 <span class="text-gray-800 ml-2">${config.resultsLimit}</span>
             </div>
         `;
-    }
-    
-    if (config.onlyPostsNewerThan) {
-        details += `
+        }
+
+        if (config.onlyPostsNewerThan) {
+            details += `
             <div>
                 <span class="font-medium text-gray-600">Posts Newer Than:</span>
                 <span class="text-gray-800 ml-2">${config.onlyPostsNewerThan}</span>
             </div>
         `;
-    }
-    
-    details += '</div>';
-    return details;
-}
+        }
 
-function renderTiktokConfig(source) {
-    const config = source.config;
-    let details = '<div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">';
-    
-    if (config.profiles && config.profiles.length > 0) {
-        details += `
+        details += '</div>';
+        return details;
+    }
+
+    function renderTiktokConfig(source) {
+        const config = source.config;
+        let details = '<div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">';
+
+        if (config.profiles && config.profiles.length > 0) {
+            details += `
             <div class="md:col-span-2">
                 <span class="font-medium text-gray-600">Profiles:</span>
                 <div class="mt-1 bg-white rounded p-2">
@@ -759,10 +689,10 @@ function renderTiktokConfig(source) {
                 </div>
             </div>
         `;
-    }
-    
-    if (config.hashtags && config.hashtags.length > 0) {
-        details += `
+        }
+
+        if (config.hashtags && config.hashtags.length > 0) {
+            details += `
             <div class="md:col-span-2">
                 <span class="font-medium text-gray-600">Hashtags:</span>
                 <div class="mt-1 bg-white rounded p-2">
@@ -770,10 +700,10 @@ function renderTiktokConfig(source) {
                 </div>
             </div>
         `;
-    }
-    
-    if (config.searchQueries && config.searchQueries.length > 0) {
-        details += `
+        }
+
+        if (config.searchQueries && config.searchQueries.length > 0) {
+            details += `
             <div class="md:col-span-2">
                 <span class="font-medium text-gray-600">Search Queries:</span>
                 <div class="mt-1 bg-white rounded p-2">
@@ -781,36 +711,36 @@ function renderTiktokConfig(source) {
                 </div>
             </div>
         `;
-    }
-    
-    if (config.resultsPerPage) {
-        details += `
+        }
+
+        if (config.resultsPerPage) {
+            details += `
             <div>
                 <span class="font-medium text-gray-600">Results Per Page:</span>
                 <span class="text-gray-800 ml-2">${config.resultsPerPage}</span>
             </div>
         `;
-    }
-    
-    if (config.maxResults) {
-        details += `
+        }
+
+        if (config.maxResults) {
+            details += `
             <div>
                 <span class="font-medium text-gray-600">Max Results:</span>
                 <span class="text-gray-800 ml-2">${config.maxResults}</span>
             </div>
         `;
-    }
-    
-    details += '</div>';
-    return details;
-}
+        }
 
-function renderYoutubeConfig(source) {
-    const config = source.config;
-    let details = '<div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">';
-    
-    if (config.startUrls && config.startUrls.length > 0) {
-        details += `
+        details += '</div>';
+        return details;
+    }
+
+    function renderYoutubeConfig(source) {
+        const config = source.config;
+        let details = '<div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">';
+
+        if (config.startUrls && config.startUrls.length > 0) {
+            details += `
             <div class="md:col-span-2">
                 <span class="font-medium text-gray-600">Channel URLs:</span>
                 <div class="mt-1 bg-white rounded p-2">
@@ -818,416 +748,415 @@ function renderYoutubeConfig(source) {
                 </div>
             </div>
         `;
-    }
-    
-    if (config.maxResults) {
-        details += `
+        }
+
+        if (config.maxResults) {
+            details += `
             <div>
                 <span class="font-medium text-gray-600">Max Results:</span>
                 <span class="text-gray-800 ml-2">${config.maxResults}</span>
             </div>
         `;
-    }
-    
-    if (config.maxResultsShorts) {
-        details += `
+        }
+
+        if (config.maxResultsShorts) {
+            details += `
             <div>
                 <span class="font-medium text-gray-600">Max Shorts:</span>
                 <span class="text-gray-800 ml-2">${config.maxResultsShorts}</span>
             </div>
         `;
-    }
-    
-    if (config.maxResultStreams) {
-        details += `
+        }
+
+        if (config.maxResultStreams) {
+            details += `
             <div>
                 <span class="font-medium text-gray-600">Max Streams:</span>
                 <span class="text-gray-800 ml-2">${config.maxResultStreams}</span>
             </div>
         `;
-    }
-    
-    if (config.sortVideosBy) {
-        details += `
+        }
+
+        if (config.sortVideosBy) {
+            details += `
             <div>
                 <span class="font-medium text-gray-600">Sort By:</span>
                 <span class="text-gray-800 ml-2">${config.sortVideosBy}</span>
             </div>
         `;
-    }
-    
-    details += '</div>';
-    return details;
-}
-
-// Format table output
-// Load extracted data from API
-loadExtractedData();
-
-async function loadExtractedData() {
-    try {
-        const response = await fetch(`/api/runs/{{ run.pk }}/transit-data/`);
-        const result = await response.json();
-        
-        if (result.success) {
-            document.getElementById('extracted-loading').style.display = 'none';
-            document.getElementById('extracted-data-section').style.display = 'block';
-            
-            if (result.data.entities.length > 0) {
-                renderExtractedTable(result.data);
-            } else {
-                document.getElementById('extracted-table-container').style.display = 'none';
-                document.getElementById('no-data-message').style.display = 'block';
-            }
-        } else {
-            document.getElementById('extracted-loading').innerHTML = '<p class="text-red-600">Error loading extracted data</p>';
         }
-    } catch (error) {
-        console.error('Error loading extracted data:', error);
-        document.getElementById('extracted-loading').innerHTML = '<p class="text-red-600">Failed to load extracted data</p>';
+
+        details += '</div>';
+        return details;
     }
-}
 
-// Load scraped data from API
-loadScrapedData();
+    // Format table output
+    // Load extracted data from API
+    loadExtractedData();
 
-async function loadScrapedData() {
-    try {
-        const response = await fetch(`/api/runs/{{ run.pk }}/landing-zone/`);
-        const result = await response.json();
-        
-        if (result.success) {
-            document.getElementById('scraped-loading').style.display = 'none';
-            document.getElementById('scraped-data-section').style.display = 'block';
-            
-            if (Object.keys(result.data).length > 0) {
-                renderScrapedDataTabs(result.data);
-            } else {
-                document.getElementById('scraped-data').innerHTML = '<p class="text-gray-500 text-center py-8">No scraped data available</p>';
-                document.getElementById('scraped-data').style.display = 'block';
-            }
-        } else {
-            document.getElementById('scraped-loading').innerHTML = '<p class="text-red-600">Error loading scraped data</p>';
-        }
-    } catch (error) {
-        console.error('Error loading scraped data:', error);
-        document.getElementById('scraped-loading').innerHTML = '<p class="text-red-600">Failed to load scraped data</p>';
-    }
-}
+    async function loadExtractedData() {
+        try {
+            const response = await fetch(`/api/runs/{{ run.pk }}/transit-data/`);
+            const result = await response.json();
 
-function renderScrapedDataTabs(scrapedData) {
-    const sourceTabs = document.getElementById('source-tabs').querySelector('nav');
-    const scrapedDataContainer = document.getElementById('scraped-data');
-    
-    // Create tabs
-    const sourceTypes = Object.keys(scrapedData);
-    sourceTypes.forEach((sourceType, index) => {
-        const tab = document.createElement('button');
-        tab.className = `whitespace-nowrap py-2 px-1 border-b-2 font-medium text-sm ${
-            index === 0 ? 'border-primary-500 text-primary-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-        }`;
-        tab.textContent = sourceType.replace('-', ' ').replace(/\b\w/g, l => l.toUpperCase());
-        tab.onclick = () => switchScrapedTab(sourceType, tab);
-        sourceTabs.appendChild(tab);
-    });
-    
-    // Show first tab by default
-    if (sourceTypes.length > 0) {
-        showScrapedDataForSource(sourceTypes[0], scrapedData[sourceTypes[0]]);
-    }
-}
-
-function switchScrapedTab(sourceType, selectedTab) {
-    // Update tab styling
-    const tabs = document.querySelectorAll('#source-tabs button');
-    tabs.forEach(tab => {
-        tab.className = 'whitespace-nowrap py-2 px-1 border-b-2 font-medium text-sm border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300';
-    });
-    selectedTab.className = 'whitespace-nowrap py-2 px-1 border-b-2 font-medium text-sm border-primary-500 text-primary-600';
-    
-    // Load data for selected source
-    fetch(`/api/runs/{{ run.pk }}/landing-zone/`)
-        .then(response => response.json())
-        .then(result => {
             if (result.success) {
-                showScrapedDataForSource(sourceType, result.data[sourceType]);
+                document.getElementById('extracted-loading').style.display = 'none';
+                document.getElementById('extracted-data-section').style.display = 'block';
+
+                if (result.data.entities.length > 0) {
+                    renderExtractedTable(result.data);
+                } else {
+                    document.getElementById('extracted-table-container').style.display = 'none';
+                    document.getElementById('no-data-message').style.display = 'block';
+                }
+            } else {
+                document.getElementById('extracted-loading').innerHTML = '<p class="text-red-600">Error loading extracted data</p>';
             }
+        } catch (error) {
+            console.error('Error loading extracted data:', error);
+            document.getElementById('extracted-loading').innerHTML = '<p class="text-red-600">Failed to load extracted data</p>';
+        }
+    }
+
+    // Load scraped data from API
+    loadScrapedData();
+
+    async function loadScrapedData() {
+        try {
+            const response = await fetch(`/api/runs/{{ run.pk }}/landing-zone/`);
+            const result = await response.json();
+
+            if (result.success) {
+                document.getElementById('scraped-loading').style.display = 'none';
+                document.getElementById('scraped-data-section').style.display = 'block';
+
+                if (Object.keys(result.data).length > 0) {
+                    renderScrapedDataTabs(result.data);
+                } else {
+                    document.getElementById('scraped-data').innerHTML = '<p class="text-gray-500 text-center py-8">No scraped data available</p>';
+                    document.getElementById('scraped-data').style.display = 'block';
+                }
+            } else {
+                document.getElementById('scraped-loading').innerHTML = '<p class="text-red-600">Error loading scraped data</p>';
+            }
+        } catch (error) {
+            console.error('Error loading scraped data:', error);
+            document.getElementById('scraped-loading').innerHTML = '<p class="text-red-600">Failed to load scraped data</p>';
+        }
+    }
+
+    function renderScrapedDataTabs(scrapedData) {
+        const sourceTabs = document.getElementById('source-tabs').querySelector('nav');
+        const scrapedDataContainer = document.getElementById('scraped-data');
+
+        // Create tabs
+        const sourceTypes = Object.keys(scrapedData);
+        sourceTypes.forEach((sourceType, index) => {
+            const tab = document.createElement('button');
+            tab.className = `whitespace-nowrap py-2 px-1 border-b-2 font-medium text-sm ${index === 0 ? 'border-primary-500 text-primary-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                }`;
+            tab.textContent = sourceType.replace('-', ' ').replace(/\b\w/g, l => l.toUpperCase());
+            tab.onclick = () => switchScrapedTab(sourceType, tab);
+            sourceTabs.appendChild(tab);
         });
-}
 
-function showScrapedDataForSource(sourceType, data) {
-    const scrapedDataContainer = document.getElementById('scraped-data');
-    
-    if (data && data.length > 0) {
-        // Create JSON viewer content
-        const jsonString = JSON.stringify(data, null, 2);
-        scrapedDataContainer.innerHTML = `<pre class="text-xs text-gray-800 overflow-x-auto"><code>${escapeHtml(jsonString)}</code></pre>`;
-    } else {
-        scrapedDataContainer.innerHTML = '<p class="text-gray-500 text-center py-8">No data available for this source</p>';
-    }
-    
-    scrapedDataContainer.style.display = 'block';
-}
-
-function escapeHtml(text) {
-    const div = document.createElement('div');
-    div.textContent = text;
-    return div.innerHTML;
-}
-
-
-
-function toggleExtractedData() {
-    const extractedDiv = document.getElementById('extracted-data');
-    const toggleButton = document.getElementById('extracted-toggle');
-    const path = toggleButton.querySelector('path');
-
-    if (extractedDiv.classList.contains('hidden')) {
-        extractedDiv.classList.remove('hidden');
-        path.setAttribute('d', 'M5 15l7-7 7 7'); // Chevron up
-    } else {
-        extractedDiv.classList.add('hidden');
-        path.setAttribute('d', 'M19 9l-7 7-7-7'); // Chevron down
-    }
-}
-
-function toggleWrapText() {
-    const checked = document.getElementById('wrap-text').checked;
-    const cells = document.querySelectorAll('#table-body td');
-    cells.forEach(cell => {
-        if (checked) {
-            cell.classList.add('wrap-cell');
-            cell.classList.remove('truncate-cell');
-        } else {
-            cell.classList.remove('wrap-cell');
+        // Show first tab by default
+        if (sourceTypes.length > 0) {
+            showScrapedDataForSource(sourceTypes[0], scrapedData[sourceTypes[0]]);
         }
-    });
-}
-
-function toggleTruncateText() {
-    const checked = document.getElementById('truncate-text').checked;
-    const cells = document.querySelectorAll('#table-body td');
-    cells.forEach(cell => {
-        if (checked) {
-            cell.classList.add('truncate-cell');
-            cell.classList.remove('wrap-cell');
-        } else {
-            cell.classList.remove('truncate-cell');
-        }
-    });
-}
-
-function toggleLegacyData() {
-    const legacyDiv = document.getElementById('legacy-data');
-    const toggleButton = legacyDiv.previousElementSibling.querySelector('button');
-
-    if (legacyDiv.classList.contains('hidden')) {
-        legacyDiv.classList.remove('hidden');
-        toggleButton.textContent = 'Hide Legacy Extracted Data';
-    } else {
-        legacyDiv.classList.add('hidden');
-        toggleButton.textContent = 'Show Legacy Extracted Data';
     }
-}
 
-function toggleScrapedData() {
-    const scrapedDiv = document.getElementById('scraped-data');
-    const toggleIcon = document.getElementById('scraped-toggle-icon');
+    function switchScrapedTab(sourceType, selectedTab) {
+        // Update tab styling
+        const tabs = document.querySelectorAll('#source-tabs button');
+        tabs.forEach(tab => {
+            tab.className = 'whitespace-nowrap py-2 px-1 border-b-2 font-medium text-sm border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300';
+        });
+        selectedTab.className = 'whitespace-nowrap py-2 px-1 border-b-2 font-medium text-sm border-primary-500 text-primary-600';
 
-    if (scrapedDiv.classList.contains('hidden')) {
-        scrapedDiv.classList.remove('hidden');
-        // Change to up arrow (chevron-up) when expanded
-        toggleIcon.setAttribute('d', 'M5 15l7-7 7 7');
-    } else {
-        scrapedDiv.classList.add('hidden');
-        // Change to down arrow (chevron-down) when collapsed
-        toggleIcon.setAttribute('d', 'M19 9l-7 7-7-7');
-    }
-}
-
-// Start polling if execution is running
-{% if run.n8n_execution_id and execution_status != 'success' and execution_status != 'failed' and execution_status != 'error' and execution_status != 'completed' and execution_status != 'finished' %}
-pollingInterval = setInterval(pollStatus, 10000); // Poll every 10 seconds
-{% endif %}
-
-// Add to List Modal Functions
-let userLists = [];
-let currentAnalysis = null;
-
-function openAddToListModal() {
-    const modal = document.getElementById('add-to-list-modal');
-    modal.classList.remove('hidden');
-    
-    // Reset modal state
-    document.getElementById('modal-loading').classList.remove('hidden');
-    document.getElementById('modal-content').classList.add('hidden');
-    document.getElementById('modal-success').classList.add('hidden');
-    document.getElementById('list-select').value = '';
-    document.getElementById('new-list-form').classList.add('hidden');
-    document.getElementById('analysis-results').classList.add('hidden');
-    document.getElementById('import-button').disabled = true;
-    
-    // Load user lists
-    loadUserLists();
-}
-
-function closeAddToListModal() {
-    const modal = document.getElementById('add-to-list-modal');
-    modal.classList.add('hidden');
-}
-
-function loadUserLists() {
-    fetch('/lists/')
-        .then(response => response.text())
-        .then(html => {
-            // Parse the HTML to extract list information
-            const parser = new DOMParser();
-            const doc = parser.parseFromString(html, 'text/html');
-            // Only select links that are list name links (not export or view links)
-            // Look for links that are inside h3 headings with list names
-            const listElements = doc.querySelectorAll('h3 a[href^="/lists/"]');
-            
-            userLists = [];
-            listElements.forEach(element => {
-                const href = element.getAttribute('href');
-                const match = href.match(/\/lists\/(\d+)\/$/);
-                if (match) {
-                    const listId = match[1];
-                    const listName = element.textContent.trim();
-                    // Filter out empty names and ensure it's a real list name
-                    if (listName && 
-                        listName !== 'CSV' && 
-                        listName !== 'JSON' && 
-                        listName !== 'View' &&
-                        listName !== 'View →' &&
-                        !listName.includes('→')) {
-                        userLists.push({ id: listId, name: listName });
-                    }
+        // Load data for selected source
+        fetch(`/api/runs/{{ run.pk }}/landing-zone/`)
+            .then(response => response.json())
+            .then(result => {
+                if (result.success) {
+                    showScrapedDataForSource(sourceType, result.data[sourceType]);
                 }
             });
-            
-            // Populate the select dropdown
-            const select = document.getElementById('list-select');
-            select.innerHTML = '<option value="">Choose a list...</option><option value="new">+ Create New List</option>';
-            userLists.forEach(list => {
-                const option = document.createElement('option');
-                option.value = list.id;
-                option.textContent = list.name;
-                select.appendChild(option);
-            });
-            
-            // Show content
-            document.getElementById('modal-loading').classList.add('hidden');
-            document.getElementById('modal-content').classList.remove('hidden');
-        })
-        .catch(error => {
-            console.error('Error loading lists:', error);
-            document.getElementById('modal-loading').classList.add('hidden');
-            document.getElementById('modal-content').classList.remove('hidden');
-        });
-}
-
-function handleListSelection() {
-    const select = document.getElementById('list-select');
-    const newForm = document.getElementById('new-list-form');
-    const analysisResults = document.getElementById('analysis-results');
-    const importButton = document.getElementById('import-button');
-    
-    if (select.value === 'new') {
-        newForm.classList.remove('hidden');
-        analysisResults.classList.add('hidden');
-        // For new list, analyze immediately (but only once)
-        if (!currentAnalysis || currentAnalysis.is_new_list !== true) {
-            analyzeNewList();
-        } else {
-            // Use existing analysis, just update button state
-            const listNameInput = document.getElementById('new-list-name');
-            if (listNameInput.value.trim()) {
-                importButton.disabled = false;
-                importButton.textContent = 'Create List and Add Data';
-            } else {
-                importButton.disabled = true;
-                importButton.textContent = 'Enter List Name';
-            }
-        }
-    } else if (select.value) {
-        newForm.classList.add('hidden');
-        analyzeImport(select.value);
-    } else {
-        newForm.classList.add('hidden');
-        analysisResults.classList.add('hidden');
-        importButton.disabled = true;
     }
-}
 
-function analyzeNewList() {
-    const listName = document.getElementById('new-list-name').value.trim();
-    if (!listName) return;
-    
-    const analysisResults = document.getElementById('analysis-results');
-    const analysisContent = document.getElementById('analysis-content');
-    const importButton = document.getElementById('import-button');
-    
-    // Show loading state
-    analysisResults.classList.remove('hidden');
-    analysisContent.innerHTML = '<div class="text-center py-2"><div class="inline-block animate-spin rounded-full h-4 w-4 border-b-2 border-primary-600"></div><p class="text-sm text-gray-600 mt-1">Analyzing import...</p></div>';
-    importButton.disabled = true;
-    
-    // Analyze import for new list
-    fetch(`/runs/{{ run.pk }}/analyze-import/new/`)
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                currentAnalysis = data.analysis;
-                displayAnalysis(data.analysis);
-                importButton.disabled = false;
+    function showScrapedDataForSource(sourceType, data) {
+        const scrapedDataContainer = document.getElementById('scraped-data');
+
+        if (data && data.length > 0) {
+            // Create JSON viewer content
+            const jsonString = JSON.stringify(data, null, 2);
+            scrapedDataContainer.innerHTML = `<pre class="text-xs text-gray-800 overflow-x-auto"><code>${escapeHtml(jsonString)}</code></pre>`;
+        } else {
+            scrapedDataContainer.innerHTML = '<p class="text-gray-500 text-center py-8">No data available for this source</p>';
+        }
+
+        scrapedDataContainer.style.display = 'block';
+    }
+
+    function escapeHtml(text) {
+        const div = document.createElement('div');
+        div.textContent = text;
+        return div.innerHTML;
+    }
+
+
+
+    function toggleExtractedData() {
+        const extractedDiv = document.getElementById('extracted-data-section');
+        const toggleButton = document.getElementById('extracted-toggle');
+        const path = toggleButton.querySelector('path');
+
+        if (extractedDiv.style.display === 'none') {
+            extractedDiv.style.display = 'block';
+            path.setAttribute('d', 'M5 15l7-7 7 7'); // Chevron up
+        } else {
+            extractedDiv.style.display = 'none';
+            path.setAttribute('d', 'M19 9l-7 7-7-7'); // Chevron down
+        }
+    }
+
+    function toggleWrapText() {
+        const checked = document.getElementById('wrap-text').checked;
+        const cells = document.querySelectorAll('#table-body td');
+        cells.forEach(cell => {
+            if (checked) {
+                cell.classList.add('wrap-cell');
+                cell.classList.remove('truncate-cell');
             } else {
-                analysisContent.innerHTML = '<p class="text-red-600">Error analyzing import</p>';
+                cell.classList.remove('wrap-cell');
             }
-        })
-        .catch(error => {
-            console.error('Error analyzing import:', error);
-            analysisContent.innerHTML = '<p class="text-red-600">Error analyzing import</p>';
         });
-}
+    }
 
-function analyzeImport(listId) {
-    const analysisResults = document.getElementById('analysis-results');
-    const analysisContent = document.getElementById('analysis-content');
-    const importButton = document.getElementById('import-button');
-    
-    // Show loading state
-    analysisResults.classList.remove('hidden');
-    analysisContent.innerHTML = '<div class="text-center py-2"><div class="inline-block animate-spin rounded-full h-4 w-4 border-b-2 border-primary-600"></div><p class="text-sm text-gray-600 mt-1">Analyzing import...</p></div>';
-    importButton.disabled = true;
-    
-    fetch(`/runs/{{ run.pk }}/analyze-import/${listId}/`)
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                currentAnalysis = data.analysis;
-                displayAnalysis(data.analysis);
-                importButton.disabled = false;
+    function toggleTruncateText() {
+        const checked = document.getElementById('truncate-text').checked;
+        const cells = document.querySelectorAll('#table-body td');
+        cells.forEach(cell => {
+            if (checked) {
+                cell.classList.add('truncate-cell');
+                cell.classList.remove('wrap-cell');
             } else {
-                analysisContent.innerHTML = '<p class="text-red-600">Error analyzing import</p>';
+                cell.classList.remove('truncate-cell');
             }
-        })
-        .catch(error => {
-            console.error('Error analyzing import:', error);
-            analysisContent.innerHTML = '<p class="text-red-600">Error analyzing import</p>';
         });
-}
+    }
 
-function displayAnalysis(analysis) {
-    const analysisContent = document.getElementById('analysis-content');
-    
-    // Debug logging
-    console.log('Displaying analysis:', analysis);
-    
-    let html = '<div class="space-y-2 text-sm">';
-    
-    if (analysis.is_new_list) {
-        html += `
+    function toggleLegacyData() {
+        const legacyDiv = document.getElementById('legacy-data');
+        const toggleButton = legacyDiv.previousElementSibling.querySelector('button');
+
+        if (legacyDiv.classList.contains('hidden')) {
+            legacyDiv.classList.remove('hidden');
+            toggleButton.textContent = 'Hide Legacy Extracted Data';
+        } else {
+            legacyDiv.classList.add('hidden');
+            toggleButton.textContent = 'Show Legacy Extracted Data';
+        }
+    }
+
+    function toggleScrapedData() {
+        const scrapedDiv = document.getElementById('scraped-data');
+        const toggleIcon = document.getElementById('scraped-toggle-icon');
+
+        if (scrapedDiv.style.display === 'none') {
+            scrapedDiv.style.display = 'block';
+            // Change to up arrow (chevron-up) when expanded
+            toggleIcon.setAttribute('d', 'M5 15l7-7 7 7');
+        } else {
+            scrapedDiv.style.display = 'none';
+            // Change to down arrow (chevron-down) when collapsed
+            toggleIcon.setAttribute('d', 'M19 9l-7 7-7-7');
+        }
+    }
+
+    // Start polling if execution is running
+    {% if run.n8n_execution_id and execution_status != 'success' and execution_status != 'failed' and execution_status != 'error' and execution_status != 'completed' and execution_status != 'finished' %}
+    pollingInterval = setInterval(pollStatus, 10000); // Poll every 10 seconds
+    {% endif %}
+
+    // Add to List Modal Functions
+    let userLists = [];
+    let currentAnalysis = null;
+
+    function openAddToListModal() {
+        const modal = document.getElementById('add-to-list-modal');
+        modal.classList.remove('hidden');
+
+        // Reset modal state
+        document.getElementById('modal-loading').classList.remove('hidden');
+        document.getElementById('modal-content').classList.add('hidden');
+        document.getElementById('modal-success').classList.add('hidden');
+        document.getElementById('list-select').value = '';
+        document.getElementById('new-list-form').classList.add('hidden');
+        document.getElementById('analysis-results').classList.add('hidden');
+        document.getElementById('import-button').disabled = true;
+
+        // Load user lists
+        loadUserLists();
+    }
+
+    function closeAddToListModal() {
+        const modal = document.getElementById('add-to-list-modal');
+        modal.classList.add('hidden');
+    }
+
+    function loadUserLists() {
+        fetch('/lists/')
+            .then(response => response.text())
+            .then(html => {
+                // Parse the HTML to extract list information
+                const parser = new DOMParser();
+                const doc = parser.parseFromString(html, 'text/html');
+                // Only select links that are list name links (not export or view links)
+                // Look for links that are inside h3 headings with list names
+                const listElements = doc.querySelectorAll('h3 a[href^="/lists/"]');
+
+                userLists = [];
+                listElements.forEach(element => {
+                    const href = element.getAttribute('href');
+                    const match = href.match(/\/lists\/(\d+)\/$/);
+                    if (match) {
+                        const listId = match[1];
+                        const listName = element.textContent.trim();
+                        // Filter out empty names and ensure it's a real list name
+                        if (listName &&
+                            listName !== 'CSV' &&
+                            listName !== 'JSON' &&
+                            listName !== 'View' &&
+                            listName !== 'View →' &&
+                            !listName.includes('→')) {
+                            userLists.push({ id: listId, name: listName });
+                        }
+                    }
+                });
+
+                // Populate the select dropdown
+                const select = document.getElementById('list-select');
+                select.innerHTML = '<option value="">Choose a list...</option><option value="new">+ Create New List</option>';
+                userLists.forEach(list => {
+                    const option = document.createElement('option');
+                    option.value = list.id;
+                    option.textContent = list.name;
+                    select.appendChild(option);
+                });
+
+                // Show content
+                document.getElementById('modal-loading').classList.add('hidden');
+                document.getElementById('modal-content').classList.remove('hidden');
+            })
+            .catch(error => {
+                console.error('Error loading lists:', error);
+                document.getElementById('modal-loading').classList.add('hidden');
+                document.getElementById('modal-content').classList.remove('hidden');
+            });
+    }
+
+    function handleListSelection() {
+        const select = document.getElementById('list-select');
+        const newForm = document.getElementById('new-list-form');
+        const analysisResults = document.getElementById('analysis-results');
+        const importButton = document.getElementById('import-button');
+
+        if (select.value === 'new') {
+            newForm.classList.remove('hidden');
+            analysisResults.classList.add('hidden');
+            // For new list, analyze immediately (but only once)
+            if (!currentAnalysis || currentAnalysis.is_new_list !== true) {
+                analyzeNewList();
+            } else {
+                // Use existing analysis, just update button state
+                const listNameInput = document.getElementById('new-list-name');
+                if (listNameInput.value.trim()) {
+                    importButton.disabled = false;
+                    importButton.textContent = 'Create List and Add Data';
+                } else {
+                    importButton.disabled = true;
+                    importButton.textContent = 'Enter List Name';
+                }
+            }
+        } else if (select.value) {
+            newForm.classList.add('hidden');
+            analyzeImport(select.value);
+        } else {
+            newForm.classList.add('hidden');
+            analysisResults.classList.add('hidden');
+            importButton.disabled = true;
+        }
+    }
+
+    function analyzeNewList() {
+        const listName = document.getElementById('new-list-name').value.trim();
+        if (!listName) return;
+
+        const analysisResults = document.getElementById('analysis-results');
+        const analysisContent = document.getElementById('analysis-content');
+        const importButton = document.getElementById('import-button');
+
+        // Show loading state
+        analysisResults.classList.remove('hidden');
+        analysisContent.innerHTML = '<div class="text-center py-2"><div class="inline-block animate-spin rounded-full h-4 w-4 border-b-2 border-primary-600"></div><p class="text-sm text-gray-600 mt-1">Analyzing import...</p></div>';
+        importButton.disabled = true;
+
+        // Analyze import for new list
+        fetch(`/runs/{{ run.pk }}/analyze-import/new/`)
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    currentAnalysis = data.analysis;
+                    displayAnalysis(data.analysis);
+                    importButton.disabled = false;
+                } else {
+                    analysisContent.innerHTML = '<p class="text-red-600">Error analyzing import</p>';
+                }
+            })
+            .catch(error => {
+                console.error('Error analyzing import:', error);
+                analysisContent.innerHTML = '<p class="text-red-600">Error analyzing import</p>';
+            });
+    }
+
+    function analyzeImport(listId) {
+        const analysisResults = document.getElementById('analysis-results');
+        const analysisContent = document.getElementById('analysis-content');
+        const importButton = document.getElementById('import-button');
+
+        // Show loading state
+        analysisResults.classList.remove('hidden');
+        analysisContent.innerHTML = '<div class="text-center py-2"><div class="inline-block animate-spin rounded-full h-4 w-4 border-b-2 border-primary-600"></div><p class="text-sm text-gray-600 mt-1">Analyzing import...</p></div>';
+        importButton.disabled = true;
+
+        fetch(`/runs/{{ run.pk }}/analyze-import/${listId}/`)
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    currentAnalysis = data.analysis;
+                    displayAnalysis(data.analysis);
+                    importButton.disabled = false;
+                } else {
+                    analysisContent.innerHTML = '<p class="text-red-600">Error analyzing import</p>';
+                }
+            })
+            .catch(error => {
+                console.error('Error analyzing import:', error);
+                analysisContent.innerHTML = '<p class="text-red-600">Error analyzing import</p>';
+            });
+    }
+
+    function displayAnalysis(analysis) {
+        const analysisContent = document.getElementById('analysis-content');
+
+        // Debug logging
+        console.log('Displaying analysis:', analysis);
+
+        let html = '<div class="space-y-2 text-sm">';
+
+        if (analysis.is_new_list) {
+            html += `
             <div class="flex justify-between">
                 <span class="text-gray-600">New rows to add:</span>
                 <span class="font-medium">${analysis.new_rows_count}</span>
@@ -1237,8 +1166,8 @@ function displayAnalysis(analysis) {
                 <span class="font-medium">${analysis.new_columns.length}</span>
             </div>
         `;
-    } else {
-        html += `
+        } else {
+            html += `
             <div class="flex justify-between">
                 <span class="text-gray-600">Current rows in list:</span>
                 <span class="font-medium">${analysis.existing_rows_count}</span>
@@ -1248,13 +1177,13 @@ function displayAnalysis(analysis) {
                 <span class="font-medium text-green-600">${analysis.new_rows_count}</span>
             </div>
         `;
-        
-        if (analysis.new_columns.length > 0) {
-            const showAllColumns = analysis.new_columns.length <= 10;
-            const columnsToShow = showAllColumns ? analysis.new_columns : analysis.new_columns.slice(0, 10);
-            const remainingCount = analysis.new_columns.length - 10;
-            
-            html += `
+
+            if (analysis.new_columns.length > 0) {
+                const showAllColumns = analysis.new_columns.length <= 10;
+                const columnsToShow = showAllColumns ? analysis.new_columns : analysis.new_columns.slice(0, 10);
+                const remainingCount = analysis.new_columns.length - 10;
+
+                html += `
                 <div class="mt-3">
                     <span class="text-gray-600">New columns to create:</span>
                     <ul class="mt-1 space-y-1 max-h-32 overflow-y-auto" id="columns-list">
@@ -1271,10 +1200,10 @@ function displayAnalysis(analysis) {
                     ` : ''}
                 </div>
             `;
-        }
-        
-        if (analysis.conflicts.length > 0) {
-            html += `
+            }
+
+            if (analysis.conflicts.length > 0) {
+                html += `
                 <div class="mt-3">
                     <span class="text-gray-600">Type conflicts:</span>
                     <ul class="mt-1 space-y-1">
@@ -1286,14 +1215,14 @@ function displayAnalysis(analysis) {
                     </ul>
                 </div>
             `;
-        }
-        
-        if (analysis.existing_columns_match && analysis.existing_columns_match.length > 0) {
-            const showAllExisting = analysis.existing_columns_match.length <= 10;
-            const existingToShow = showAllExisting ? analysis.existing_columns_match : analysis.existing_columns_match.slice(0, 10);
-            const remainingExistingCount = analysis.existing_columns_match.length - 10;
-            
-            html += `
+            }
+
+            if (analysis.existing_columns_match && analysis.existing_columns_match.length > 0) {
+                const showAllExisting = analysis.existing_columns_match.length <= 10;
+                const existingToShow = showAllExisting ? analysis.existing_columns_match : analysis.existing_columns_match.slice(0, 10);
+                const remainingExistingCount = analysis.existing_columns_match.length - 10;
+
+                html += `
                 <div class="mt-3">
                     <span class="text-gray-600">Fields matching existing columns:</span>
                     <ul class="mt-1 space-y-1 max-h-32 overflow-y-auto" id="existing-columns-list">
@@ -1310,155 +1239,155 @@ function displayAnalysis(analysis) {
                     ` : ''}
                 </div>
             `;
+            }
         }
-    }
-    
-    html += '</div>';
-    analysisContent.innerHTML = html;
-}
 
-function toggleAllColumns() {
-    const columnsList = document.getElementById('columns-list');
-    const allColumns = currentAnalysis.new_columns;
-    
-    // Show all columns
-    columnsList.innerHTML = allColumns.map(col => `
+        html += '</div>';
+        analysisContent.innerHTML = html;
+    }
+
+    function toggleAllColumns() {
+        const columnsList = document.getElementById('columns-list');
+        const allColumns = currentAnalysis.new_columns;
+
+        // Show all columns
+        columnsList.innerHTML = allColumns.map(col => `
         <li class="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded">
             ${col.name} (${col.type})
         </li>
     `).join('');
-    
-    // Remove "show more" button
-    const showMoreBtn = columnsList.nextElementSibling;
-    if (showMoreBtn && showMoreBtn.onclick.toString().includes('toggleAllColumns')) {
-        showMoreBtn.remove();
-    }
-}
 
-function toggleAllExistingColumns() {
-    const existingList = document.getElementById('existing-columns-list');
-    const allExisting = currentAnalysis.existing_columns_match;
-    
-    // Show all existing columns
-    existingList.innerHTML = allExisting.map(field => `
+        // Remove "show more" button
+        const showMoreBtn = columnsList.nextElementSibling;
+        if (showMoreBtn && showMoreBtn.onclick.toString().includes('toggleAllColumns')) {
+            showMoreBtn.remove();
+        }
+    }
+
+    function toggleAllExistingColumns() {
+        const existingList = document.getElementById('existing-columns-list');
+        const allExisting = currentAnalysis.existing_columns_match;
+
+        // Show all existing columns
+        existingList.innerHTML = allExisting.map(field => `
         <li class="text-xs bg-green-100 text-green-800 px-2 py-1 rounded">
             ${field}
         </li>
     `).join('');
-    
-    // Remove "show more" button
-    const showMoreBtn = existingList.nextElementSibling;
-    if (showMoreBtn && showMoreBtn.onclick.toString().includes('toggleAllExistingColumns')) {
-        showMoreBtn.remove();
-    }
-}
 
-function importToList() {
-    const select = document.getElementById('list-select');
-    const listId = select.value;
-    const importButton = document.getElementById('import-button');
-    
-    if (!listId) {
-        alert('Please select a list or create a new one.');
-        return;
+        // Remove "show more" button
+        const showMoreBtn = existingList.nextElementSibling;
+        if (showMoreBtn && showMoreBtn.onclick.toString().includes('toggleAllExistingColumns')) {
+            showMoreBtn.remove();
+        }
     }
-    
-    if (listId === 'new') {
-        const listName = document.getElementById('new-list-name').value.trim();
-        if (!listName) {
-            alert('Please enter a list name.');
+
+    function importToList() {
+        const select = document.getElementById('list-select');
+        const listId = select.value;
+        const importButton = document.getElementById('import-button');
+
+        if (!listId) {
+            alert('Please select a list or create a new one.');
             return;
         }
-    }
-    
-    // Disable button and show loading
-    importButton.disabled = true;
-    importButton.innerHTML = '<div class="inline-block animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>Importing...';
-    
-    const formData = new FormData();
-    if (listId === 'new') {
-        formData.append('list_name', document.getElementById('new-list-name').value.trim());
-        formData.append('description', document.getElementById('new-list-description').value.trim());
-    }
-    
-    fetch(`/runs/{{ run.pk }}/add-to-list/${listId}/`, {
-        method: 'POST',
-        body: formData,
-        headers: {
-            'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+
+        if (listId === 'new') {
+            const listName = document.getElementById('new-list-name').value.trim();
+            if (!listName) {
+                alert('Please enter a list name.');
+                return;
+            }
         }
-    })
-    .then(response => response.json())
-    .then(data => {
-        if (data.success) {
-            showImportSuccess(data);
-        } else {
-            alert('Error: ' + (data.error || 'Unknown error occurred'));
-            importButton.disabled = false;
-            importButton.innerHTML = 'Import Data';
+
+        // Disable button and show loading
+        importButton.disabled = true;
+        importButton.innerHTML = '<div class="inline-block animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>Importing...';
+
+        const formData = new FormData();
+        if (listId === 'new') {
+            formData.append('list_name', document.getElementById('new-list-name').value.trim());
+            formData.append('description', document.getElementById('new-list-description').value.trim());
         }
-    })
-    .catch(error => {
-        console.error('Error importing to list:', error);
-        alert('Error importing data. Please try again.');
-        importButton.disabled = false;
-        importButton.innerHTML = 'Import Data';
+
+        fetch(`/runs/{{ run.pk }}/add-to-list/${listId}/`, {
+            method: 'POST',
+            body: formData,
+            headers: {
+                'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+            }
+        })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    showImportSuccess(data);
+                } else {
+                    alert('Error: ' + (data.error || 'Unknown error occurred'));
+                    importButton.disabled = false;
+                    importButton.innerHTML = 'Import Data';
+                }
+            })
+            .catch(error => {
+                console.error('Error importing to list:', error);
+                alert('Error importing data. Please try again.');
+                importButton.disabled = false;
+                importButton.innerHTML = 'Import Data';
+            });
+    }
+
+    function showImportSuccess(data) {
+        const modalContent = document.getElementById('modal-content');
+        const modalSuccess = document.getElementById('modal-success');
+        const successMessage = document.getElementById('success-message');
+        const viewListLink = document.getElementById('view-list-link');
+
+        // Build success message
+        let message = `Successfully imported ${data.result.imported_rows} rows`;
+        if (data.result.new_columns > 0) {
+            message += ` and created ${data.result.new_columns} new columns`;
+        }
+        message += ' to your list.';
+
+        successMessage.textContent = message;
+        viewListLink.href = data.list_url;
+
+        // Show success state
+        modalContent.classList.add('hidden');
+        modalSuccess.classList.remove('hidden');
+    }
+
+    // Event listeners
+    document.getElementById('list-select').addEventListener('change', handleListSelection);
+    let newListAnalysisTimeout;
+
+    document.getElementById('new-list-name').addEventListener('input', function () {
+        const select = document.getElementById('list-select');
+        if (select.value === 'new') {
+            // Clear existing timeout
+            clearTimeout(newListAnalysisTimeout);
+
+            const listName = this.value.trim();
+            const importButton = document.getElementById('import-button');
+
+            if (listName) {
+                importButton.disabled = false;
+                importButton.textContent = 'Create List and Add Data';
+            } else {
+                importButton.disabled = true;
+                importButton.textContent = 'Enter List Name';
+            }
+
+            // Don't re-analyze on every keystroke - analysis is the same for new lists
+            // Only re-analyze if we haven't analyzed yet or if there was an error
+        }
     });
-}
 
-function showImportSuccess(data) {
-    const modalContent = document.getElementById('modal-content');
-    const modalSuccess = document.getElementById('modal-success');
-    const successMessage = document.getElementById('success-message');
-    const viewListLink = document.getElementById('view-list-link');
-    
-    // Build success message
-    let message = `Successfully imported ${data.result.imported_rows} rows`;
-    if (data.result.new_columns > 0) {
-        message += ` and created ${data.result.new_columns} new columns`;
-    }
-    message += ' to your list.';
-    
-    successMessage.textContent = message;
-    viewListLink.href = data.list_url;
-    
-    // Show success state
-    modalContent.classList.add('hidden');
-    modalSuccess.classList.remove('hidden');
-}
-
-// Event listeners
-document.getElementById('list-select').addEventListener('change', handleListSelection);
-let newListAnalysisTimeout;
-
-document.getElementById('new-list-name').addEventListener('input', function() {
-    const select = document.getElementById('list-select');
-    if (select.value === 'new') {
-        // Clear existing timeout
-        clearTimeout(newListAnalysisTimeout);
-        
-        const listName = this.value.trim();
-        const importButton = document.getElementById('import-button');
-        
-        if (listName) {
-            importButton.disabled = false;
-            importButton.textContent = 'Create List and Add Data';
-        } else {
-            importButton.disabled = true;
-            importButton.textContent = 'Enter List Name';
+    // Close modal when clicking outside
+    document.getElementById('add-to-list-modal').addEventListener('click', function (e) {
+        if (e.target === this) {
+            closeAddToListModal();
         }
-        
-        // Don't re-analyze on every keystroke - analysis is the same for new lists
-        // Only re-analyze if we haven't analyzed yet or if there was an error
-    }
-});
-
-// Close modal when clicking outside
-document.getElementById('add-to-list-modal').addEventListener('click', function(e) {
-    if (e.target === this) {
-        closeAddToListModal();
-    }
-});
+    });
 
 </script>
 {% endblock %}
