@@ -522,6 +522,15 @@ class RunForm(forms.ModelForm):
         if self.instance and self.instance.input:
             # Pre-populate fields from JSON if editing
             data = self.instance.input
+            # Ensure data is a dict (handle legacy string format)
+            if isinstance(data, str):
+                try:
+                    data = json.loads(data)
+                except (json.JSONDecodeError, TypeError):
+                    data = {}
+            elif not isinstance(data, dict):
+                data = {}
+
             self.fields['sources'].initial = data.get('sources', [])
             self.fields['days_since'].initial = data.get('days_since', 14)
             self.fields['max_results'].initial = data.get('max_results', 50)
@@ -591,14 +600,15 @@ class RunForm(forms.ModelForm):
     def save(self, commit=True):
         instance = super().save(commit=False)
         instance.enable_extraction = self.cleaned_data['enable_extraction']
-        
+
         # Handle extraction prompt - use default if empty
         extraction_prompt = self.cleaned_data['extraction_prompt']
         # if not extraction_prompt.strip():
         #     extraction_prompt = "Extract location information, business mentions, contact details, and other relevant data from social media posts. Adapt to the specific platform and content type."
-        
+
         instance.extraction_prompt = extraction_prompt
-        instance.input = json.dumps({
+        # Store as Python dict, not JSON string - Django JSONField handles serialization
+        instance.input = {
             'sources': self.cleaned_data['sources'],
             'days_since': self.cleaned_data['days_since'],
             'max_results': self.cleaned_data['max_results'],
@@ -606,7 +616,7 @@ class RunForm(forms.ModelForm):
             'custom_columns': self.cleaned_data['custom_columns'],
             'extraction_prompt': extraction_prompt,
             'enable_extraction': self.cleaned_data['enable_extraction']
-        })
+        }
         if commit:
             instance.save()
         return instance

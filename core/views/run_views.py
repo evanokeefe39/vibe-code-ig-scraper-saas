@@ -81,9 +81,10 @@ def run_create(request):
             sources = serialize_dates(sources)
 
             # Get the input data from form.save() and update with processed sources
-            input_data = json.loads(run.input)
+            # input is now stored as dict, not JSON string
+            input_data = run.input.copy() if run.input else {}
             input_data['sources'] = sources
-            run.input = json.dumps(input_data)
+            run.input = input_data
             run.save()
             trigger_run(run)
             messages.success(request, 'Run started successfully!')
@@ -160,12 +161,14 @@ def run_detail(request, pk):
     execution_info = get_n8n_execution_status(run.n8n_execution_id)
     execution_data_json = json.dumps(execution_info['data'])
 
-    # Parse input data
+    # Parse input data - handle both dict (new format) and string (legacy format)
     try:
         if isinstance(run.input, str):
             input_data = json.loads(run.input)
+        elif isinstance(run.input, dict):
+            input_data = run.input
         else:
-            input_data = run.input or {}
+            input_data = {}
     except (json.JSONDecodeError, TypeError):
         input_data = {}
 
@@ -217,7 +220,8 @@ def run_detail(request, pk):
         'execution_data': execution_info['data'],
         'execution_data_json': execution_data_json,
         'run_data': run_data,
-        'run_data_json': run_data_json
+        'run_data_json': run_data_json,
+        'input_json': input_json
     })
 
 

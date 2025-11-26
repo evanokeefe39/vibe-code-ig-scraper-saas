@@ -156,7 +156,7 @@ def build_source_config(cleaned_data):
 def trigger_run(run):
     """Trigger multi-source n8n workflow"""
     # Parse input
-    input_data = json.loads(run.input)
+    input_data = run.input if isinstance(run.input, dict) else json.loads(run.input)
     sources = input_data.get('sources', [])
     days_since = input_data.get('days_since', 14)
     max_results = input_data.get('max_results', 50)
