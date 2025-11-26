@@ -889,10 +889,7 @@
 
         if (data && data.length > 0) {
             // Create JSON viewer content
-            const jsonString = JSON.stringify(data, null, 2);
-            scrapedDataContainer.innerHTML = `<pre class="text-xs text-gray-800 overflow-x-auto"><code>${escapeHtml(jsonString)}</code></pre>`;
-        } else {
-            scrapedDataContainer.innerHTML = '<p class="text-gray-500 text-center py-8">No data available for this source</p>';
+            $(scrapedDataContainer).jsonView(data, { collapsed: true });
         }
 
         scrapedDataContainer.style.display = 'block';
